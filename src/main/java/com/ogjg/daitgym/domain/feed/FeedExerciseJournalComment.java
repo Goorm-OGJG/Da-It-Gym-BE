@@ -1,5 +1,7 @@
-package com.ogjg.daitgym.domain;
+package com.ogjg.daitgym.domain.feed;
 
+import com.ogjg.daitgym.domain.BaseEntity;
+import com.ogjg.daitgym.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
-import static jakarta.persistence.GenerationType.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class ExerciseJournalComment extends BaseEntity {
+public class FeedExerciseJournalComment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -26,13 +28,14 @@ public class ExerciseJournalComment extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    // TODO ExerciseJournal 연관관계 맺기
-
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "journal_id")
+    private FeedExerciseJournal feedExerciseJournal;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "parent_id")
-    private ExerciseJournalComment parent;
+    private FeedExerciseJournalComment parent;
 
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
-    private List<ExerciseJournalComment> children = new ArrayList<>();
+    private List<FeedExerciseJournalComment> children = new ArrayList<>();
 }

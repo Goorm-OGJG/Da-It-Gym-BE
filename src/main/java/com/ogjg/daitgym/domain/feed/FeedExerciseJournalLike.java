@@ -1,5 +1,7 @@
-package com.ogjg.daitgym.domain;
+package com.ogjg.daitgym.domain.feed;
 
+import com.ogjg.daitgym.domain.BaseEntity;
+import com.ogjg.daitgym.domain.User;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,7 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class ExerciseJournalLike extends BaseEntity {
+public class FeedExerciseJournalLike extends BaseEntity {
 
     @EmbeddedId
     private ExerciseJournalLikePk exerciseJournalLikePk;
@@ -23,7 +25,10 @@ public class ExerciseJournalLike extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    // TODO ExerciseJournal 연관관계 맺기
+    @MapsId("exerciseJournalId")
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "journal_id")
+    private FeedExerciseJournal feedExerciseJournal;
 
     @Getter
     @Embeddable

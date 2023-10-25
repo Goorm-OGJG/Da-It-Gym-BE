@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.domain;
 
+import com.ogjg.daitgym.domain.feed.FeedExerciseJournalComment;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,8 +33,8 @@ public class RoutineComment extends BaseEntity {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "parent_id")
-    private ExerciseJournalComment parent;
+    private FeedExerciseJournalComment parent;
 
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
-    private List<ExerciseJournalComment> children = new ArrayList<>();
+    private List<FeedExerciseJournalComment> children = new ArrayList<>();
 }
