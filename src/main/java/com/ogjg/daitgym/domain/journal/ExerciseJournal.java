@@ -7,8 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.sql.Time;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -34,9 +35,11 @@ public class ExerciseJournal extends BaseEntity {
     @NotNull
     private LocalDate journalDate;
 
-    private LocalTime exerciseTime;
+    private Time exerciseTime;
 
-    private LocalTime restTime;
+    private LocalDateTime exerciseStartTime;
+
+    private LocalDateTime exerciseEndTime;
 
     @Enumerated(STRING)
     private Split split;
