@@ -3,6 +3,7 @@ package com.ogjg.daitgym.domain.feed;
 import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,7 +30,7 @@ public class FeedExerciseJournalComment extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "journal_id")
+    @JoinColumn(name = "feed_journal_id")
     private FeedExerciseJournal feedExerciseJournal;
 
     @ManyToOne(fetch = LAZY)
@@ -38,4 +39,27 @@ public class FeedExerciseJournalComment extends BaseEntity {
 
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
     private List<FeedExerciseJournalComment> children = new ArrayList<>();
+
+
+    public void updateCommentParent(FeedExerciseJournalComment parentComment) {
+        this.parent = parentComment;
+    }
+
+    public void updateComment(String comment) {
+        this.comment = comment;
+    }
+
+    /**
+     * TODO user 추가하기
+     *
+     * @param comment
+     * @param feedExerciseJournal
+     */
+    @Builder
+    public FeedExerciseJournalComment(String comment, User user, FeedExerciseJournal feedExerciseJournal) {
+        this.comment = comment;
+        this.user = user;
+        this.feedExerciseJournal = feedExerciseJournal;
+    }
+
 }
