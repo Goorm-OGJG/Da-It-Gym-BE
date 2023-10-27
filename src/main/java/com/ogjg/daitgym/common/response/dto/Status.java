@@ -1,7 +1,7 @@
-package com.ogjg.daitgym.common.exception.response.dto;
+package com.ogjg.daitgym.common.response.dto;
 
 
-import com.ogjg.daitgym.common.exception.exception.ErrorType;
+import com.ogjg.daitgym.common.exception.ErrorType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

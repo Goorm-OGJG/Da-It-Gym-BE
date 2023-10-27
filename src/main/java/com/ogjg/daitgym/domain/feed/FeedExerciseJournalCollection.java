@@ -26,10 +26,10 @@ public class FeedExerciseJournalCollection extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    @MapsId("journalId")
+    @MapsId("feedExerciseJournalId")
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "journal_id")
-    private ExerciseJournal exerciseJournal;
+    @JoinColumn(name = "feed_exercise_journal_id")
+    private FeedExerciseJournal feedExerciseJournal;
 
     @Getter
     @Embeddable
@@ -37,11 +37,11 @@ public class FeedExerciseJournalCollection extends BaseEntity {
     @NoArgsConstructor(access = PROTECTED)
     public static class PK implements Serializable {
         private String email;
-        private Long journalId;
+        private Long feedExerciseJournalId;
 
-        public PK(String email, Long journalId) {
+        public PK(String email, Long feedExerciseJournalId) {
             this.email = email;
-            this.journalId = journalId;
+            this.feedExerciseJournalId = feedExerciseJournalId;
         }
     }
 

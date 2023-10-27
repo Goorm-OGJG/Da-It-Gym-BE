@@ -30,10 +30,10 @@ public class ExerciseJournal extends BaseEntity {
     private User user;
 
     @Enumerated(STRING)
-    private JournalVisibility journalVisibility;
+    private JournalVisibility journalVisibility = JournalVisibility.PRIVATE;
 
     @NotNull
-    private LocalDate journalDate;
+    private LocalDate journalDate = LocalDate.now();
 
     private Time exerciseTime;
 
@@ -44,6 +44,10 @@ public class ExerciseJournal extends BaseEntity {
     @Enumerated(STRING)
     private Split split;
 
-    private boolean exerciseStatus;
+    private boolean exerciseStatus = false;
+
+    public ExerciseJournal(User user) {
+        this.user = user;
+    }
 
 }

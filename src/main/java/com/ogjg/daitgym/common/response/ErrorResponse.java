@@ -1,7 +1,7 @@
-package com.ogjg.daitgym.common.exception.response;
+package com.ogjg.daitgym.common.response;
 
-import com.ogjg.daitgym.common.exception.exception.ErrorData;
-import com.ogjg.daitgym.common.exception.exception.ErrorType;
+import com.ogjg.daitgym.common.exception.ErrorData;
+import com.ogjg.daitgym.common.exception.ErrorType;
 
 public class ErrorResponse extends ApiResponse<ErrorData> {
 
