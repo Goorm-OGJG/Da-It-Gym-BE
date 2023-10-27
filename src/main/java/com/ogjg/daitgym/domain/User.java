@@ -1,18 +1,15 @@
 package com.ogjg.daitgym.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
-import javax.management.relation.Role;
 import java.time.LocalDate;
 
+import static jakarta.persistence.EnumType.STRING;
 import static lombok.AccessLevel.PROTECTED;
 
 @Getter
@@ -40,6 +37,7 @@ public class User extends BaseEntity {
 
     private String imageUrl;
 
+    @Enumerated(STRING)
     private Role role;
 
     private boolean isDeleted;
