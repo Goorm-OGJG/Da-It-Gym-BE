@@ -21,6 +21,7 @@ public class FeedExerciseJournal extends BaseEntity {
     private Long id;
 
     @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "jouranl_id")
     private ExerciseJournal exerciseJournal;
 
 }

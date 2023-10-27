@@ -1,9 +1,9 @@
-package com.ogjg.daitgym.common.exception.controller;
+package com.ogjg.daitgym.common.controller;
 
-import com.ogjg.daitgym.common.exception.exception.CustomException;
-import com.ogjg.daitgym.common.exception.exception.ErrorCode;
-import com.ogjg.daitgym.common.exception.response.ApiResponse;
-import com.ogjg.daitgym.common.exception.response.ErrorResponse;
+import com.ogjg.daitgym.common.exception.CustomException;
+import com.ogjg.daitgym.common.exception.ErrorCode;
+import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.common.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;

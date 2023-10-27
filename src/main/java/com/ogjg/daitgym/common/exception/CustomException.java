@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.common.exception.exception;
+package com.ogjg.daitgym.common.exception;
 
 import lombok.Getter;
 
