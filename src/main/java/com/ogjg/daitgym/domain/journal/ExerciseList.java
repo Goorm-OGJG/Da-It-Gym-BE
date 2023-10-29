@@ -3,10 +3,9 @@ package com.ogjg.daitgym.domain.journal;
 import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.Exercise;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.sql.Time;
 
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -22,14 +21,19 @@ public class ExerciseList extends BaseEntity {
     @Column(name = "exercise_list_id")
     private Long id;
 
+    @NotNull
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "journal_id")
     private ExerciseJournal exerciseJournal;
 
+    @NotNull
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "exercise_id")
     private Exercise exercise;
 
-    private Time restTime;
+    private int exerciseNum;
+
+    @Embedded
+    private TimeTemplate restTime;
 
 }
