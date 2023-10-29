@@ -7,11 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -29,22 +27,20 @@ public class ExerciseJournal extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    @Enumerated(STRING)
-    private JournalVisibility journalVisibility = JournalVisibility.PRIVATE;
+    private boolean journalVisibility = false;
+
+    private boolean exerciseStatus = false;
 
     @NotNull
     private LocalDate journalDate = LocalDate.now();
 
-    private Time exerciseTime;
+    private TimeTemplate exerciseTime;
 
     private LocalDateTime exerciseStartTime;
 
     private LocalDateTime exerciseEndTime;
 
-    @Enumerated(STRING)
-    private Split split;
-
-    private boolean exerciseStatus = false;
+    private String split;
 
     public ExerciseJournal(User user) {
         this.user = user;
