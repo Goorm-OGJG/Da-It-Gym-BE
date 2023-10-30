@@ -2,8 +2,10 @@ package com.ogjg.daitgym.domain.journal;
 
 import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.Exercise;
+import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,4 +38,24 @@ public class ExerciseList extends BaseEntity {
     @Embedded
     private TimeTemplate restTime;
 
+    public static ExerciseList createExercise(
+            ExerciseJournal exerciseJournal,
+            Exercise exercise,
+            ExerciseListRequest exerciseListRequest
+    ) {
+        return builder()
+                .exerciseJournal(exerciseJournal)
+                .exercise(exercise)
+                .exerciseNum(exerciseListRequest.getExerciseNum())
+                .restTime(new TimeTemplate(exerciseListRequest.getRestTime()))
+                .build();
+    }
+
+    @Builder
+    public ExerciseList(ExerciseJournal exerciseJournal, Exercise exercise, int exerciseNum, TimeTemplate restTime) {
+        this.exerciseJournal = exerciseJournal;
+        this.exercise = exercise;
+        this.exerciseNum = exerciseNum;
+        this.restTime = restTime;
+    }
 }

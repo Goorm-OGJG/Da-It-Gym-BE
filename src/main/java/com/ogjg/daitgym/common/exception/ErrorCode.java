@@ -8,6 +8,10 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode implements ErrorType {
 
     SUCCESS(HttpStatus.OK, "200", "OK"),
+    NOT_FOUND_EXERCISE(HttpStatus.NOT_FOUND,"404","운동을 찾을 수 없습니다"),
+    NOT_FOUND_EXERCISE_LIST(HttpStatus.NOT_FOUND,"404","운동 목록을 찾을 수 없습니다"),
+    NOT_FOUND_JOURNAL(HttpStatus.NOT_FOUND,"404", "운동일지를 찾을 수 없습니다"),
+    USER_NOT_AUTHORIZED_JOURNAL(HttpStatus.FORBIDDEN,"403","운동일지에 접근 권한이 없습니다"),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "404", "유저를 찾을 수 없습니다"),
     INVALID_FORMAT(HttpStatus.BAD_REQUEST, "400", "데이터 검증 실패"),
     NOT_FOUND_FEED_JOURNAL(HttpStatus.BAD_REQUEST,"400","운동일지 피드를 찾을 수 없습니다"),
