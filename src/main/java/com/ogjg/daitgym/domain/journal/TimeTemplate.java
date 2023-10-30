@@ -2,7 +2,6 @@ package com.ogjg.daitgym.domain.journal;
 
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.Max;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,15 +13,14 @@ public class TimeTemplate {
     private int hour = 0;
 
     @Max(59)
-    private int minute = 0;
+    private int minutes = 0;
 
     @Max(59)
-    private int second = 0;
+    private int seconds = 0;
 
-    @Builder
-    public TimeTemplate(int hour, int minute, int second) {
-        this.hour = hour;
-        this.minute = minute;
-        this.second = second;
+    public TimeTemplate(TimeTemplate timeTemplate) {
+        this.hour = timeTemplate.getHour();
+        this.minutes = timeTemplate.getMinutes();
+        this.seconds = timeTemplate.getSeconds();
     }
 }

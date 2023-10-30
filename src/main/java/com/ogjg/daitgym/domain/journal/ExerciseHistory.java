@@ -1,7 +1,9 @@
 package com.ogjg.daitgym.domain.journal;
 
 import com.ogjg.daitgym.domain.BaseEntity;
+import com.ogjg.daitgym.journal.dto.request.ExerciseHistoryRequest;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,12 +25,32 @@ public class ExerciseHistory extends BaseEntity {
     @JoinColumn(name = "exercise_list_id")
     private ExerciseList exerciseList;
 
-    private int setCount;
+    private int setNum;
 
     private int weight;
 
-    private int repetition_count;
+    private int repetitionCount;
 
-    private boolean exercise_status;
+    private boolean isCompleted = false;
 
+    public static ExerciseHistory createExerciseHistory(ExerciseList exerciseList, ExerciseHistoryRequest exerciseHistoryRequest) {
+        return builder()
+                .exerciseList(exerciseList)
+                .setNum(exerciseHistoryRequest.getSetNum())
+                .weight(exerciseHistoryRequest.getWeight())
+                .repetitionCount(exerciseHistoryRequest.getRepetitionCount())
+                .build();
+    }
+
+    @Builder
+    public ExerciseHistory(
+            ExerciseList exerciseList, int setNum, int weight,
+            int repetitionCount, boolean isCompleted
+    ) {
+        this.exerciseList = exerciseList;
+        this.setNum = setNum;
+        this.weight = weight;
+        this.repetitionCount = repetitionCount;
+        this.isCompleted = isCompleted;
+    }
 }

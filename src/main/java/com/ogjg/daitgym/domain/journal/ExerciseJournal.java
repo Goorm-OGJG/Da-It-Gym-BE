@@ -4,6 +4,7 @@ import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,12 +28,12 @@ public class ExerciseJournal extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    private boolean journalVisibility = false;
+    private boolean isVisible = false;
 
-    private boolean exerciseStatus = false;
+    private boolean isCompleted = false;
 
     @NotNull
-    private LocalDate journalDate = LocalDate.now();
+    private LocalDate journalDate;
 
     private TimeTemplate exerciseTime;
 
@@ -42,8 +43,30 @@ public class ExerciseJournal extends BaseEntity {
 
     private String split;
 
-    public ExerciseJournal(User user) {
-        this.user = user;
+    public static ExerciseJournal createJournal(
+            User user, LocalDate journalDate
+    ) {
+        return builder()
+                .user(user)
+                .exerciseTime(new TimeTemplate())
+                .journalDate(journalDate)
+                .build();
     }
 
+    @Builder
+    public ExerciseJournal(
+            User user, boolean isVisible, boolean isCompleted,
+            LocalDate journalDate, TimeTemplate exerciseTime,
+            LocalDateTime exerciseStartTime, LocalDateTime exerciseEndTime,
+            String split
+    ) {
+        this.user = user;
+        this.isVisible = isVisible;
+        this.isCompleted = isCompleted;
+        this.journalDate = journalDate;
+        this.exerciseTime = exerciseTime;
+        this.exerciseStartTime = exerciseStartTime;
+        this.exerciseEndTime = exerciseEndTime;
+        this.split = split;
+    }
 }
