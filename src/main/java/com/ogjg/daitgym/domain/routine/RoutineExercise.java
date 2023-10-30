@@ -1,5 +1,6 @@
-package com.ogjg.daitgym.domain;
+package com.ogjg.daitgym.domain.routine;
 
+import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.exercise.Exercise;
 import jakarta.persistence.*;
 import lombok.Builder;

@@ -1,5 +1,7 @@
-package com.ogjg.daitgym.domain;
+package com.ogjg.daitgym.domain.routine;
 
+import com.ogjg.daitgym.domain.BaseEntity;
+import com.ogjg.daitgym.domain.User;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -1,5 +1,7 @@
-package com.ogjg.daitgym.domain;
+package com.ogjg.daitgym.domain.routine;
 
+import com.ogjg.daitgym.domain.BaseEntity;
+import com.ogjg.daitgym.domain.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,7 +47,6 @@ public class RoutineComment extends BaseEntity {
     public void updateComment(String comment) {
         this.comment = comment;
     }
-
     @Builder
     public RoutineComment(User user, Routine routine, String comment) {
         this.user = user;
