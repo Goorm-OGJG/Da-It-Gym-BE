@@ -3,6 +3,7 @@ package com.ogjg.daitgym.domain.journal;
 import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.Exercise;
 import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
+import com.ogjg.daitgym.journal.dto.request.UpdateRestTimeRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -49,6 +50,12 @@ public class ExerciseList extends BaseEntity {
                 .exerciseNum(exerciseListRequest.getExerciseNum())
                 .restTime(new TimeTemplate(exerciseListRequest.getRestTime()))
                 .build();
+    }
+
+    public void changeRestTime(
+            UpdateRestTimeRequest updateRestTimeRequest
+    ) {
+        this.restTime = new TimeTemplate(updateRestTimeRequest.getRestTime());
     }
 
     @Builder

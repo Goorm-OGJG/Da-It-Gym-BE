@@ -9,6 +9,7 @@ import com.ogjg.daitgym.domain.journal.ExerciseList;
 import com.ogjg.daitgym.journal.dto.request.ExerciseHistoryRequest;
 import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
 import com.ogjg.daitgym.journal.dto.request.UpdateExerciseHistoryRequest;
+import com.ogjg.daitgym.journal.dto.request.UpdateRestTimeRequest;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailDto;
@@ -51,6 +52,19 @@ public class ExerciseJournalService {
         exerciseJournalRepository.save(
                 ExerciseJournal.createJournal(findUserByEmail(email), journalDate)
         );
+    }
+
+    /**
+     * 운동 목록 휴식시간 변경
+     */
+    @Transactional
+    public void changeExerciseListRestTime(
+            String email, Long exerciseListId,
+            UpdateRestTimeRequest updateRestTimeRequest
+    ) {
+        ExerciseList exerciseList = findExerciseList(exerciseListId);
+        isAuthorizedForJournal(email, exerciseList.getExerciseJournal().getId());
+        exerciseList.changeRestTime(updateRestTimeRequest);
     }
 
     /**
