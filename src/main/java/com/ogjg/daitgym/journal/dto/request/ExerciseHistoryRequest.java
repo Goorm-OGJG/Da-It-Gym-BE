@@ -9,10 +9,10 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class ExerciseHistoryRequest {
 
-    private Long exerciseListId;
+    private Long id;
     private int setNum;
-    private int weight;
-    private int repetitionCount;
+    private int weights;
+    private int counts;
 
     /**
      * 운동목록을 처음 생성할 때
@@ -20,7 +20,7 @@ public class ExerciseHistoryRequest {
      * 어떤 운동목록에 생성되는 운동기록인지 넣어주기 위해 사용
      */
     public ExerciseHistoryRequest putExerciseListId(Long exerciseListId) {
-        this.exerciseListId = exerciseListId;
+        this.id = exerciseListId;
         return this;
     }
 
