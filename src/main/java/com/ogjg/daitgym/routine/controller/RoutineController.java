@@ -2,7 +2,9 @@ package com.ogjg.daitgym.routine.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.routine.dto.RoutineDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
+import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.routine.service.RoutineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,17 +24,25 @@ public class RoutineController {
     private final RoutineService routineService;
 
     @GetMapping
-    public ApiResponse<?> getRoutines(Pageable pageable) {
+    public ApiResponse<RoutineListResponseDto> getRoutines(Pageable pageable) {
         RoutineListResponseDto routines = routineService.getRoutines(pageable);
 
         return new ApiResponse<>(ErrorCode.SUCCESS, routines);
     }
 
     @GetMapping("/{userEmail}")
-    public ApiResponse<?> getUserRoutines(@PathVariable("userEmail") String userEmail,
+    public ApiResponse<RoutineListResponseDto> getUserRoutines(@PathVariable("userEmail") String userEmail,
                                           Pageable pageable) {
         RoutineListResponseDto userRoutines = routineService.getUserRoutines(userEmail, pageable);
 
         return new ApiResponse<>(ErrorCode.SUCCESS, userRoutines);
+    }
+
+    @GetMapping("/following")
+    public ApiResponse<RoutineListResponseDto> getFollowerRoutines(String myEmail, Pageable pageable) {
+
+        RoutineListResponseDto routinesOfFollowing = routineService.getFollowerRoutines(myEmail, pageable);
+
+        return new ApiResponse<>(ErrorCode.SUCCESS, routinesOfFollowing);
     }
 }
