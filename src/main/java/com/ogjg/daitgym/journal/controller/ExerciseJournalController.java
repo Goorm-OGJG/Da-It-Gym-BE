@@ -2,10 +2,7 @@ package com.ogjg.daitgym.journal.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
-import com.ogjg.daitgym.journal.dto.request.CreateJournalRequest;
-import com.ogjg.daitgym.journal.dto.request.ExerciseHistoryRequest;
-import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
-import com.ogjg.daitgym.journal.dto.request.UpdateExerciseHistoryRequest;
+import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
 import com.ogjg.daitgym.journal.service.ExerciseJournalService;
@@ -150,5 +147,20 @@ public class ExerciseJournalController {
         String email1 = "dlehdwls21@naver.com";
         UserJournalDetailResponse userJournalDetail = exerciseJournalService.userJournalDetail(journalDate, email1);
         return new ApiResponse<>(ErrorCode.SUCCESS, userJournalDetail);
+    }
+
+    /**
+     * 내 운동목록 휴식시간 변경
+     */
+    @PostMapping("/exercise-list/{exerciseListId}/rest-time")
+    public ApiResponse<Void> changeExerciseListRestTime(
+//            todo email가져오기
+            String email,
+            @PathVariable("exerciseListId") Long exerciseListId,
+            @RequestBody UpdateRestTimeRequest updateRestTimeRequest
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+        exerciseJournalService.changeExerciseListRestTime(email1, exerciseListId, updateRestTimeRequest);
+        return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 }

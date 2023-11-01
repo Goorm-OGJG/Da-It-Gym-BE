@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TimeTemplate {
 
-    private int hour = 0;
+    private int hours = 0;
 
     @Max(59)
     private int minutes = 0;
@@ -19,7 +19,7 @@ public class TimeTemplate {
     private int seconds = 0;
 
     public TimeTemplate(TimeTemplate timeTemplate) {
-        this.hour = timeTemplate.getHour();
+        this.hours = timeTemplate.getHours();
         this.minutes = timeTemplate.getMinutes();
         this.seconds = timeTemplate.getSeconds();
     }
