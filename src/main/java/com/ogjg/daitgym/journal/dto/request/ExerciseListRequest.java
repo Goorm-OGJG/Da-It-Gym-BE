@@ -13,8 +13,8 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class ExerciseListRequest {
 
-    private Long exerciseJournalId;
-    private String exerciseName;
+    private Long id;
+    private String name;
     private int exerciseNum;
     private TimeTemplate restTime;
     List<ExerciseHistoryRequest> exerciseSets = new ArrayList<>();

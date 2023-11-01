@@ -2,6 +2,7 @@ package com.ogjg.daitgym.domain.journal;
 
 import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.journal.dto.request.ExerciseHistoryRequest;
+import com.ogjg.daitgym.journal.dto.request.UpdateExerciseHistoryRequest;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,9 +38,17 @@ public class ExerciseHistory extends BaseEntity {
         return builder()
                 .exerciseList(exerciseList)
                 .setNum(exerciseHistoryRequest.getSetNum())
-                .weight(exerciseHistoryRequest.getWeight())
-                .repetitionCount(exerciseHistoryRequest.getRepetitionCount())
+                .weight(exerciseHistoryRequest.getWeights())
+                .repetitionCount(exerciseHistoryRequest.getCounts())
                 .build();
+    }
+
+    public void updateHistory(
+            UpdateExerciseHistoryRequest updateExerciseHistoryRequest
+    ) {
+        this.weight = updateExerciseHistoryRequest.getWeight();
+        this.repetitionCount = updateExerciseHistoryRequest.getCount();
+        this.isCompleted = updateExerciseHistoryRequest.isCompleted();
     }
 
     @Builder
