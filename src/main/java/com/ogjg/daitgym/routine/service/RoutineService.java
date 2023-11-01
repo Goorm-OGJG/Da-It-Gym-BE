@@ -2,6 +2,7 @@ package com.ogjg.daitgym.routine.service;
 
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
 import com.ogjg.daitgym.domain.routine.Routine;
+import com.ogjg.daitgym.follow.repository.FollowRepository;
 import com.ogjg.daitgym.routine.dto.RoutineDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.print.Pageable;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -20,6 +22,7 @@ import java.util.List;
 public class RoutineService {
 
     private final RoutineRepository routineRepository;
+    private final FollowRepository followRepository;
 
     @Transactional(readOnly = true)
     public RoutineListResponseDto getRoutines(Pageable pageable) {
@@ -63,4 +66,20 @@ public class RoutineService {
 
         return getRoutineListResponseDto(routines);
     }
+
+    @Transactional(readOnly = true)
+    public RoutineListResponseDto getFollowerRoutines(String myEmail, Pageable pageable) {
+
+        List<String> followingEmails = followRepository.findAllByTargetEmail(myEmail)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(follow -> follow.getTarget().getEmail())
+                .toList();
+
+        Slice<Routine> routines = routineRepository.findByUserEmailIn(followingEmails, pageable)
+                .orElseThrow(NotFoundRoutine::new);
+
+        return getRoutineListResponseDto(routines);
+    }
+
 }
