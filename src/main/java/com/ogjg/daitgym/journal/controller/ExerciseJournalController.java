@@ -163,4 +163,19 @@ public class ExerciseJournalController {
         exerciseJournalService.changeExerciseListRestTime(email1, exerciseListId, updateRestTimeRequest);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
+
+    /**
+     * 운동일지 작성완료
+     */
+    @PatchMapping("/{journalId}/complete")
+    public ApiResponse<Void> exerciseJournalComplete(
+//            todo email가져오기
+            String email,
+            @PathVariable("journalId") Long journalId,
+            @RequestBody ExerciseJournalCompleteRequest exerciseJournalCompleteRequest
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+        exerciseJournalService.exerciseJournalComplete(journalId, email1, exerciseJournalCompleteRequest);
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
 }

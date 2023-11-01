@@ -6,10 +6,7 @@ import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseList;
-import com.ogjg.daitgym.journal.dto.request.ExerciseHistoryRequest;
-import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
-import com.ogjg.daitgym.journal.dto.request.UpdateExerciseHistoryRequest;
-import com.ogjg.daitgym.journal.dto.request.UpdateRestTimeRequest;
+import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailDto;
@@ -55,6 +52,20 @@ public class ExerciseJournalService {
     }
 
     /**
+     * 운동일지 완료하기
+     * todo 공개여부가 true라면 피드에 일지추가
+     */
+    @Transactional
+    public void exerciseJournalComplete(
+            Long journalId, String email,
+            ExerciseJournalCompleteRequest exerciseJournalCompleteRequest
+    ) {
+        isAuthorizedForJournal(email, journalId);
+        ExerciseJournal exerciseJournal = findExerciseJournal(journalId);
+        exerciseJournal.journalComplete(exerciseJournalCompleteRequest);
+    }
+
+    /**
      * 운동 목록 휴식시간 변경
      */
     @Transactional
@@ -71,6 +82,7 @@ public class ExerciseJournalService {
      * 운동일지 삭제하기
      * 운동목록 삭제
      * 운동기록 삭제
+     * todo 운동일지 삭제시 피드 운동일지도 삭제
      */
     @Transactional
     public void deleteJournal(String email, Long journalId) {
