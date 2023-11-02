@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode implements ErrorType {
 
     SUCCESS(HttpStatus.OK, "200", "OK"),
+    ALREADY_FOLLOW_USER(HttpStatus.NOT_FOUND, "404", "이미 팔로우한 유저입니다"),
+    NOT_FOUND_FOLLOW(HttpStatus.NOT_FOUND, "404", "팔로우를 먼저 해주세요"),
     NOT_FOUND_EXERCISE(HttpStatus.NOT_FOUND, "404", "운동을 찾을 수 없습니다"),
     NOT_FOUND_EXERCISE_PART(HttpStatus.NOT_FOUND, "404", "운동부위를 찾을 수 없습니다"),
     NOT_FOUND_EXERCISE_LIST(HttpStatus.NOT_FOUND, "404", "운동 목록을 찾을 수 없습니다"),
