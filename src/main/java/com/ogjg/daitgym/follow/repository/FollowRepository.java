@@ -5,4 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FollowRepository extends JpaRepository<Follow, Follow.PK> {
 
+    int countByFollowPKTargetEmail(String targetEmail);
+
+    int countByFollowPKFollowerEmail(String followerEmail);
 }
