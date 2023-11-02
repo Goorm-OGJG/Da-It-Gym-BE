@@ -3,6 +3,7 @@ package com.ogjg.daitgym.follow.controller;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.follow.dto.request.FollowRequest;
+import com.ogjg.daitgym.follow.dto.response.FollowCountResponse;
 import com.ogjg.daitgym.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,5 +45,27 @@ public class FollowController {
         followService.unfollow(email1, followRequest);
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
+
+    /**
+     * 내가 팔로우한 유저 수
+     */
+    @GetMapping("/following-count/{nickName}")
+    public ApiResponse<FollowCountResponse> followingCount(
+            @PathVariable("nickName") String nickName
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+        return new ApiResponse<>(ErrorCode.SUCCESS, followService.followingCount(nickName));
+    }
+
+    /**
+     * 나를 팔로우한 유저 수
+     */
+    @GetMapping("/follower-count/{nickName}")
+    public ApiResponse<FollowCountResponse> followerCount(
+            @PathVariable("nickName") String nickName
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+        return new ApiResponse<>(ErrorCode.SUCCESS, followService.followerCount(nickName));
     }
 }
