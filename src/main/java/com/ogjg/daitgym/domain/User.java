@@ -2,6 +2,7 @@ package com.ogjg.daitgym.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
@@ -43,6 +44,19 @@ public class User extends BaseEntity {
     private boolean isDeleted;
 
     // 적용중인 루틴
+
+    @Builder
+    public User(String email, String password, String nickname, LocalDate birth, String phoneNumber, String intro, String imageUrl, Role role, boolean isDeleted) {
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+        this.birth = birth;
+        this.phoneNumber = phoneNumber;
+        this.intro = intro;
+        this.imageUrl = imageUrl;
+        this.role = role;
+        this.isDeleted = isDeleted;
+    }
 }
 
 
