@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.config.security;
 
 import com.ogjg.daitgym.config.security.oauth.dto.OAuthAttributes;
+import com.ogjg.daitgym.domain.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -77,5 +78,12 @@ public class OAuth2JwtUserDetails extends DefaultOAuth2User implements UserDetai
     @Override
     public String getName() {
         return super.getName();
+    }
+
+    public Role findAnyFirstRole() {
+        return getAuthorities().stream()
+                .map((grantedAuthority) -> Role.fromKey(grantedAuthority.getAuthority()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("권한이 존재하지 않습니다.")); // todo: 중복적인 검증 로직
     }
 }
