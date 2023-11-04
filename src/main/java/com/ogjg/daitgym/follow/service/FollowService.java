@@ -4,6 +4,7 @@ import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.follow.Follow;
 import com.ogjg.daitgym.follow.dto.request.FollowRequest;
 import com.ogjg.daitgym.follow.dto.response.FollowCountResponse;
+import com.ogjg.daitgym.follow.dto.response.FollowListResponse;
 import com.ogjg.daitgym.follow.exception.AlreadyFollowUser;
 import com.ogjg.daitgym.follow.exception.NotFoundFollow;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
@@ -53,19 +54,47 @@ public class FollowService {
     /**
      * 나를 팔로우 하고있는 사람의 수
      */
-    public FollowCountResponse followerCount(String nickName) {
-        User user = findUserByNickName(nickName);
+    @Transactional(readOnly = true)
+    public FollowCountResponse followerCount(String nickname) {
+        User user = findUserByNickName(nickname);
         int followerCount = followRepository.countByFollowPKTargetEmail(user.getEmail());
+
         return new FollowCountResponse(followerCount);
     }
 
     /**
      * 내가 팔로우 하고있는 사람의 수
      */
-    public FollowCountResponse followingCount(String nickName) {
-        User user = findUserByNickName(nickName);
+    @Transactional(readOnly = true)
+    public FollowCountResponse followingCount(String nickname) {
+        User user = findUserByNickName(nickname);
         int followingCount = followRepository.countByFollowPKFollowerEmail(user.getEmail());
+
         return new FollowCountResponse(followingCount);
+    }
+
+    /**
+     * 내가 팔로우한 사람들 목록
+     */
+    @Transactional(readOnly = true)
+    public FollowListResponse followingList(String nickname) {
+        findUserByNickName(nickname);
+
+        return new FollowListResponse(
+                followRepository.followingList(nickname)
+        );
+    }
+
+    /**
+     * 나를 팔로우한 사람들 목록
+     */
+    @Transactional(readOnly = true)
+    public FollowListResponse followerList(String nickname) {
+        findUserByNickName(nickname);
+
+        return new FollowListResponse(
+                followRepository.followerList(nickname)
+        );
     }
 
     /**
@@ -79,8 +108,8 @@ public class FollowService {
     /**
      * 닉네임으로 유저 찾기
      */
-    public User findUserByNickName(String nickName) {
-        return userRepository.findByNickname(nickName)
+    private User findUserByNickName(String nickname) {
+        return userRepository.findByNickname(nickname)
                 .orElseThrow(NotFoundUser::new);
     }
 
@@ -93,6 +122,4 @@ public class FollowService {
         followRepository.findById(followPk)
                 .orElseThrow(NotFoundFollow::new);
     }
-
-
 }
