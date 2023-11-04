@@ -1,6 +1,5 @@
 package com.ogjg.daitgym.domain;
 
-import com.ogjg.daitgym.domain.feed.FeedExerciseJournalComment;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
-import static jakarta.persistence.GenerationType.*;
-import static lombok.AccessLevel.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
+import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
@@ -46,6 +45,7 @@ public class RoutineComment extends BaseEntity {
     public void updateComment(String comment) {
         this.comment = comment;
     }
+
     @Builder
     public RoutineComment(User user, Routine routine, String comment) {
         this.user = user;
