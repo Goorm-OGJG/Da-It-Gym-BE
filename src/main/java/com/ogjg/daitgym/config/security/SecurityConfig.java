@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.web.cors.CorsUtils;
 
 @Configuration
@@ -18,6 +19,8 @@ import org.springframework.web.cors.CorsUtils;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+
+    private final AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,6 +48,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(
                         (oauth2) -> oauth2
+                                .successHandler(oauth2AuthenticationSuccessHandler)
                                 .userInfoEndpoint((endPoint) -> endPoint
                                         .userService(customOAuth2UserService)
                                 )
