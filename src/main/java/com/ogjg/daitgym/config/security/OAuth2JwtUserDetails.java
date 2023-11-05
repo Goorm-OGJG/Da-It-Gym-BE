@@ -1,12 +1,15 @@
 package com.ogjg.daitgym.config.security;
 
+import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import com.ogjg.daitgym.config.security.oauth.dto.OAuthAttributes;
 import com.ogjg.daitgym.domain.Role;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 public class OAuth2JwtUserDetails extends DefaultOAuth2User implements UserDetails {
@@ -21,6 +24,16 @@ public class OAuth2JwtUserDetails extends DefaultOAuth2User implements UserDetai
         super(authorities, oAuthAttributes.getAttributes(), oAuthAttributes.getNameAttributeKey());
         this.oAuthAttributes = oAuthAttributes;
         this.oAuthAttributes.setAlreadyJoined(alreadyJoined);
+    }
+
+    public OAuth2JwtUserDetails(JwtUserClaimsDto userClaimsDto) {
+        super(Collections.singleton(
+                        new SimpleGrantedAuthority(userClaimsDto.getRole().getKey())),
+                null,
+                null);
+        this.oAuthAttributes = OAuthAttributes.builder()
+                .email(userClaimsDto.getEmail())
+                .build();
     }
 
     @Override

@@ -23,7 +23,10 @@ public enum ErrorCode implements ErrorType {
     WRONG_APPROACH(HttpStatus.FORBIDDEN, "403", "잘못된 접근입니다"),
     NOT_FOUND_ROUTINE(HttpStatus.BAD_REQUEST, "400", "루틴을 찾을 수 없습니다"),
     NOT_FOUND_ROUTINE_COMMENT(HttpStatus.BAD_REQUEST, "400", "루틴 댓글을 찾을 수 없습니다"),
-    NOT_FOUND_EXERCISE_JOURNAL(HttpStatus.BAD_REQUEST, "400", "운동일지를 찾을 수 없습니다");
+    NOT_FOUND_EXERCISE_JOURNAL(HttpStatus.BAD_REQUEST, "400", "운동일지를 찾을 수 없습니다"),
+    REFRESH_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Refresh Token 인증 오류"),
+    ACCESS_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Access Token 인증 오류"),
+    ;
 
     @JsonIgnore
     private final HttpStatus statusCode;
