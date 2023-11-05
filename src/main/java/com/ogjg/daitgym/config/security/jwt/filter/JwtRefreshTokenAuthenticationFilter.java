@@ -1,7 +1,7 @@
 package com.ogjg.daitgym.config.security.jwt.filter;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
-import com.ogjg.daitgym.config.security.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationToken;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import com.ogjg.daitgym.config.security.jwt.exception.RefreshTokenException;
