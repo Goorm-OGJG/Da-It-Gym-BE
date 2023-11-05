@@ -31,7 +31,7 @@ public class Inbody extends BaseEntity {
 
     private double weight;
 
-    private int basalMetabolism;
+    private int basalMetabolicRate;
 
     private LocalDate measureAt;
 }

@@ -11,6 +11,7 @@ import org.hibernate.annotations.Where;
 import java.time.LocalDate;
 
 import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.FetchType.*;
 import static lombok.AccessLevel.PROTECTED;
 
 @Getter
@@ -25,8 +26,15 @@ public class User extends BaseEntity {
     @Email
     private String email;
 
-    private String password;
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "health_club_id")
+    private HealthClub healthClub;
 
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "active_routine_id")
+    private Routine activeRoutine;
+
+    @Column(unique = true)
     private String nickname;
 
     private LocalDate birth;
@@ -34,27 +42,30 @@ public class User extends BaseEntity {
     @Column(length = 11)
     private String phoneNumber;
 
-    private String intro;
+    private String introduction;
 
     private String imageUrl;
 
     @Enumerated(STRING)
     private Role role;
 
+    @Enumerated(STRING)
+    private ExerciseSplit preferredSplit;
+
     private boolean isDeleted;
 
-    // 적용중인 루틴
-
     @Builder
-    public User(String email, String password, String nickname, LocalDate birth, String phoneNumber, String intro, String imageUrl, Role role, boolean isDeleted) {
+    public User(String email, HealthClub healthClub, Routine activeRoutine, String nickname, LocalDate birth, String phoneNumber, String introduction, String imageUrl, Role role, ExerciseSplit preferredSplit, boolean isDeleted) {
         this.email = email;
-        this.password = password;
+        this.healthClub = healthClub;
+        this.activeRoutine = activeRoutine;
         this.nickname = nickname;
         this.birth = birth;
         this.phoneNumber = phoneNumber;
-        this.intro = intro;
+        this.introduction = introduction;
         this.imageUrl = imageUrl;
         this.role = role;
+        this.preferredSplit = preferredSplit;
         this.isDeleted = isDeleted;
     }
 }
