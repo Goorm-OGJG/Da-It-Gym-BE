@@ -1,6 +1,6 @@
-package com.ogjg.daitgym.journal.repository.exercise;
+package com.ogjg.daitgym.exercise.repository;
 
-import com.ogjg.daitgym.domain.Exercise;
+import com.ogjg.daitgym.domain.exercise.Exercise;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

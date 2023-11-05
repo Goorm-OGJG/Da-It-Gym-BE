@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.domain;
+package com.ogjg.daitgym.domain.exercise;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
