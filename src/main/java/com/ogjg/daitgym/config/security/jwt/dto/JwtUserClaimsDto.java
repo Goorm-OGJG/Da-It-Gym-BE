@@ -2,6 +2,7 @@ package com.ogjg.daitgym.config.security.jwt.dto;
 
 import com.ogjg.daitgym.config.security.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.Role;
+import io.jsonwebtoken.Claims;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,13 @@ public class JwtUserClaimsDto {
         return JwtUserClaimsDto.builder()
                 .email(userDetails.getEmail())
                 .role(userDetails.findAnyFirstRole())
+                .build();
+    }
+
+    public static JwtUserClaimsDto from(Claims claims) {
+        return JwtUserClaimsDto.builder()
+                .email((String) claims.get("email"))
+                .role((Role) claims.get("role"))
                 .build();
     }
 }
