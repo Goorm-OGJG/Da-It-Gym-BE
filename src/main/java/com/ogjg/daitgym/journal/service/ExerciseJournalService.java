@@ -1,11 +1,12 @@
 package com.ogjg.daitgym.journal.service;
 
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundExerciseJournal;
-import com.ogjg.daitgym.domain.Exercise;
 import com.ogjg.daitgym.domain.User;
+import com.ogjg.daitgym.domain.exercise.Exercise;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseList;
+import com.ogjg.daitgym.exercise.service.ExerciseService;
 import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
@@ -13,9 +14,10 @@ import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseHistoryDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseListDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalListDto;
-import com.ogjg.daitgym.journal.exception.*;
-import com.ogjg.daitgym.journal.repository.exercise.ExercisePartRepository;
-import com.ogjg.daitgym.journal.repository.exercise.ExerciseRepository;
+import com.ogjg.daitgym.journal.exception.NotFoundExerciseHistory;
+import com.ogjg.daitgym.journal.exception.NotFoundExerciseList;
+import com.ogjg.daitgym.journal.exception.NotFoundJournal;
+import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
@@ -37,9 +39,8 @@ public class ExerciseJournalService {
     private final ExerciseJournalRepository exerciseJournalRepository;
     private final ExerciseListRepository exerciseListRepository;
     private final ExerciseHistoryRepository exerciseHistoryRepository;
-    private final ExerciseRepository exerciseRepository;
-    private final ExercisePartRepository exercisePartRepository;
     private final UserRepository userRepository;
+    private final ExerciseService exerciseService;
 
     /**
      * 빈 운동일지 생성하기
@@ -150,7 +151,7 @@ public class ExerciseJournalService {
     ) {
 
         ExerciseJournal userJournal = isAuthorizedForJournal(email, exerciseListRequest.getId());
-        Exercise userExercise = findExercise(exerciseListRequest.getName());
+        Exercise userExercise = exerciseService.findExercise(exerciseListRequest.getName());
 
         ExerciseList exerciseList = exerciseListRepository.save(
                 ExerciseList.createExercise(
@@ -226,7 +227,7 @@ public class ExerciseJournalService {
                 .map(exerciseList ->
                         new UserJournalDetailExerciseListDto(
                                 exerciseList,
-                                findExercisePartByExercise(exerciseList.getExercise()),
+                                exerciseService.findExercisePartByExercise(exerciseList.getExercise()),
                                 userJournalDetailExerciseHistoryDtos(exerciseList)
                         ))
                 .toList();
@@ -259,17 +260,6 @@ public class ExerciseJournalService {
     }
 
     /**
-     * 운동으로 운동부위 찾기
-     */
-    private String findExercisePartByExercise(
-            Exercise exercise
-    ) {
-        return exercisePartRepository.findByExercise(exercise)
-                .orElseThrow(NotFoundExercisePart::new)
-                .getPart();
-    }
-
-    /**
      * 일지 작성자인지 확인
      */
     private ExerciseJournal isAuthorizedForJournal(String email, Long JournalId) {
@@ -289,15 +279,6 @@ public class ExerciseJournalService {
     private ExerciseJournal findExerciseJournal(Long journalId) {
         return exerciseJournalRepository.findById(journalId)
                 .orElseThrow(NotFoundJournal::new);
-    }
-
-    /**
-     * 운동검색
-     * 운동이름으로 운동 존재하는지 확인하기
-     */
-    private Exercise findExercise(String exerciseName) {
-        return exerciseRepository.findByName(exerciseName)
-                .orElseThrow(NotFoundExercise::new);
     }
 
     /**
