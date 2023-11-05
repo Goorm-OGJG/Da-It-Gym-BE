@@ -11,15 +11,15 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @Entity
 @NoArgsConstructor(access = PROTECTED)
-public class CertificateImage extends BaseEntity {
+public class CertificationImage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "certificate_id")
-    private Certificate certificate;
+    @JoinColumn(name = "certification_id")
+    private Certification certification;
 
     private String url;
 }

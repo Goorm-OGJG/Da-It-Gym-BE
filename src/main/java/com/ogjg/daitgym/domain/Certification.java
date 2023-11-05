@@ -14,7 +14,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @Entity
 @NoArgsConstructor(access = PROTECTED)
-public class Certificate extends BaseEntity {
+public class Certification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +24,8 @@ public class Certificate extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    @OneToMany(mappedBy = "certificate")
-    private List<CertificateImage> certificateImages = new ArrayList<>();
+    @OneToMany(mappedBy = "certification")
+    private List<CertificationImage> certificationImages = new ArrayList<>();
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "approval_id")
