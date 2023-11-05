@@ -18,30 +18,37 @@ import static lombok.AccessLevel.PROTECTED;
 public class FeedExerciseJournalLike extends BaseEntity {
 
     @EmbeddedId
-    private ExerciseJournalLikePk exerciseJournalLikePk;
+    private FeedExerciseJournalLikePk feedJournalLikePk;
 
     @MapsId("email")
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "email")
     private User user;
 
-    @MapsId("exerciseJournalId")
+    @MapsId("feedExerciseJournalId")
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "journal_id")
+    @JoinColumn(name = "feed_journal_id")
     private FeedExerciseJournal feedExerciseJournal;
 
     @Getter
     @Embeddable
     @EqualsAndHashCode
     @NoArgsConstructor
-    public static class ExerciseJournalLikePk implements Serializable {
+    public static class FeedExerciseJournalLikePk implements Serializable {
 
         private String email;
-        private Long exerciseJournalId;
+        private Long feedExerciseJournalId;
 
-        public ExerciseJournalLikePk(String email, Long exerciseJournalId) {
+        public FeedExerciseJournalLikePk(String email, Long feedExerciseJournalId) {
             this.email = email;
-            this.exerciseJournalId = exerciseJournalId;
+            this.feedExerciseJournalId = feedExerciseJournalId;
         }
     }
+
+    public FeedExerciseJournalLike(User user, FeedExerciseJournal feedExerciseJournal) {
+        this.feedJournalLikePk = new FeedExerciseJournalLikePk(user.getEmail(), feedExerciseJournal.getId());
+        this.user = user;
+        this.feedExerciseJournal = feedExerciseJournal;
+    }
+
 }
