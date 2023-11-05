@@ -43,5 +43,9 @@ public class RoutineLike extends BaseEntity {
         }
     }
 
-
+    public RoutineLike(User user, Routine routine) {
+        this.routineLikePk = new RoutineLikePk(user.getEmail(), routine.getId());
+        this.user = user;
+        this.routine = routine;
+    }
 }
