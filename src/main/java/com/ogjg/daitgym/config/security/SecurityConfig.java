@@ -3,6 +3,7 @@ package com.ogjg.daitgym.config.security;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationEntryPoint;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationProvider;
 import com.ogjg.daitgym.config.security.jwt.filter.JwtAccessTokenAuthenticationFilter;
+import com.ogjg.daitgym.config.security.jwt.filter.JwtRefreshTokenAuthenticationFilter;
 import com.ogjg.daitgym.config.security.oauth.CustomOAuth2UserService;
 import com.ogjg.daitgym.domain.Role;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +63,7 @@ public class SecurityConfig {
                         )
                 )
                 .addFilterBefore(jwtAccessTokenAuthenticationFilter(), OAuth2AuthorizationRequestRedirectFilter.class)
+                .addFilterAfter(jwtRefreshTokenAuthenticationFilter(), JwtAccessTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(
                         authorize -> authorize
                                 .requestMatchers(CorsUtils::isPreFlightRequest)
@@ -95,6 +97,11 @@ public class SecurityConfig {
     public JwtAccessTokenAuthenticationFilter jwtAccessTokenAuthenticationFilter() throws Exception {
         authenticationManagerBuilder.authenticationProvider(jwtAuthenticationProvider());
         return new JwtAccessTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint(), permitJwtUrlList);
+    }
+
+    @Bean
+    public JwtRefreshTokenAuthenticationFilter jwtRefreshTokenAuthenticationFilter() throws Exception {
+        return new JwtRefreshTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint());
     }
 
     @Bean

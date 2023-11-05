@@ -15,9 +15,12 @@ import java.util.Map;
 @Component
 public class JwtUtils {
 
+    // todo : 상수 처리
     public static final String TOKEN_PREFIX = "Bearer ";
 
     public static final String SPACE = " ";
+
+    public static final String CHARSET_UTF_8 = "UTF-8";
 
     private static String JWT_SECRET;
 
