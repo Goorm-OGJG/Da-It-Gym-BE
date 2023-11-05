@@ -3,7 +3,7 @@ package com.ogjg.daitgym.config.security.oauth.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
-import com.ogjg.daitgym.config.security.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import com.ogjg.daitgym.config.security.oauth.dto.LoginResponseDto;
 import jakarta.servlet.ServletException;

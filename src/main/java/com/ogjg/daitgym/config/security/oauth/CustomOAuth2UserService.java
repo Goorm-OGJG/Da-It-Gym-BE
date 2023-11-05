@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.config.security.oauth;
 
-import com.ogjg.daitgym.config.security.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.oauth.dto.OAuthAttributes;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.user.repository.UserRepository;

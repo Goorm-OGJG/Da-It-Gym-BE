@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.config.security;
 
-import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationEntryPoint;
+import com.ogjg.daitgym.config.security.jwt.handler.JwtAuthenticationEntryPoint;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationProvider;
 import com.ogjg.daitgym.config.security.jwt.filter.JwtAccessTokenAuthenticationFilter;
 import com.ogjg.daitgym.config.security.jwt.filter.JwtRefreshTokenAuthenticationFilter;

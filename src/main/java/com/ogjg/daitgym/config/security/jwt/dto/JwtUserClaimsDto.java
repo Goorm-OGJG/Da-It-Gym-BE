@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.config.security.jwt.dto;
 
-import com.ogjg.daitgym.config.security.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.Role;
 import io.jsonwebtoken.Claims;
 import lombok.Builder;

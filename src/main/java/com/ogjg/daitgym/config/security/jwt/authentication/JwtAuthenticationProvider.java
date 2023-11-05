@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.config.security.jwt.authentication;
 
-import com.ogjg.daitgym.config.security.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.authentication.AuthenticationProvider;

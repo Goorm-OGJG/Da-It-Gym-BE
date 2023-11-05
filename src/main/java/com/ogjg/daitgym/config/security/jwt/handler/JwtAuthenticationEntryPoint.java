@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.config.security.jwt.authentication;
+package com.ogjg.daitgym.config.security.jwt.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ogjg.daitgym.common.response.ErrorResponse;

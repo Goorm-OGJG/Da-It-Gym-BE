@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.config.security;
+package com.ogjg.daitgym.config.security.details;
 
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import com.ogjg.daitgym.config.security.oauth.dto.OAuthAttributes;
