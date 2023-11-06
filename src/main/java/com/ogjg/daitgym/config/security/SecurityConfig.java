@@ -20,6 +20,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -38,6 +39,8 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    private final AccessDeniedHandler accessDeniedHandler;
 
     private final CustomOAuth2UserService customOAuth2UserService;
 
@@ -77,6 +80,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/profiles/**").hasRole(Role.USER.name())
                                 .requestMatchers("/**").permitAll()
                                 .anyRequest().authenticated()
+                ).exceptionHandling((exceptionHandle) -> exceptionHandle
+                        .accessDeniedHandler(accessDeniedHandler)
                 )
                 .logout(
                         (logout) -> logout.logoutSuccessUrl("/")
