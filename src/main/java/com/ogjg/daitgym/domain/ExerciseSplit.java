@@ -1,5 +1,11 @@
 package com.ogjg.daitgym.domain;
 
+import com.ogjg.daitgym.user.exception.NotFoundSplitTitle;
+import lombok.Getter;
+
+import java.util.Arrays;
+
+@Getter
 public enum ExerciseSplit {
     ONE_DAY("1분할"),
     TWO_DAY("2분할"),
@@ -13,5 +19,12 @@ public enum ExerciseSplit {
 
     ExerciseSplit(String title) {
         this.title = title;
+    }
+
+    public static ExerciseSplit titleFrom(String split) {
+        return Arrays.stream(ExerciseSplit.values())
+                .filter((exerciseSplit) -> exerciseSplit.getTitle().equals(split))
+                .findAny()
+                .orElseThrow(() -> new NotFoundSplitTitle());
     }
 }
