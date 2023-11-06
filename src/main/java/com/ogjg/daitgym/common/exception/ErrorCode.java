@@ -26,6 +26,8 @@ public enum ErrorCode implements ErrorType {
     NOT_FOUND_EXERCISE_JOURNAL(HttpStatus.BAD_REQUEST, "400", "운동일지를 찾을 수 없습니다"),
     REFRESH_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Refresh Token 인증 오류"),
     ACCESS_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Access Token 인증 오류"),
+
+    UNAUTHORIZED_USER_ACCESS(HttpStatus.FORBIDDEN, "403", "접근 권한이 부족합니다.")
     ;
 
     @JsonIgnore
