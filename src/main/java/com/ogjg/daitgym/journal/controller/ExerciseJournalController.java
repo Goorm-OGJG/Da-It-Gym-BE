@@ -178,4 +178,19 @@ public class ExerciseJournalController {
         exerciseJournalService.exerciseJournalComplete(journalId, email1, exerciseJournalCompleteRequest);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
+
+    /**
+     * 운동일지 피드에 공유
+     */
+    @PatchMapping("/{journalId}/share")
+    public ApiResponse<Void> exerciseJournalShare(
+//            todo email가져오기
+            String email,
+            @PathVariable("journalId") Long journalId,
+            @RequestBody ExerciseJournalShareRequest exerciseJournalShareRequest
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+        exerciseJournalService.exerciseJournalShare(journalId, email1, exerciseJournalShareRequest);
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
 }
