@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,4 +23,11 @@ public class AwardImage extends BaseEntity {
     private Award award;
 
     private String url;
+
+    @Builder
+    public AwardImage(Long id, Award award, String url) {
+        this.id = id;
+        this.award = award;
+        this.url = url;
+    }
 }

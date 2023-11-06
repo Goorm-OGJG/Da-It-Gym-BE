@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,4 +35,14 @@ public class Approval extends BaseEntity {
 
     // Todo 승인 관리자 연관관계에 대해 고민해보기
     private Long approvalManager;
+
+    @Builder
+    public Approval(Long id, List<Certification> certifications, List<Award> awards, ApproveStatus approveStatus, String content, Long approvalManager) {
+        this.id = id;
+        this.certifications = certifications;
+        this.awards = awards;
+        this.approveStatus = approveStatus;
+        this.content = content;
+        this.approvalManager = approvalManager;
+    }
 }

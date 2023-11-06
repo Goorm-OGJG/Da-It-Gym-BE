@@ -3,6 +3,7 @@ package com.ogjg.daitgym.user.controller;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.service.UserService;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,6 +48,22 @@ public class UserController {
     ) {
         String loginEmail = userDetails.getEmail();
         userService.editUserProfile(loginEmail, nickname, userProfileImg, request);
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
+
+    /**
+     * 트레이너 심사 신청
+     */
+    @PostMapping("/career/submit")
+    public ApiResponse<Void> applyForApproval(
+            @RequestPart ApplyForApprovalRequest request,
+            @RequestPart List<MultipartFile> certificationImgs,
+            @RequestPart List<MultipartFile> awardImgs,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+        String loginEmail = userDetails.getEmail();
+
+        userService.applyForApproval(loginEmail, request, awardImgs, certificationImgs);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 }

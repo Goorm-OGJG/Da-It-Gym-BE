@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -41,4 +42,17 @@ public class Award extends BaseEntity {
     private String awardName;
 
     private LocalDate awardAt;
+
+    @Builder
+    public Award(Long id, User user, List<AwardImage> awardImages, Approval approval, String competitionName, String hostOrganization, int ranking, String awardName, LocalDate awardAt) {
+        this.id = id;
+        this.user = user;
+        this.awardImages = awardImages;
+        this.approval = approval;
+        this.competitionName = competitionName;
+        this.hostOrganization = hostOrganization;
+        this.ranking = ranking;
+        this.awardName = awardName;
+        this.awardAt = awardAt;
+    }
 }
