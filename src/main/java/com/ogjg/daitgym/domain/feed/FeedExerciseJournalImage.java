@@ -24,4 +24,8 @@ public class FeedExerciseJournalImage {
 
     private String imageUrl;
 
+    public FeedExerciseJournalImage(FeedExerciseJournal feedExerciseJournal, String imageUrl) {
+        this.feedExerciseJournal = feedExerciseJournal;
+        this.imageUrl = imageUrl;
+    }
 }

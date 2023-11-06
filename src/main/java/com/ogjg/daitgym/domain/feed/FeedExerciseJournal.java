@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -24,4 +27,10 @@ public class FeedExerciseJournal extends BaseEntity {
     @JoinColumn(name = "journal_id")
     private ExerciseJournal exerciseJournal;
 
+    @OneToMany(mappedBy = "feedExerciseJournal")
+    private List<FeedExerciseJournalImage> feedExerciseJournalImage = new ArrayList<>();
+
+    public FeedExerciseJournal(ExerciseJournal exerciseJournal) {
+        this.exerciseJournal = exerciseJournal;
+    }
 }
