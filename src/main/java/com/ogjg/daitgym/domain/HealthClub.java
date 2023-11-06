@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,4 +34,23 @@ public class HealthClub extends BaseEntity {
 
     private String address;
 
+    @Builder
+    public HealthClub(Long id, List<User> users, String name, Double latitude, Double longitude, String address) {
+        this.id = id;
+        this.users = users;
+        this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.address = address;
+    }
+
+    public static HealthClub from(HealthClub healthClub) {
+        return HealthClub.builder()
+                .users(healthClub.getUsers())
+                .name(healthClub.getName())
+                .latitude(healthClub.getLatitude())
+                .longitude(healthClub.getLongitude())
+                .address(healthClub.getAddress())
+                .build();
+    }
 }

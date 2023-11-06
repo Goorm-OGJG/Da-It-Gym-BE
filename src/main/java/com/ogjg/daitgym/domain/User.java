@@ -68,7 +68,22 @@ public class User extends BaseEntity {
         this.preferredSplit = preferredSplit;
         this.isDeleted = isDeleted;
     }
+
+    public void editProfile(String awsImageUrl, String introduction, HealthClub healthClub, String split) {
+        this.imageUrl = awsImageUrl;
+        this.introduction = introduction;
+        changeHealthClub(healthClub);
+        this.preferredSplit = ExerciseSplit.titleFrom(split);
+    }
+
+    public void changeHealthClub(HealthClub newHealthClub) {
+        if (this.healthClub != null) {
+            this.healthClub.getUsers().remove(this);
+        }
+
+        if (newHealthClub != null && newHealthClub.getUsers() != null && !newHealthClub.getUsers().contains(this)) {
+            newHealthClub.getUsers().add(this);
+        }
+        this.healthClub = newHealthClub;
+    }
 }
-
-
-

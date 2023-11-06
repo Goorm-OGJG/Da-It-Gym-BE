@@ -18,6 +18,8 @@ public enum ErrorCode implements ErrorType {
     NOT_FOUND_JOURNAL(HttpStatus.NOT_FOUND, "404", "운동일지를 찾을 수 없습니다"),
     USER_NOT_AUTHORIZED_JOURNAL(HttpStatus.FORBIDDEN, "403", "운동일지에 접근 권한이 없습니다"),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "404", "유저를 찾을 수 없습니다"),
+    NOT_FOUND_HEALTH_CLUB(HttpStatus.NOT_FOUND, "404", "헬스장을 찾을 수 없습니다"),
+    NOT_FOUND_SPLIT_TITLE(HttpStatus.NOT_FOUND, "404", "분할 명칭을 찾을 수 없습니다."),
     INVALID_FORMAT(HttpStatus.BAD_REQUEST, "400", "데이터 검증 실패"),
     NOT_FOUND_FEED_JOURNAL(HttpStatus.BAD_REQUEST, "400", "운동일지 피드를 찾을 수 없습니다"),
     NOT_FOUND_FEED_JOURNAL_COMMENT(HttpStatus.BAD_REQUEST, "400", "운동일지 댓글을 찾을 수 없습니다"),
