@@ -53,9 +53,11 @@ public class SecurityConfig {
                     "/login/oauth2/code/.*",
                     "/oauth2/authorization/.*",
                     "/api/users/token",
+                    "/api/token/new",
                     "/health",
                     "/ws/.*",
                     "/chat/.*"
+
             ));
 
     @Bean
