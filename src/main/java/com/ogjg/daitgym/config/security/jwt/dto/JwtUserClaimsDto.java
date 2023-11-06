@@ -32,8 +32,9 @@ public class JwtUserClaimsDto {
     public static JwtUserClaimsDto from(Claims claims) {
         return JwtUserClaimsDto.builder()
                 .email((String) claims.get("email"))
-                .role((Role) claims.get("role"))
+                .role(Role.fromKey((String) claims.get("role")))
                 .build();
+
     }
 }
 
