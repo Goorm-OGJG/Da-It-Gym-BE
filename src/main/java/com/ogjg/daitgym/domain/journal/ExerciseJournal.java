@@ -3,6 +3,7 @@ package com.ogjg.daitgym.domain.journal;
 import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.journal.dto.request.ExerciseJournalCompleteRequest;
+import com.ogjg.daitgym.journal.dto.request.ExerciseJournalShareRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -57,10 +58,19 @@ public class ExerciseJournal extends BaseEntity {
     public void journalComplete(
             ExerciseJournalCompleteRequest exerciseJournalCompleteRequest
     ) {
-        this.isVisible = exerciseJournalCompleteRequest.isVisible();
         this.isCompleted = exerciseJournalCompleteRequest.isCompleted();
-        this.split = exerciseJournalCompleteRequest.getSplit();
         this.exerciseTime = exerciseJournalCompleteRequest.getExerciseTime();
+    }
+
+    public void journalShareToFeed(
+            ExerciseJournalShareRequest exerciseJournalShareRequest
+    ) {
+        this.isVisible = exerciseJournalShareRequest.isVisible();
+        this.split = exerciseJournalShareRequest.getSplit();
+    }
+
+    public void feedJournalDelete() {
+        this.isVisible = false;
     }
 
     @Builder

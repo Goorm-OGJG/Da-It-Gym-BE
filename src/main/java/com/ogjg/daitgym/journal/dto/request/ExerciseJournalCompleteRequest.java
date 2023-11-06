@@ -10,8 +10,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class ExerciseJournalCompleteRequest {
 
-    private boolean visible;
     private boolean completed;
-    private String split;
     private TimeTemplate exerciseTime;
+
 }
