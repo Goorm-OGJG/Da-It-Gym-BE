@@ -29,8 +29,8 @@ public class OAuth2JwtUserDetails extends DefaultOAuth2User implements UserDetai
     public OAuth2JwtUserDetails(JwtUserClaimsDto userClaimsDto) {
         super(Collections.singleton(
                         new SimpleGrantedAuthority(userClaimsDto.getRole().getKey())),
-                null,
-                null);
+                Map.of("name", ""),
+                "name");
         this.oAuthAttributes = OAuthAttributes.builder()
                 .email(userClaimsDto.getEmail())
                 .build();
