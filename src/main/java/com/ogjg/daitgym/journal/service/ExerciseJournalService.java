@@ -24,11 +24,13 @@ import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
+
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -75,15 +77,15 @@ public class ExerciseJournalService {
     @Transactional
     public void exerciseJournalShare(
             Long journalId, String email,
-            ExerciseJournalShareRequest exerciseJournalShareRequest
+            ExerciseJournalShareRequest exerciseJournalShareRequest,
+            List<MultipartFile> imgFiles
     ) {
-        isAuthorizedForJournal(email, journalId);
-        ExerciseJournal exerciseJournal = findExerciseJournal(journalId);
+        ExerciseJournal exerciseJournal = isAuthorizedForJournal(email, journalId);
         exerciseJournal.journalShareToFeed(exerciseJournalShareRequest);
 
         if (exerciseJournal.isVisible()) {
             feedExerciseJournalService.shareJournalFeed(
-                    exerciseJournal, exerciseJournalShareRequest.getImgFiles()
+                    exerciseJournal, imgFiles
             );
         }
     }

@@ -9,8 +9,10 @@ import com.ogjg.daitgym.journal.service.ExerciseJournalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -187,10 +189,11 @@ public class ExerciseJournalController {
 //            todo email가져오기
             String email,
             @PathVariable("journalId") Long journalId,
-            @RequestBody ExerciseJournalShareRequest exerciseJournalShareRequest
+            @RequestPart("share") ExerciseJournalShareRequest exerciseJournalShareRequest,
+            @RequestPart("imgFiles") List<MultipartFile> imgFiles
     ) {
         String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.exerciseJournalShare(journalId, email1, exerciseJournalShareRequest);
+        exerciseJournalService.exerciseJournalShare(journalId, email1, exerciseJournalShareRequest, imgFiles);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 }

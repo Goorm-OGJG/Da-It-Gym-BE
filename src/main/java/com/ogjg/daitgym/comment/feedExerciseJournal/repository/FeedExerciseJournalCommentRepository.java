@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.comment.feedExerciseJournal.repository;
 
+import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalComment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,6 @@ public interface FeedExerciseJournalCommentRepository extends JpaRepository<Feed
     int countByFeedExerciseJournalIdAndParentIdIsNull(Long feedJournalId);
 
     int countByFeedExerciseJournalIdAndParentIdIsNotNull(Long feedJournalId);
+
+    void deleteAllByFeedExerciseJournal(FeedExerciseJournal feedExerciseJournal);
 }
