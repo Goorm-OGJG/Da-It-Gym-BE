@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,4 +37,15 @@ public class Certification extends BaseEntity {
     private String issuingOrganization;
 
     private LocalDate acquisitionAt;
+
+    @Builder
+    public Certification(Long id, User user, List<CertificationImage> certificationImages, Approval approval, String name, String issuingOrganization, LocalDate acquisitionAt) {
+        this.id = id;
+        this.user = user;
+        this.certificationImages = certificationImages;
+        this.approval = approval;
+        this.name = name;
+        this.issuingOrganization = issuingOrganization;
+        this.acquisitionAt = acquisitionAt;
+    }
 }
