@@ -4,9 +4,11 @@ import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundFeedJourna
 import com.ogjg.daitgym.comment.feedExerciseJournal.repository.FeedExerciseJournalCommentRepository;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
+import com.ogjg.daitgym.domain.feed.FeedExerciseJournalCollection;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalImage;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
+import com.ogjg.daitgym.feed.repository.FeedExerciseJournalCollectionRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalImageRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
 import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
@@ -32,10 +34,12 @@ public class FeedExerciseJournalService {
     private final ExerciseJournalRepository exerciseJournalRepository;
     private final FeedExerciseJournalCommentRepository feedExerciseJournalCommentRepository;
     private final FeedExerciseJournalLikeRepository feedExerciseJournalLikeRepository;
+    private final FeedExerciseJournalCollectionRepository feedExerciseJournalCollectionRepository;
     private final UserRepository userRepository;
 
     /*
      * todo 이미지 넘어올시 이미지 저장 추가
+     * todo 이미지 null 이면 기본 이미지 저장
      * 운동일지 공유시 피드에 생성
      * 이미지가 넘어오면 저장
      * */
@@ -68,6 +72,29 @@ public class FeedExerciseJournalService {
      */
 
     /**
+     * 피드 운동일지 보관함 조회 목록보기
+     */
+
+    /**
+     * 내 피드 운동일지 조회
+     */
+
+
+    /**
+     * 피드 운동일지 스크랩
+     */
+    public void feedExerciseJournalScrap(
+            String email, Long feedExerciseJournalId
+    ) {
+        feedExerciseJournalCollectionRepository.save(
+                new FeedExerciseJournalCollection(
+                        findUserByEmail(email),
+                        findFeedJournalById(feedExerciseJournalId)
+                )
+        );
+    }
+
+    /**
      * 피드 운동일지 삭제하기
      * 피드 좋아요 삭제
      * 피드 댓글 삭제
@@ -88,7 +115,7 @@ public class FeedExerciseJournalService {
 
         feedExerciseJournalRepository.delete(feedJournal);
 
-        feedJournal.getExerciseJournal().feedJournalDelete();
+        feedJournal.getExerciseJournal().privateVisible();
     }
 
     /**
@@ -99,18 +126,9 @@ public class FeedExerciseJournalService {
         User user = findUserByNickname(nickname);
 
         return new FeedExerciseJournalCountResponse(
-                exerciseJournalRepository.countByUserAndCompleted(user, true)
+                exerciseJournalRepository.countByUserAndIsCompleted(user, true)
         );
     }
-
-    /**
-     * 피드 운동일지 보관함 조회 목록보기
-     */
-
-    /**
-     * 내피드 운동일지 조회
-     */
-
 
     /**
      * Id로 feedJournal 검색
@@ -122,6 +140,11 @@ public class FeedExerciseJournalService {
 
     private User findUserByNickname(String nickname) {
         return userRepository.findByNickname(nickname)
+                .orElseThrow(NotFoundUser::new);
+    }
+
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
                 .orElseThrow(NotFoundUser::new);
     }
 
