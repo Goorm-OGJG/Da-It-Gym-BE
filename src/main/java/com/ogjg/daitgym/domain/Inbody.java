@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,4 +35,16 @@ public class Inbody extends BaseEntity {
     private int basalMetabolicRate;
 
     private LocalDate measureAt;
+
+    @Builder
+    public Inbody(Long id, User user, int score, double skeletalMuscleMass, double bodyFatRatio, double weight, int basalMetabolicRate, LocalDate measureAt) {
+        this.id = id;
+        this.user = user;
+        this.score = score;
+        this.skeletalMuscleMass = skeletalMuscleMass;
+        this.bodyFatRatio = bodyFatRatio;
+        this.weight = weight;
+        this.basalMetabolicRate = basalMetabolicRate;
+        this.measureAt = measureAt;
+    }
 }

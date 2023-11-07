@@ -7,9 +7,11 @@ import com.ogjg.daitgym.follow.repository.FollowRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
+import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.exception.NotFoundUser;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
+import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,8 @@ public class UserService {
     private final FollowRepository followRepository;
 
     private final ApprovalRepository approvalRepository;
+
+    private final InbodyRepository inbodyRepository;
 
     private final ExerciseJournalRepository exerciseJournalRepository;
 
@@ -88,16 +92,6 @@ public class UserService {
         return healthClubRepository.save(healthClub);
     }
 
-    private User findUserByNickname(String nickname) {
-        return userRepository.findByNickname(nickname)
-                .orElseThrow(NotFoundUser::new);
-    }
-
-    private User findUserByEmail(String nickname) {
-        return userRepository.findByEmail(nickname)
-                .orElseThrow(NotFoundUser::new);
-    }
-
     @Transactional
     public void applyForApproval(String loginEmail, ApplyForApprovalRequest request, List<MultipartFile> awardImgs, List<MultipartFile> certificationImgs) {
         User user = findUserByEmail(loginEmail);
@@ -126,5 +120,32 @@ public class UserService {
         return request.getCertifications().stream()
                 .map(certificationDto -> certificationDto.toCertification(user, certificationImgUrls, approval))
                 .toList();
+    }
+
+    @Transactional
+    public void registerInbody(String loginEmail, RegisterInbodyRequest request) {
+        User user = findUserByEmail(loginEmail);
+
+        Inbody inbody = Inbody.builder()
+                .user(user)
+                .measureAt(request.getMeasureAt())
+                .score(request.getInbodyScore())
+                .skeletalMuscleMass(request.getSkeletalMuscleMass())
+                .bodyFatRatio(request.getBodyFatRatio())
+                .weight(request.getWeight())
+                .basalMetabolicRate(request.getBasalMetabolicRate())
+                .build();
+
+        inbodyRepository.save(inbody);
+    }
+
+    private User findUserByNickname(String nickname) {
+        return userRepository.findByNickname(nickname)
+                .orElseThrow(NotFoundUser::new);
+    }
+
+    private User findUserByEmail(String nickname) {
+        return userRepository.findByEmail(nickname)
+                .orElseThrow(NotFoundUser::new);
     }
 }
