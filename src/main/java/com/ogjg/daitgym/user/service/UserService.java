@@ -8,6 +8,7 @@ import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
+import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.exception.NotFoundUser;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
@@ -137,6 +138,15 @@ public class UserService {
                 .build();
 
         inbodyRepository.save(inbody);
+    }
+
+    @Transactional(readOnly = true)
+    public GetInbodiesResponse getInbodies(String nickname) {
+        User user = findUserByNickname(nickname);
+
+        return new GetInbodiesResponse(
+                inbodyRepository.findByUserEmail(user.getEmail())
+        );
     }
 
     private User findUserByNickname(String nickname) {

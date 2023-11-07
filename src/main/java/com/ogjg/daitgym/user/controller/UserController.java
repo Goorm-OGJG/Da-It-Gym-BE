@@ -6,6 +6,7 @@ import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
+import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -80,5 +81,21 @@ public class UserController {
 
         userService.registerInbody(loginEmail, request);
         return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
+
+    /**
+     * 인바디 조회
+     */
+    @GetMapping("/{nickname}/inbodies")
+    public ApiResponse<GetInbodiesResponse> getInbodies(
+            @PathVariable("nickname") String nickname,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+        String loginEmail = userDetails.getEmail();
+
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                userService.getInbodies(nickname)
+        );
     }
 }
