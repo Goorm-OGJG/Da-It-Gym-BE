@@ -28,7 +28,7 @@ public class FeedExerciseJournal extends BaseEntity {
     private ExerciseJournal exerciseJournal;
 
     @OneToMany(mappedBy = "feedExerciseJournal")
-    private List<FeedExerciseJournalImage> feedExerciseJournalImage = new ArrayList<>();
+    private List<FeedExerciseJournalImage> feedExerciseJournalImages = new ArrayList<>();
 
     public FeedExerciseJournal(ExerciseJournal exerciseJournal) {
         this.exerciseJournal = exerciseJournal;

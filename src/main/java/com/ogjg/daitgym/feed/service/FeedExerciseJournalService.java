@@ -2,14 +2,18 @@ package com.ogjg.daitgym.feed.service;
 
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundFeedJournal;
 import com.ogjg.daitgym.comment.feedExerciseJournal.repository.FeedExerciseJournalCommentRepository;
+import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalImage;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
+import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalImageRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
 import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.like.feedExerciseJournal.repository.FeedExerciseJournalLikeRepository;
+import com.ogjg.daitgym.user.exception.NotFoundUser;
+import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,7 @@ public class FeedExerciseJournalService {
     private final ExerciseJournalRepository exerciseJournalRepository;
     private final FeedExerciseJournalCommentRepository feedExerciseJournalCommentRepository;
     private final FeedExerciseJournalLikeRepository feedExerciseJournalLikeRepository;
+    private final UserRepository userRepository;
 
     /*
      * todo 이미지 넘어올시 이미지 저장 추가
@@ -87,8 +92,16 @@ public class FeedExerciseJournalService {
     }
 
     /**
-     * 피드 운동일지 수
+     * 운동일지 수 조회
      */
+    @Transactional(readOnly = true)
+    public FeedExerciseJournalCountResponse countExerciseJournal(String nickname) {
+        User user = findUserByNickname(nickname);
+
+        return new FeedExerciseJournalCountResponse(
+                exerciseJournalRepository.countByUserAndCompleted(user, true)
+        );
+    }
 
     /**
      * 피드 운동일지 보관함 조회 목록보기
@@ -105,6 +118,11 @@ public class FeedExerciseJournalService {
     private FeedExerciseJournal findFeedJournalById(Long feedJournalId) {
         return feedExerciseJournalRepository.findById(feedJournalId)
                 .orElseThrow(NotFoundFeedJournal::new);
+    }
+
+    private User findUserByNickname(String nickname) {
+        return userRepository.findByNickname(nickname)
+                .orElseThrow(NotFoundUser::new);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.domain.journal;
+package com.ogjg.daitgym.domain;
 
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.Max;

@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.domain.journal;
 
 import com.ogjg.daitgym.domain.BaseEntity;
+import com.ogjg.daitgym.domain.TimeTemplate;
 import com.ogjg.daitgym.domain.exercise.Exercise;
 import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
 import com.ogjg.daitgym.journal.dto.request.UpdateRestTimeRequest;
