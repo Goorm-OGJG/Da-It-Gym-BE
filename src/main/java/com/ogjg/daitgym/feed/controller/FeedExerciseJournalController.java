@@ -2,13 +2,11 @@ package com.ogjg.daitgym.feed.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -30,6 +28,18 @@ public class FeedExerciseJournalController {
         String email1 = "dlehdwls21@naver.com";
         feedExerciseJournalService.deleteFeedJournal(email1, feedJournalId);
         return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
+
+    /**
+     * 운동일지 수 가져오기
+     */
+    @GetMapping("/count/{nickname}")
+    public ApiResponse<FeedExerciseJournalCountResponse> countExerciseJournal(
+            @PathVariable("nickname") String nickname
+    ) {
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                feedExerciseJournalService.countExerciseJournal(nickname));
     }
 
 }

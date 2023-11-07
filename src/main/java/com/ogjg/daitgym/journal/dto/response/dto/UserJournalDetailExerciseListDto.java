@@ -1,7 +1,7 @@
 package com.ogjg.daitgym.journal.dto.response.dto;
 
 import com.ogjg.daitgym.domain.journal.ExerciseList;
-import com.ogjg.daitgym.domain.journal.TimeTemplate;
+import com.ogjg.daitgym.domain.TimeTemplate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
