@@ -5,6 +5,7 @@ import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
+import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,20 @@ public class UserController {
         String loginEmail = userDetails.getEmail();
 
         userService.applyForApproval(loginEmail, request, awardImgs, certificationImgs);
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
+
+    /**
+     * 인바디 등록
+     */
+    @PostMapping("/inbodies")
+    public ApiResponse<Void> registerInbody(
+            @RequestBody RegisterInbodyRequest request,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+        String loginEmail = userDetails.getEmail();
+
+        userService.registerInbody(loginEmail, request);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 }
