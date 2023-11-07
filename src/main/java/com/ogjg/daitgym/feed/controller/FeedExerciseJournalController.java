@@ -42,4 +42,17 @@ public class FeedExerciseJournalController {
                 feedExerciseJournalService.countExerciseJournal(nickname));
     }
 
+    /**
+     * 피드 운동일지 스크랩하기
+     */
+    @PostMapping("/{feedJournalId}/scrap")
+    public ApiResponse<Void> feedExerciseJournalScrap(
+            @PathVariable("feedJournalId") Long feedJournalId,
+            //todo token 추출
+            String email
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+        feedExerciseJournalService.feedExerciseJournalScrap(email1, feedJournalId);
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
 }

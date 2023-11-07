@@ -2,7 +2,6 @@ package com.ogjg.daitgym.domain.feed;
 
 import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.User;
-import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,6 +29,14 @@ public class FeedExerciseJournalCollection extends BaseEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "feed_exercise_journal_id")
     private FeedExerciseJournal feedExerciseJournal;
+
+    public FeedExerciseJournalCollection(
+            User user, FeedExerciseJournal feedExerciseJournal
+    ) {
+        this.pk = new PK(user.getEmail(), feedExerciseJournal.getId());
+        this.user = user;
+        this.feedExerciseJournal = feedExerciseJournal;
+    }
 
     @Getter
     @Embeddable

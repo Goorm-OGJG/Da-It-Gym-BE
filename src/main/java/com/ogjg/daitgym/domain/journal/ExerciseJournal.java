@@ -70,7 +70,7 @@ public class ExerciseJournal extends BaseEntity {
         this.split = exerciseJournalShareRequest.getSplit();
     }
 
-    public void feedJournalDelete() {
+    public void privateVisible() {
         this.isVisible = false;
     }
 

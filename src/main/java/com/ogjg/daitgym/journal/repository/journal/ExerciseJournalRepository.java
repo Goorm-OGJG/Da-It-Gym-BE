@@ -14,6 +14,6 @@ public interface ExerciseJournalRepository extends JpaRepository<ExerciseJournal
 
     Optional<ExerciseJournal> findByJournalDateAndUser(LocalDate journalDate, User user);
 
-    int countByUserAndCompleted(User user, boolean completed);
+    int countByUserAndIsCompleted(User user, boolean completed);
 
 }
