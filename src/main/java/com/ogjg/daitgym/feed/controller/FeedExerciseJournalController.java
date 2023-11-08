@@ -2,11 +2,17 @@ package com.ogjg.daitgym.feed.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
+import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -54,5 +60,19 @@ public class FeedExerciseJournalController {
         String email1 = "dlehdwls21@naver.com";
         feedExerciseJournalService.feedExerciseJournalScrap(email1, feedJournalId);
         return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
+
+    /**
+     * 피드 목록 가져오기
+     */
+    @GetMapping
+    public ApiResponse<List<FeedExerciseJournalListResponse>> getFeedJournalLists(
+            @PageableDefault(page = 0, size = 12) Pageable pageable,
+            @ModelAttribute FeedSearchConditionRequest feedSearchConditionRequest
+    ) {
+        log.info(feedSearchConditionRequest.toString());
+        List<FeedExerciseJournalListResponse> feedLists = feedExerciseJournalService.feedExerciseJournalLists(pageable, feedSearchConditionRequest);
+
+        return new ApiResponse<>(ErrorCode.SUCCESS, feedLists);
     }
 }
