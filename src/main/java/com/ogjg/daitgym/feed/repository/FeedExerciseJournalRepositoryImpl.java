@@ -14,6 +14,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
+import static com.ogjg.daitgym.domain.QUser.user;
 import static com.ogjg.daitgym.domain.exercise.QExercise.exercise;
 import static com.ogjg.daitgym.domain.exercise.QExercisePart.exercisePart;
 import static com.ogjg.daitgym.domain.feed.QFeedExerciseJournal.feedExerciseJournal;
@@ -106,6 +107,38 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
 
         return PageableExecutionUtils.getPage(followerFeedJournalLists, pageable, countQuery::fetchOne);
     }
+
+    /**
+     * 피드 운동일지 상세보기
+     */
+
+
+    /**
+     * 유저 페이지 피드 운동일지 가져오기
+     */
+    public Page<FeedExerciseJournal> userFeedExerciseJournalLists(
+            String nickname, Pageable pageable
+    ) {
+        List<FeedExerciseJournal> userFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal)
+                .from(user)
+                .where(user.nickname.eq(nickname))
+                .join(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email)).fetchJoin()
+                .orderBy(feedExerciseJournal.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = jpaQueryFactory.select(feedExerciseJournal.count())
+                .from(user)
+                .where(user.nickname.eq(nickname))
+                .leftJoin(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email));
+
+        return PageableExecutionUtils.getPage(userFeedJournalLists, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 유저 페이지 피드 운동일지 컬렉션 가져오기
+     */
 
     /**
      * 운동 부위의 검색목록이 들어올시
