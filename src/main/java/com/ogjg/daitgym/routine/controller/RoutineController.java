@@ -2,6 +2,7 @@ package com.ogjg.daitgym.routine.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto;
 import com.ogjg.daitgym.routine.dto.RoutineDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
@@ -44,5 +45,13 @@ public class RoutineController {
         RoutineListResponseDto routinesOfFollowing = routineService.getFollowerRoutines(myEmail, pageable);
 
         return new ApiResponse<>(ErrorCode.SUCCESS, routinesOfFollowing);
+    }
+
+    @GetMapping("/{routineId}/details")
+    public ApiResponse<RoutineDetailsResponseDto> getRoutineDetails(@PathVariable("routineId") Long routineId) {
+
+        RoutineDetailsResponseDto routineDetails = routineService.getRoutineDetails(routineId);
+
+        return new ApiResponse<>(ErrorCode.SUCCESS, routineDetails);
     }
 }

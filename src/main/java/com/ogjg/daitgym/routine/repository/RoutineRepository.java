@@ -16,4 +16,6 @@ public interface RoutineRepository extends JpaRepository<Routine, String> {
 
     Optional<Slice<Routine>> findByUserEmailIn(List<String> followerEmails, Pageable pageable);
 
+    Optional<Routine> findById(Long routineId);
+
 }
