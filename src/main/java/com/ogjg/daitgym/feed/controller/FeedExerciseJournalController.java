@@ -75,4 +75,20 @@ public class FeedExerciseJournalController {
 
         return new ApiResponse<>(ErrorCode.SUCCESS, feedLists);
     }
+
+    /**
+     * 팔로우 피드 목록 가져오기
+     */
+    @GetMapping("/follow")
+    public ApiResponse<List<FeedExerciseJournalListResponse>> getFollowFeedJournalLists(
+            //todo token useremail
+            String email,
+            @PageableDefault(page = 0, size = 12) Pageable pageable,
+            @ModelAttribute FeedSearchConditionRequest feedSearchConditionRequest
+    ) {
+        String email1 = "test@naver.com";
+        List<FeedExerciseJournalListResponse> followFeedLists = feedExerciseJournalService.followFeedJournalLists(email1, pageable, feedSearchConditionRequest);
+
+        return new ApiResponse<>(ErrorCode.SUCCESS, followFeedLists);
+    }
 }

@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -71,7 +72,8 @@ public class FeedExerciseJournalService {
     public List<FeedExerciseJournalListResponse> feedExerciseJournalLists(
             Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
-        Page<FeedExerciseJournal> feedExerciseJournals = feedExerciseJournalRepository.feedExerciseJournalLists(pageable, feedSearchConditionRequest);
+        Page<FeedExerciseJournal> feedExerciseJournals = feedExerciseJournalRepository
+                .feedExerciseJournalLists(pageable, feedSearchConditionRequest);
 
         return feedExerciseJournals.getContent()
                 .stream()
@@ -79,9 +81,27 @@ public class FeedExerciseJournalService {
                         feedExerciseJournal.getId(),
                         feedExerciseJournalLikes(feedExerciseJournal.getId()),
                         feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
-                        findFeedExerciseJournalImageByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
-                ))
-                .toList();
+                        findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
+                )).collect(Collectors.toList());
+    }
+
+    /**
+     * 팔로우 피드 운동일지 가져오기 목록보기 무한 스크롤
+     * 분할 및 부위 분할 및 부위로 검색가능
+     */
+    public List<FeedExerciseJournalListResponse> followFeedJournalLists(
+            String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
+    ) {
+        Page<FeedExerciseJournal> feedExerciseJournals = feedExerciseJournalRepository
+                .feedExerciseJournalListsByFollow(email, pageable, feedSearchConditionRequest);
+
+        return feedExerciseJournals.getContent().stream()
+                .map(feedExerciseJournal -> new FeedExerciseJournalListResponse(
+                        feedExerciseJournal.getId(),
+                        feedExerciseJournalLikes(feedExerciseJournal.getId()),
+                        feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
+                        findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
+                )).collect(Collectors.toList());
     }
 
     /**
@@ -101,18 +121,12 @@ public class FeedExerciseJournalService {
     /**
      * 피드운동일지 이미지 가져오기
      */
-    private List<FeedExerciseJournalImage> findFeedExerciseJournalImageByFeedExerciseJournal(
+    private List<FeedExerciseJournalImage> findFeedExerciseJournalImagesByFeedExerciseJournal(
             FeedExerciseJournal feedExerciseJournal
     ) {
         return feedExerciseJournalImageRepository.findAllByFeedExerciseJournal(feedExerciseJournal);
     }
 
-
-    /**
-     * 피드 운동일지 가져오기 목록보기 무한 스크롤
-     * 분할 및 부위 분할 및 부위로 검색가능
-     * 팔로우 => ?
-     */
 
     /**
      * 피드 운동일지 상세정보 가져오기
