@@ -1,11 +1,15 @@
 package com.ogjg.daitgym.config.security.jwt.util;
 
+import com.ogjg.daitgym.chat.exception.UnauthorizedException;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SecurityException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -54,6 +58,7 @@ public class JwtUtils {
     private void setJwtSecret(String jwtSecret) {
         JWT_SECRET = jwtSecret;
     }
+
     public static class TokenGenerator {
         public static String generateAccessToken(JwtUserClaimsDto jwtUserClaimsDto) {
             return Jwts.builder()
@@ -137,5 +142,36 @@ public class JwtUtils {
                 throw new JwtException("Token의 prefix가 유효하지 않습니다.");
             }
         }
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(SIGNATURE_KEY).build().parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            throw UnauthorizedException.of(e.getClass().getName(), "잘못된 JWT 토큰입니다.");
+        } catch (ExpiredJwtException e) {
+            throw UnauthorizedException.of(e.getClass().getName(), "만료된 JWT 토큰입니다.");
+        } catch (UnsupportedJwtException e) {
+            throw UnauthorizedException.of(e.getClass().getName(), "지원되지 않는 JWT 토큰입니다.");
+        } catch (IllegalArgumentException e) {
+            throw UnauthorizedException.of(e.getClass().getName(), "JWT 토큰이 잘못되었습니다.");
+        }
+    }
+
+    public String getTokenStompHeader(String token) {
+        try {
+            return getAccessToken(URLDecoder.decode(token, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
+    }
+
+    public String getAccessToken(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith(
+                TOKEN_PREFIX)) {
+            return authorizationHeader.substring(7);
+        }
+        return null;
     }
 }

@@ -16,7 +16,7 @@ import static lombok.AccessLevel.PROTECTED;
 public class UsersChattingRoom {
 
     @EmbeddedId
-    private UsersChattingRoomPk id;
+    private UsersChattingRoomPk usersChattingRoomPk;
 
     @MapsId("email")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,10 +27,6 @@ public class UsersChattingRoom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
-
-    public UsersChattingRoom(UsersChattingRoomPk id) {
-        this.id = id;
-    }
 
     @Embeddable
     @NoArgsConstructor(access = PROTECTED)
@@ -44,5 +40,10 @@ public class UsersChattingRoom {
             this.email = email;
             this.roomId = roomId;
         }
+    }
+    public UsersChattingRoom(User user, ChatRoom chatRoom) {
+        this.usersChattingRoomPk  = new UsersChattingRoomPk(user.getEmail(),chatRoom.getId());
+        this.user = user;
+        this.chatRoom = chatRoom;
     }
 }
