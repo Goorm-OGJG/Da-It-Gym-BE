@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -54,6 +56,8 @@ public class JwtUtils {
     private void setJwtSecret(String jwtSecret) {
         JWT_SECRET = jwtSecret;
     }
+
+    private Key key;
     public static class TokenGenerator {
         public static String generateAccessToken(JwtUserClaimsDto jwtUserClaimsDto) {
             return Jwts.builder()
@@ -138,4 +142,41 @@ public class JwtUtils {
             }
         }
     }
+
+    /**
+     * StompHandler에서 사용하는 검증 로직
+     * 이 부분 사용하는 부분인데, 채팅관련된 코드들 합칠 때 다시 제가 활성화 해놓겠습니다.(예진)
+     *
+     */
+//    public boolean validateToken(String token) {
+//        try {
+//            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+//            return true;
+//        } catch (SecurityException | MalformedJwtException e) {
+//            throw UnauthorizedException.of(e.getClass().getName(), "잘못된 JWT 토큰입니다.");
+//        } catch (ExpiredJwtException e) {
+//            throw UnauthorizedException.of(e.getClass().getName(), "만료된 JWT 토큰입니다.");
+//        } catch (UnsupportedJwtException e) {
+//            throw UnauthorizedException.of(e.getClass().getName(), "지원되지 않는 JWT 토큰입니다.");
+//        } catch (IllegalArgumentException e) {
+//            throw UnauthorizedException.of(e.getClass().getName(), "JWT 토큰이 잘못되었습니다.");
+//        }
+//    }
+
+    public String getTokenStompHeader(String token) {
+        try {
+            return getAccessToken(URLDecoder.decode(token, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
+    }
+
+    public String getAccessToken(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith(
+                TOKEN_PREFIX)) {
+            return authorizationHeader.substring(7);
+        }
+        return null;
+    }
+
 }
