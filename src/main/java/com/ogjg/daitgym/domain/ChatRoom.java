@@ -1,13 +1,13 @@
 package com.ogjg.daitgym.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.ogjg.daitgym.chat.dto.ChatRoomDto;
+import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static jakarta.persistence.GenerationType.*;
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
 @Getter
@@ -19,6 +19,23 @@ public class ChatRoom extends BaseEntity {
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "chat_room_id")
     private Long id;
+    private String roomName;
+    private String sender;
+    private String redisRoomId;
+    private String receiver;
+    private String imageUrl;
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "email")
+    private User user;
 
+    @Builder
+    public ChatRoom(ChatRoomDto chatRoomDto, User user) {
+        this.roomName = chatRoomDto.getReceiver();
+        this.sender = chatRoomDto.getSender();
+        this.redisRoomId = chatRoomDto.getRedisRoomId();
+        this.user = user;
+        this.imageUrl = user.getImageUrl();
+        this.receiver = chatRoomDto.getReceiver();
+    }
 }
