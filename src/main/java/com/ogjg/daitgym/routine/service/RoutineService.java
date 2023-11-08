@@ -1,10 +1,15 @@
 package com.ogjg.daitgym.routine.service;
 
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
+import com.ogjg.daitgym.domain.routine.Day;
 import com.ogjg.daitgym.domain.routine.Routine;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
+import com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto;
 import com.ogjg.daitgym.routine.dto.RoutineDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
+import com.ogjg.daitgym.routine.exception.NoExerciseInRoutine;
+import com.ogjg.daitgym.routine.repository.DayRepository;
+import com.ogjg.daitgym.routine.repository.ExerciseDetailRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.awt.print.Pageable;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto.*;
 
 @Slf4j
 @Service
@@ -23,6 +31,8 @@ public class RoutineService {
 
     private final RoutineRepository routineRepository;
     private final FollowRepository followRepository;
+    private final DayRepository dayRepository;
+    private final ExerciseDetailRepository exerciseDetailRepository;
 
     @Transactional(readOnly = true)
     public RoutineListResponseDto getRoutines(Pageable pageable) {
@@ -39,17 +49,15 @@ public class RoutineService {
         }
 
         List<RoutineDto> routineDtos = routines.stream()
-                .map(routine -> {
-                    return RoutineDto.builder()
-                            .id(routine.getId())
-                            .title(routine.getTitle())
-                            .author(routine.getUser().getNickname())
-                            .description(routine.getContent())
+                .map(routine -> RoutineDto.builder()
+                        .id(routine.getId())
+                        .title(routine.getTitle())
+                        .author(routine.getUser().getNickname())
+                        .description(routine.getContent())
 //                            .likeCounts()
 //                            .scrapCounts()
-                            .createdAt(routine.getCreatedAt())
-                            .build();
-                })
+                        .createdAt(routine.getCreatedAt())
+                        .build())
                 .toList();
 
         return RoutineListResponseDto.builder()
@@ -82,4 +90,62 @@ public class RoutineService {
         return getRoutineListResponseDto(routines);
     }
 
+    @Transactional(readOnly = true)
+    public RoutineDetailsResponseDto getRoutineDetails(Long routineId) {
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(NotFoundRoutine::new);
+
+        List<Day> days = dayRepository.findAllWithExerciseDetailsByRoutineId(routine.getId())
+                .orElseThrow(NoExerciseInRoutine::new);
+
+        List<DayDto> dayDtos = days.stream()
+                .map(day -> {
+                    List<ExerciseDto> exerciseDtos = day.getExerciseDetails().stream()
+                            .map(exerciseDetail -> {
+                                ExerciseSets exerciseSet = ExerciseSets.builder()
+                                        .id(exerciseDetail.getId())
+                                        .order(exerciseDetail.getSetCount())
+                                        .weights(exerciseDetail.getWeight())
+                                        .counts(exerciseDetail.getRepetitionCount())
+                                        .completed(false)
+                                        .build();
+
+                                return ExerciseDto.builder()
+                                        .id(exerciseDetail.getExercise().getId())
+                                        .order(exerciseDetail.getOrder())
+                                        .name(exerciseDetail.getExercise().getName())
+                                        .part(exerciseDetail.getExercise().getExercisePart().getPart())
+                                        .restTime(new RestTimeDto(
+                                                exerciseDetail.getRestTime().getHour(),
+                                                exerciseDetail.getRestTime().getMinute(),
+                                                exerciseDetail.getRestTime().getSecond()))
+                                        .exerciseSets(Collections.singletonList(exerciseSet))
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+
+                    return DayDto.builder()
+                            .id(day.getId())
+                            .order(day.getDayNumber())
+                            .isSpread(false)
+                            .exercises(exerciseDtos)
+                            .build();
+                })
+                .toList();
+
+        return RoutineDetailsResponseDto.builder()
+                .writer(routine.getUser().getNickname())
+                .writerImg(routine.getUser().getImageUrl())
+                .title(routine.getTitle())
+                .description(routine.getContent())
+                .liked(false)
+                .likeCounts(0)
+                .scrapCounts(0)
+                .routine(RoutineDetailsResponseDto.RoutineDto.builder()
+                        .id(routine.getId())
+                        .days(dayDtos)
+                        .build())
+                .createdAt(routine.getCreatedAt())
+                .build();
+    }
 }
