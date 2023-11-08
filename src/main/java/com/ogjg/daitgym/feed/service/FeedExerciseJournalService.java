@@ -16,8 +16,6 @@ import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
 import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.like.feedExerciseJournal.repository.FeedExerciseJournalLikeRepository;
-import com.ogjg.daitgym.user.exception.NotFoundUser;
-import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,7 +38,7 @@ public class FeedExerciseJournalService {
     private final FeedExerciseJournalCommentRepository feedExerciseJournalCommentRepository;
     private final FeedExerciseJournalLikeRepository feedExerciseJournalLikeRepository;
     private final FeedExerciseJournalCollectionRepository feedExerciseJournalCollectionRepository;
-    private final UserRepository userRepository;
+    private final FeedJournalHelperService feedJournalHelperService;
 
     /*
      * todo 이미지 넘어올시 이미지 저장 추가
@@ -69,6 +67,7 @@ public class FeedExerciseJournalService {
      * 분할 및 부위 분할 및 부위로 검색가능
      * todo 개선하기
      */
+    @Transactional(readOnly = true)
     public List<FeedExerciseJournalListResponse> feedExerciseJournalLists(
             Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
@@ -89,6 +88,7 @@ public class FeedExerciseJournalService {
      * 팔로우 피드 운동일지 가져오기 목록보기 무한 스크롤
      * 분할 및 부위 분할 및 부위로 검색가능
      */
+    @Transactional(readOnly = true)
     public List<FeedExerciseJournalListResponse> followFeedJournalLists(
             String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
@@ -107,26 +107,25 @@ public class FeedExerciseJournalService {
     /**
      * 피드 운동일지 좋아요 수
      */
-    private int feedExerciseJournalLikes(Long feedJournalId) {
+    public int feedExerciseJournalLikes(Long feedJournalId) {
         return feedExerciseJournalLikeRepository.countByFeedJournalLikePkFeedExerciseJournalId(feedJournalId);
     }
 
     /**
      * 피드 운동일지 스크랩 횟수
      */
-    private int feedExerciseJournalScrapCounts(Long feedExerciseJournalId) {
+    public int feedExerciseJournalScrapCounts(Long feedExerciseJournalId) {
         return feedExerciseJournalCollectionRepository.countByPkFeedExerciseJournalId(feedExerciseJournalId);
     }
 
     /**
      * 피드운동일지 이미지 가져오기
      */
-    private List<FeedExerciseJournalImage> findFeedExerciseJournalImagesByFeedExerciseJournal(
+    public List<FeedExerciseJournalImage> findFeedExerciseJournalImagesByFeedExerciseJournal(
             FeedExerciseJournal feedExerciseJournal
     ) {
         return feedExerciseJournalImageRepository.findAllByFeedExerciseJournal(feedExerciseJournal);
     }
-
 
     /**
      * 피드 운동일지 상세정보 가져오기
@@ -137,9 +136,8 @@ public class FeedExerciseJournalService {
      */
 
     /**
-     * 내 피드 운동일지 조회
+     * 사용자 피드 운동일지 목록 조회
      */
-
 
     /**
      * 피드 운동일지 스크랩
@@ -149,8 +147,8 @@ public class FeedExerciseJournalService {
     ) {
         feedExerciseJournalCollectionRepository.save(
                 new FeedExerciseJournalCollection(
-                        findUserByEmail(email),
-                        findFeedJournalById(feedExerciseJournalId)
+                        feedJournalHelperService.findUserByEmail(email),
+                        feedJournalHelperService.findFeedJournalById(feedExerciseJournalId)
                 )
         );
     }
@@ -166,7 +164,7 @@ public class FeedExerciseJournalService {
     public void deleteFeedJournal(
             String email, Long feedJournalId
     ) {
-        FeedExerciseJournal feedJournal = findFeedJournalById(feedJournalId);
+        FeedExerciseJournal feedJournal = feedJournalHelperService.findFeedJournalById(feedJournalId);
         feedExerciseJournalCommentRepository.deleteAllByFeedExerciseJournal(feedJournal);
         feedExerciseJournalLikeRepository.deleteAllByFeedExerciseJournal(feedJournal);
         feedExerciseJournalImageRepository.deleteAllByFeedExerciseJournal(feedJournal);
@@ -184,29 +182,11 @@ public class FeedExerciseJournalService {
      */
     @Transactional(readOnly = true)
     public FeedExerciseJournalCountResponse countExerciseJournal(String nickname) {
-        User user = findUserByNickname(nickname);
+        User user = feedJournalHelperService.findUserByNickname(nickname);
 
         return new FeedExerciseJournalCountResponse(
                 exerciseJournalRepository.countByUserAndIsCompleted(user, true)
         );
-    }
-
-    /**
-     * Id로 feedJournal 검색
-     */
-    private FeedExerciseJournal findFeedJournalById(Long feedJournalId) {
-        return feedExerciseJournalRepository.findById(feedJournalId)
-                .orElseThrow(NotFoundFeedJournal::new);
-    }
-
-    private User findUserByNickname(String nickname) {
-        return userRepository.findByNickname(nickname)
-                .orElseThrow(NotFoundUser::new);
-    }
-
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(NotFoundUser::new);
     }
 
     /**
@@ -216,6 +196,5 @@ public class FeedExerciseJournalService {
         return feedExerciseJournalRepository.findByExerciseJournal(exerciseJournal)
                 .orElseThrow(NotFoundFeedJournal::new);
     }
-
 
 }
