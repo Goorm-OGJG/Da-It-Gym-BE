@@ -7,7 +7,9 @@ import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalCollection;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalImage;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
+import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
+import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalCollectionRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalImageRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
@@ -18,6 +20,8 @@ import com.ogjg.daitgym.user.exception.NotFoundUser;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,11 +64,54 @@ public class FeedExerciseJournalService {
     }
 
     /**
+     * 전체 피드 운동일지 가져오기 목록보기 무한 스크롤
+     * 분할 및 부위 분할 및 부위로 검색가능
+     * todo 개선하기
+     */
+    public List<FeedExerciseJournalListResponse> feedExerciseJournalLists(
+            Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
+    ) {
+        Page<FeedExerciseJournal> feedExerciseJournals = feedExerciseJournalRepository.feedExerciseJournalLists(pageable, feedSearchConditionRequest);
+
+        return feedExerciseJournals.getContent()
+                .stream()
+                .map(feedExerciseJournal -> new FeedExerciseJournalListResponse(
+                        feedExerciseJournal.getId(),
+                        feedExerciseJournalLikes(feedExerciseJournal.getId()),
+                        feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
+                        findFeedExerciseJournalImageByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
+                ))
+                .toList();
+    }
+
+    /**
+     * 피드 운동일지 좋아요 수
+     */
+    private int feedExerciseJournalLikes(Long feedJournalId) {
+        return feedExerciseJournalLikeRepository.countByFeedJournalLikePkFeedExerciseJournalId(feedJournalId);
+    }
+
+    /**
+     * 피드 운동일지 스크랩 횟수
+     */
+    private int feedExerciseJournalScrapCounts(Long feedExerciseJournalId) {
+        return feedExerciseJournalCollectionRepository.countByPkFeedExerciseJournalId(feedExerciseJournalId);
+    }
+
+    /**
+     * 피드운동일지 이미지 가져오기
+     */
+    private List<FeedExerciseJournalImage> findFeedExerciseJournalImageByFeedExerciseJournal(
+            FeedExerciseJournal feedExerciseJournal
+    ) {
+        return feedExerciseJournalImageRepository.findAllByFeedExerciseJournal(feedExerciseJournal);
+    }
+
+
+    /**
      * 피드 운동일지 가져오기 목록보기 무한 스크롤
      * 분할 및 부위 분할 및 부위로 검색가능
      * 팔로우 => ?
-     * 전체 => ?
-     * 추천 => ?
      */
 
     /**

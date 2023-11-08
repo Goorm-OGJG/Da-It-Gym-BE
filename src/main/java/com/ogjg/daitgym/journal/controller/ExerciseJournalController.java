@@ -190,7 +190,7 @@ public class ExerciseJournalController {
             String email,
             @PathVariable("journalId") Long journalId,
             @RequestPart("share") ExerciseJournalShareRequest exerciseJournalShareRequest,
-            @RequestPart("imgFiles") List<MultipartFile> imgFiles
+            @RequestPart(value = "imgFiles", required = false) List<MultipartFile> imgFiles
     ) {
         String email1 = "dlehdwls21@naver.com";
         exerciseJournalService.exerciseJournalShare(journalId, email1, exerciseJournalShareRequest, imgFiles);

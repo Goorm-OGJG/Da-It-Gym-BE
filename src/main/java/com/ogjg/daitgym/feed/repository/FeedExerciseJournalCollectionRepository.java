@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FeedExerciseJournalCollectionRepository extends JpaRepository<FeedExerciseJournalCollection, Long> {
 
+    int countByPkFeedExerciseJournalId(Long feedJournalId);
 
 }
