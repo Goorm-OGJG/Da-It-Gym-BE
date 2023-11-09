@@ -1,9 +1,3 @@
-FROM gradle:8.4-jdk17-alpine AS build
-
-WORKDIR /usr/src/app
-COPY krampoline/ ./
-RUN gradle clean build
-
 FROM alpine:3.18
 
 ARG version=17.0.8.7.1
@@ -23,6 +17,6 @@ ENV LANG C.UTF-8
 ENV JAVA_HOME=/usr/lib/jvm/default-jvm
 ENV PATH=$PATH:/usr/lib/jvm/default-jvm/bin
 
-COPY --from=build /usr/src/app/build/libs/da-it-gym-0.0.1-SNAPSHOT.jar /app/da-it-gym-0.0.1-SNAPSHOT.jar
+COPY build/libs/da-it-gym-0.0.1-SNAPSHOT.jar /app/
 
 ENTRYPOINT ["java", "-jar", "/app/da-it-gym-0.0.1-SNAPSHOT.jar"]

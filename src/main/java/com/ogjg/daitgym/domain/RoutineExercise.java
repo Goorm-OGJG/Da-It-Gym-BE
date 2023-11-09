@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.domain;
 
+import com.ogjg.daitgym.domain.exercise.Exercise;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
