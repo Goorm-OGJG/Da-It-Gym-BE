@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -37,4 +40,11 @@ public class Routine extends BaseEntity {
 
     @Enumerated(STRING)
     private UnitType unitType;
+
+    @OneToMany(mappedBy = "routine", fetch = LAZY)
+    private Set<RoutineLike> routineLikes = new HashSet<>();
+
+    public int getLikesCount() {
+        return routineLikes.size();
+    }
 }
