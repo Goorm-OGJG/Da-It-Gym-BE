@@ -20,6 +20,9 @@ public class UserFeedExerciseJournalService {
     private final FeedExerciseJournalService feedExerciseJournalService;
     private final FeedJournalHelperService feedJournalHelperService;
 
+    /**
+     * 유저 페이지 피드 운동일지 목록 가져오기
+     */
     public List<FeedExerciseJournalListResponse> userFeedExerciseJournalLists(
             String nickname, Pageable pageable
     ) {
@@ -27,6 +30,26 @@ public class UserFeedExerciseJournalService {
 
         return userFeedExerciseJournals.getContent()
                 .stream().map(
+                        feedExerciseJournal -> new FeedExerciseJournalListResponse(
+                                feedExerciseJournal.getId(),
+                                feedExerciseJournalService.feedExerciseJournalLikes(feedExerciseJournal.getId()),
+                                feedExerciseJournalService.feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
+                                feedExerciseJournalService.findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
+                        )
+                ).toList();
+    }
+
+    /**
+     * 피드 운동일지 보관함 조회 목록보기
+     */
+    public List<FeedExerciseJournalListResponse> userFeedExerciseJournalCollectionLists(
+            String nickname, Pageable pageable
+    ) {
+        Page<FeedExerciseJournal> userFeedJournalCollections = feedExerciseJournalRepository.userFeedExerciseJournalCollectionLists(nickname, pageable);
+
+        return userFeedJournalCollections.getContent()
+                .stream()
+                .map(
                         feedExerciseJournal -> new FeedExerciseJournalListResponse(
                                 feedExerciseJournal.getId(),
                                 feedExerciseJournalService.feedExerciseJournalLikes(feedExerciseJournal.getId()),

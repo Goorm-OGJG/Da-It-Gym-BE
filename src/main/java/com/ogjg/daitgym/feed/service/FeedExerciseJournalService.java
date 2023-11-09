@@ -128,18 +128,6 @@ public class FeedExerciseJournalService {
     }
 
     /**
-     * 피드 운동일지 상세정보 가져오기
-     */
-
-    /**
-     * 피드 운동일지 보관함 조회 목록보기
-     */
-
-    /**
-     * 사용자 피드 운동일지 목록 조회
-     */
-
-    /**
      * 피드 운동일지 스크랩
      */
     public void feedExerciseJournalScrap(
@@ -188,6 +176,11 @@ public class FeedExerciseJournalService {
                 exerciseJournalRepository.countByUserAndIsCompleted(user, true)
         );
     }
+
+    /**
+     * todo
+     * 피드 운동일지 상세정보 가져오기
+     */
 
     /**
      * 운동일지로 피드 운동일지 찾기
