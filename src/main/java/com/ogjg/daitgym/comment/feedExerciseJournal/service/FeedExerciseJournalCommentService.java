@@ -11,6 +11,7 @@ import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundFeedJourna
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundUser;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
 import com.ogjg.daitgym.comment.feedExerciseJournal.repository.FeedExerciseJournalCommentRepository;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalComment;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,14 +39,13 @@ public class FeedExerciseJournalCommentService {
     private final FeedExerciseJournalCommentRepository feedJournalCommentRepository;
 
     /**
-     * 1. feedExerciseJournalRepository 추가하기
-     * FeedExerciseJournal feedExerciseJournal = feedExerciseJournalRepository.findById(journalId).orElseThrow(NotFoundJournal::new);
-     * 2. userRepository 추가하기
-     * UserRepository userRepository= userRepository.findById(userId).orElseThrow(NOTFOUNDUSER::new);
+     * 댓글/대댓글 작성하기
      */
     @Transactional
-    public CreateFeedJournalCommentResponse createComment(Long feedJournalId, FeedJournalCommentRequest request) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public CreateFeedJournalCommentResponse createComment(Long feedJournalId,
+                                                          FeedJournalCommentRequest request,
+                                                          OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         FeedExerciseJournal feedJournal = feedJournalRepository.findById(feedJournalId).orElseThrow(NotFoundFeedJournal::new);
         Long parentId = request.getParentId();
 
@@ -70,10 +71,18 @@ public class FeedExerciseJournalCommentService {
     }
 
     @Transactional
-    public EditFeedJournalCommentResponse editComment(Long feedJournalId, Long commentId, EditFeedJournalCommentRequest request) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public EditFeedJournalCommentResponse editComment(Long feedJournalId,
+                                                      Long commentId,
+                                                      EditFeedJournalCommentRequest request,
+                                                      OAuth2JwtUserDetails oAuth2JwtUserDetails) {
 
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         FeedExerciseJournalComment journalComment = feedJournalCommentRepository.findByFeedExerciseJournalIdAndId(feedJournalId, commentId).orElseThrow(NotFoundFeedJournalComment::new);
+
+        if (!Objects.equals(user.getNickname(), journalComment.getUser().getNickname())) {
+            throw new WrongApproach("작성한 사용자만 수정할 수 있습니다");
+        }
+
         journalComment.updateComment(request.getComment());
         Long parentId = (journalComment.getParent() != null) ? journalComment.getParent().getId() : null;
 
@@ -86,8 +95,11 @@ public class FeedExerciseJournalCommentService {
     }
 
     @Transactional
-    public void deleteComment(Long feedJournalId, Long commentId) {
-        User user = getUserByEmail("yaejingo@naver.com");
+    public void deleteComment(Long feedJournalId,
+                              Long commentId,
+                              OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         ExerciseJournal exerciseJournal = getExerciseJournal(feedJournalId);
 
         FeedExerciseJournalComment journalComment = feedJournalCommentRepository.findByFeedExerciseJournalIdAndId(feedJournalId, commentId).orElseThrow(NotFoundFeedJournalComment::new);
@@ -98,7 +110,6 @@ public class FeedExerciseJournalCommentService {
         if (!Objects.equals(userEmail, feedCommentWriter) && !Objects.equals(userEmail, exerciseJournalWriter)) {
             throw new WrongApproach("작성한 사용자만 삭제할 수 있습니다");
         }
-
         feedJournalCommentRepository.delete(journalComment);
     }
 
@@ -110,8 +121,11 @@ public class FeedExerciseJournalCommentService {
      * 최신순으로 댓글 정렬 : FeedJournalCommentResponse 안에서 처
      */
     @Transactional(readOnly = true)
-    public FeedJournalCommentResponse getFeedJournalComments(Long feedJournalId, Pageable pageable) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public FeedJournalCommentResponse getFeedJournalComments(Long feedJournalId,
+                                                             Pageable pageable,
+                                                             OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         ExerciseJournal exerciseJournal = getExerciseJournal(feedJournalId);
         boolean authority = checkAuthority(user, exerciseJournal);
 
@@ -127,8 +141,11 @@ public class FeedExerciseJournalCommentService {
      * 최신순으로 댓글 정렬 : FeedJournalChildCommentResponse 안에서 처리
      */
     @Transactional(readOnly = true)
-    public FeedJournalChildCommentResponse getFeedJournalChildComment(Long feedJournalId, Long commentId) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public FeedJournalChildCommentResponse getFeedJournalChildComment(Long feedJournalId,
+                                                                      Long commentId,
+                                                                      OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         ExerciseJournal exerciseJournal = getExerciseJournal(feedJournalId);
         boolean authority = checkAuthority(user, exerciseJournal);
 

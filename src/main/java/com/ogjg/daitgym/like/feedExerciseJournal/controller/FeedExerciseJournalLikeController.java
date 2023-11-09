@@ -1,10 +1,12 @@
 package com.ogjg.daitgym.like.feedExerciseJournal.controller;
 
-import com.ogjg.daitgym.like.feedExerciseJournal.dto.FeedExerciseJournalLikeResponse;
-import com.ogjg.daitgym.like.feedExerciseJournal.service.FeedExerciseJournalLikeService;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.like.feedExerciseJournal.dto.FeedExerciseJournalLikeResponse;
+import com.ogjg.daitgym.like.feedExerciseJournal.service.FeedExerciseJournalLikeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,14 +19,16 @@ public class FeedExerciseJournalLikeController {
     /**
      * TODO User 추가하기
      */
-
     @PostMapping
-    public ApiResponse<FeedExerciseJournalLikeResponse> feedJournalLike(@PathVariable Long feedJournalId) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, feedJournalLikeService.feedJournalLike(feedJournalId));
+    public ApiResponse<FeedExerciseJournalLikeResponse> feedJournalLike(@PathVariable Long feedJournalId,
+                                                                        @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, feedJournalLikeService.feedJournalLike(feedJournalId, oAuth2JwtUserDetails));
     }
 
     @DeleteMapping
-    public ApiResponse<FeedExerciseJournalLikeResponse> feedJournalUnLike(@PathVariable Long feedJournalId) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, feedJournalLikeService.feedJournalUnLike(feedJournalId));
+    public ApiResponse<FeedExerciseJournalLikeResponse> feedJournalUnLike(@PathVariable Long feedJournalId,
+                                                                          @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, feedJournalLikeService.feedJournalUnLike(feedJournalId, oAuth2JwtUserDetails));
     }
 }
+

@@ -9,9 +9,11 @@ import com.ogjg.daitgym.comment.feedExerciseJournal.dto.response.FeedJournalComm
 import com.ogjg.daitgym.comment.feedExerciseJournal.service.FeedExerciseJournalCommentService;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 public class FeedExerciseJournalCommentController {
 
     /**
-     * TODO @Authentication 넣기
      * 댓글 대댓글 api는 하나로 사용하며, 대댓글 작성히 parentId(댓글)를 같이 받는다
      * ex) 댓글 request : comment / 대댓글 request : comment, parentId
      */
@@ -31,8 +32,10 @@ public class FeedExerciseJournalCommentController {
      * 댓글/대댓글 작성하기
      */
     @PostMapping("/{feedJournalId}/comment")
-    public ApiResponse<CreateFeedJournalCommentResponse> createComment(@PathVariable Long feedJournalId, @RequestBody FeedJournalCommentRequest request) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.createComment(feedJournalId, request));
+    public ApiResponse<CreateFeedJournalCommentResponse> createComment(@PathVariable Long feedJournalId,
+                                                                       @RequestBody FeedJournalCommentRequest request,
+                                                                       @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.createComment(feedJournalId, request, oAuth2JwtUserDetails));
     }
 
     /**
@@ -41,16 +44,19 @@ public class FeedExerciseJournalCommentController {
     @PutMapping("/{feedJournalId}/comments/{commentId}")
     public ApiResponse<EditFeedJournalCommentResponse> editComment(@PathVariable Long feedJournalId,
                                                                    @PathVariable Long commentId,
-                                                                   @RequestBody EditFeedJournalCommentRequest request) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.editComment(feedJournalId, commentId, request));
+                                                                   @RequestBody EditFeedJournalCommentRequest request,
+                                                                   @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.editComment(feedJournalId, commentId, request, oAuth2JwtUserDetails));
     }
 
     /**
      * 댓글/대댓글 삭제하기
      */
     @DeleteMapping(("/{feedJournalId}/comments/{commentId}"))
-    public ApiResponse<Void> deleteComment(@PathVariable Long feedJournalId, @PathVariable Long commentId) {
-        journalCommentService.deleteComment(feedJournalId, commentId);
+    public ApiResponse<Void> deleteComment(@PathVariable Long feedJournalId,
+                                           @PathVariable Long commentId,
+                                           @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        journalCommentService.deleteComment(feedJournalId, commentId, oAuth2JwtUserDetails);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -61,16 +67,19 @@ public class FeedExerciseJournalCommentController {
      */
     @GetMapping("/{feedJournalId}/comments")
     public ApiResponse<FeedJournalCommentResponse> getFeedJournalComments(@PathVariable Long feedJournalId,
-                                                                          @PageableDefault(page = 0, size = 10) Pageable pageable) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.getFeedJournalComments(feedJournalId, pageable));
+                                                                          @PageableDefault(page = 0, size = 10) Pageable pageable,
+                                                                          @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.getFeedJournalComments(feedJournalId, pageable, oAuth2JwtUserDetails));
     }
 
     /**
      * 대댓글 가져오기
      */
     @GetMapping("/{feedJournalId}/comments/{commentId}/child-comment")
-    public ApiResponse<FeedJournalChildCommentResponse> getFeedJournalChildComment(@PathVariable Long feedJournalId, @PathVariable Long commentId) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.getFeedJournalChildComment(feedJournalId, commentId));
+    public ApiResponse<FeedJournalChildCommentResponse> getFeedJournalChildComment(@PathVariable Long feedJournalId,
+                                                                                   @PathVariable Long commentId,
+                                                                                   @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, journalCommentService.getFeedJournalChildComment(feedJournalId, commentId, oAuth2JwtUserDetails));
     }
 }
 
