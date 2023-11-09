@@ -91,6 +91,14 @@ public class ExerciseJournalService {
     }
 
     /**
+     * 운동일지 공개여부 확인
+     * */
+    private void checkDisclosure(Long journalId){
+        if (!findExerciseJournal(journalId).isVisible())
+            throw new UserNotAuthorizedForJournal("공개된 운동일지가 아닙니다");
+    }
+
+    /**
      * 운동 목록 휴식시간 변경
      */
     @Transactional
@@ -239,6 +247,25 @@ public class ExerciseJournalService {
     ) {
         ExerciseJournal exerciseJournal = findExerciseJournalByUserAndJournalDate(findUserByEmail(email), journalDate);
         isAuthorizedForJournal(email, exerciseJournal.getId());
+
+        List<ExerciseList> journalList = findExerciseListByJournal(exerciseJournal);
+        List<UserJournalDetailExerciseListDto> exerciseListDtos = userJournalDetailExerciseListDtos(journalList);
+        UserJournalDetailDto userJournalDetailDto = new UserJournalDetailDto(exerciseJournal, exerciseListDtos);
+
+        return new UserJournalDetailResponse(userJournalDetailDto);
+    }
+
+    /**
+     * todo 구조적 개선할 필요성이 있어보임 순환참조 가능성
+     * 피드 운동일지 상세보기
+     * 공개여부 확인후 운동일지 반환
+     */
+    @Transactional(readOnly = true)
+    public UserJournalDetailResponse JournalDetail(
+            Long journalId
+    ) {
+        checkDisclosure(journalId);
+        ExerciseJournal exerciseJournal = findExerciseJournal(journalId);
 
         List<ExerciseList> journalList = findExerciseListByJournal(exerciseJournal);
         List<UserJournalDetailExerciseListDto> exerciseListDtos = userJournalDetailExerciseListDtos(journalList);

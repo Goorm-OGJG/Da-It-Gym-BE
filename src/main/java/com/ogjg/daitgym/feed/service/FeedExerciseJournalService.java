@@ -162,7 +162,7 @@ public class FeedExerciseJournalService {
 
         feedExerciseJournalRepository.delete(feedJournal);
 
-        feedJournal.getExerciseJournal().privateVisible();
+        feedJournal.getExerciseJournal().changeToPrivate();
     }
 
     /**
