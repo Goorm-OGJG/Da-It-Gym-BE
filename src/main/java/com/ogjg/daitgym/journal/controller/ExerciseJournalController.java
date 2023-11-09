@@ -140,7 +140,7 @@ public class ExerciseJournalController {
     /**
      * 내 운동일지 상세보기
      */
-    @GetMapping("{journalDate}")
+    @GetMapping("/{journalDate}")
     public ApiResponse<UserJournalDetailResponse> userJournalDetail(
 //      todo email 가져오기
             String email,

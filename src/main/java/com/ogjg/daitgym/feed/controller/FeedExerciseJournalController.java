@@ -6,6 +6,8 @@ import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
+import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
+import com.ogjg.daitgym.journal.service.ExerciseJournalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +23,7 @@ import java.util.List;
 public class FeedExerciseJournalController {
 
     private final FeedExerciseJournalService feedExerciseJournalService;
+    private final ExerciseJournalService exerciseJournalService;
 
     /**
      * 운동일지 피드 삭제
@@ -63,17 +66,17 @@ public class FeedExerciseJournalController {
     }
 
     /**
-     * 피드 목록 가져오기
+     * 피드 운동일지 목록 가져오기
      */
     @GetMapping
     public ApiResponse<List<FeedExerciseJournalListResponse>> getFeedJournalLists(
             @PageableDefault(page = 0, size = 12) Pageable pageable,
             @ModelAttribute FeedSearchConditionRequest feedSearchConditionRequest
     ) {
-        log.info(feedSearchConditionRequest.toString());
-        List<FeedExerciseJournalListResponse> feedLists = feedExerciseJournalService.feedExerciseJournalLists(pageable, feedSearchConditionRequest);
-
-        return new ApiResponse<>(ErrorCode.SUCCESS, feedLists);
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                feedExerciseJournalService.feedExerciseJournalLists(pageable, feedSearchConditionRequest)
+        );
     }
 
     /**
@@ -87,8 +90,22 @@ public class FeedExerciseJournalController {
             @ModelAttribute FeedSearchConditionRequest feedSearchConditionRequest
     ) {
         String email1 = "test@naver.com";
-        List<FeedExerciseJournalListResponse> followFeedLists = feedExerciseJournalService.followFeedJournalLists(email1, pageable, feedSearchConditionRequest);
-
-        return new ApiResponse<>(ErrorCode.SUCCESS, followFeedLists);
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                feedExerciseJournalService.followFeedJournalLists(email1, pageable, feedSearchConditionRequest)
+        );
     }
+
+    /**
+     * 피드 운동일지 상세보기
+     */
+    @GetMapping("{journalId}/journal-detail")
+    public ApiResponse<UserJournalDetailResponse> feedJournalDetail(
+            @PathVariable("journalId") Long journalId
+    ) {
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS, exerciseJournalService.JournalDetail(journalId)
+        );
+    }
+
 }
