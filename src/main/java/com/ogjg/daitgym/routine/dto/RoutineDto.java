@@ -10,16 +10,18 @@ public class RoutineDto {
     private String title;
     private String author;
     private String description;
+    private boolean liked;
     private int likeCounts;
     private int scrapCounts;
     private LocalDateTime createdAt;
 
     @Builder
-    public RoutineDto(Long id, String title, String author, String description, int likeCounts, int scrapCounts, LocalDateTime createdAt) {
+    public RoutineDto(Long id, String title, String author, String description, boolean liked, int likeCounts, int scrapCounts, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.description = description;
+        this.liked = liked;
         this.likeCounts = likeCounts;
         this.scrapCounts = scrapCounts;
         this.createdAt = createdAt;

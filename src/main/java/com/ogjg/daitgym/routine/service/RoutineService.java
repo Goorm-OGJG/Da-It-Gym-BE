@@ -4,6 +4,7 @@ import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
 import com.ogjg.daitgym.domain.routine.Day;
 import com.ogjg.daitgym.domain.routine.Routine;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
+import com.ogjg.daitgym.like.routine.repository.RoutineLikeRepository;
 import com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto;
 import com.ogjg.daitgym.routine.dto.RoutineDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.awt.print.Pageable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto.*;
@@ -33,20 +35,23 @@ public class RoutineService {
     private final FollowRepository followRepository;
     private final DayRepository dayRepository;
     private final ExerciseDetailRepository exerciseDetailRepository;
+    private final RoutineLikeRepository routineLikeRepository;
 
     @Transactional(readOnly = true)
-    public RoutineListResponseDto getRoutines(Pageable pageable) {
+    public RoutineListResponseDto getRoutines(Pageable pageable, String email) {
 
         Slice<Routine> routines = routineRepository.findAll(pageable)
                 .orElseThrow(NotFoundRoutine::new);
 
-        return getRoutineListResponseDto(routines);
+        return getRoutineListResponseDto(routines, email);
     }
 
-    private RoutineListResponseDto getRoutineListResponseDto(Slice<Routine> routines) {
+    private RoutineListResponseDto getRoutineListResponseDto(Slice<Routine> routines, String email) {
         if (!routines.hasNext()) {
             throw new NotFoundRoutine("더 이상 루틴이 존재하지 않습니다.");
         }
+
+        Set<Long> likedRoutineIdByUserEmail = routineLikeRepository.findLikedRoutineIdByUserEmail(email);
 
         List<RoutineDto> routineDtos = routines.stream()
                 .map(routine -> RoutineDto.builder()
@@ -54,7 +59,8 @@ public class RoutineService {
                         .title(routine.getTitle())
                         .author(routine.getUser().getNickname())
                         .description(routine.getContent())
-//                            .likeCounts()
+                        .liked(likedRoutineIdByUserEmail.contains(routine.getId()))
+                        .likeCounts(routine.getLikesCount())
 //                            .scrapCounts()
                         .createdAt(routine.getCreatedAt())
                         .build())
@@ -72,11 +78,11 @@ public class RoutineService {
         Slice<Routine> routines = routineRepository.findAllByUserEmail(userEmail, pageable)
                 .orElseThrow(NotFoundRoutine::new);
 
-        return getRoutineListResponseDto(routines);
+        return getRoutineListResponseDto(routines, userEmail);
     }
 
     @Transactional(readOnly = true)
-    public RoutineListResponseDto getFollowerRoutines(String myEmail, Pageable pageable) {
+    public RoutineListResponseDto getFollowerRoutines(Pageable pageable, String myEmail) {
 
         List<String> followingEmails = followRepository.findAllByTargetEmail(myEmail)
                 .orElse(Collections.emptyList())
@@ -87,17 +93,37 @@ public class RoutineService {
         Slice<Routine> routines = routineRepository.findByUserEmailIn(followingEmails, pageable)
                 .orElseThrow(NotFoundRoutine::new);
 
-        return getRoutineListResponseDto(routines);
+        return getRoutineListResponseDto(routines, myEmail);
     }
 
     @Transactional(readOnly = true)
-    public RoutineDetailsResponseDto getRoutineDetails(Long routineId) {
+    public RoutineDetailsResponseDto getRoutineDetails(Long routineId, String userEmail) {
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(NotFoundRoutine::new);
 
         List<Day> days = dayRepository.findAllWithExerciseDetailsByRoutineId(routine.getId())
                 .orElseThrow(NoExerciseInRoutine::new);
 
+        List<DayDto> dayDtos = getDayDtos(days);
+
+        return RoutineDetailsResponseDto.builder()
+                .writer(routine.getUser().getNickname())
+                .writerImg(routine.getUser().getImageUrl())
+                .title(routine.getTitle())
+                .description(routine.getContent())
+                .liked(routineLikeRepository
+                        .existsByUserEmailAndRoutineId(userEmail, routine.getId()))
+                .likeCounts(routine.getLikesCount())
+                .scrapCounts(0)
+                .routine(RoutineDetailsResponseDto.RoutineDto.builder()
+                        .id(routine.getId())
+                        .days(dayDtos)
+                        .build())
+                .createdAt(routine.getCreatedAt())
+                .build();
+    }
+
+    private static List<DayDto> getDayDtos(List<Day> days) {
         List<DayDto> dayDtos = days.stream()
                 .map(day -> {
                     List<ExerciseDto> exerciseDtos = day.getExerciseDetails().stream()
@@ -132,20 +158,6 @@ public class RoutineService {
                             .build();
                 })
                 .toList();
-
-        return RoutineDetailsResponseDto.builder()
-                .writer(routine.getUser().getNickname())
-                .writerImg(routine.getUser().getImageUrl())
-                .title(routine.getTitle())
-                .description(routine.getContent())
-                .liked(false)
-                .likeCounts(0)
-                .scrapCounts(0)
-                .routine(RoutineDetailsResponseDto.RoutineDto.builder()
-                        .id(routine.getId())
-                        .days(dayDtos)
-                        .build())
-                .createdAt(routine.getCreatedAt())
-                .build();
+        return dayDtos;
     }
 }
