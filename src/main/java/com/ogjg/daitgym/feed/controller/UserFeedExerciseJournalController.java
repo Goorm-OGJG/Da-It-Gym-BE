@@ -27,9 +27,21 @@ public class UserFeedExerciseJournalController {
             @PathVariable(name = "nickname") String nickname,
             @PageableDefault(page = 0, size = 12) Pageable pageable
     ) {
-        List<FeedExerciseJournalListResponse> feedExerciseJournalLists =
+        List<FeedExerciseJournalListResponse> userFeedExerciseJournalLists =
                 userFeedExerciseJournalService.userFeedExerciseJournalLists(nickname, pageable);
 
-        return new ApiResponse<>(ErrorCode.SUCCESS, feedExerciseJournalLists);
+        return new ApiResponse<>(ErrorCode.SUCCESS, userFeedExerciseJournalLists);
     }
+
+    @GetMapping("{nickname}/scrap")
+    public ApiResponse<List<FeedExerciseJournalListResponse>> userFeedExerciseJournalCollectionLists(
+            @PathVariable(name = "nickname") String nickname,
+            @PageableDefault(page = 0, size = 12) Pageable pageable
+    ) {
+        List<FeedExerciseJournalListResponse> userFeedExerciseJournalCollectionLists =
+                userFeedExerciseJournalService.userFeedExerciseJournalCollectionLists(nickname, pageable);
+
+        return new ApiResponse<>(ErrorCode.SUCCESS, userFeedExerciseJournalCollectionLists);
+    }
+
 }

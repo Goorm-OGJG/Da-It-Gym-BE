@@ -12,4 +12,6 @@ public interface FeedExerciseJournalRepositoryCustom {
     Page<FeedExerciseJournal> feedExerciseJournalListsByFollow(String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest);
 
     Page<FeedExerciseJournal> userFeedExerciseJournalLists(String nickname, Pageable pageable);
+
+    Page<FeedExerciseJournal> userFeedExerciseJournalCollectionLists(String nickname, Pageable pageable);
 }
