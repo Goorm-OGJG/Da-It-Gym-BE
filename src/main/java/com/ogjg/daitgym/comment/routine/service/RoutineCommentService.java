@@ -12,6 +12,7 @@ import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutineComment;
 import com.ogjg.daitgym.comment.routine.repository.RoutineCommentRepository;
 import com.ogjg.daitgym.domain.User;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.routine.Routine;
 import com.ogjg.daitgym.domain.routine.RoutineComment;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
@@ -36,8 +37,10 @@ public class RoutineCommentService {
      * 루틴에 대한 댓글/대댓글 작성
      */
     @Transactional
-    public CreateRoutineCommentResponse createComment(Long routineId, RoutineCommentRequest request) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public CreateRoutineCommentResponse createComment(Long routineId,
+                                                      RoutineCommentRequest request,
+                                                      OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         Routine routine = getRoutine(routineId);
         Long parentId = request.getParentId();
 
@@ -66,12 +69,19 @@ public class RoutineCommentService {
      * 댓글/대댓글 수정
      */
     @Transactional
-    public EditRoutineCommentResponse editComment(Long routineId, Long commentId, EditFeedJournalCommentRequest request) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public EditRoutineCommentResponse editComment(Long routineId,
+                                                  Long commentId,
+                                                  EditFeedJournalCommentRequest request,
+                                                  OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
 
         RoutineComment routineComment = routineCommentRepository.findByRoutineIdAndId(routineId, commentId).orElseThrow(NotFoundRoutineComment::new);
-        routineComment.updateComment(request.getComment());
 
+        if (!Objects.equals(user.getNickname(), routineComment.getUser().getNickname())) {
+            throw new WrongApproach("작성한 사용자만 수정할 수 있습니다");
+        }
+
+        routineComment.updateComment(request.getComment());
         Long parentId = (routineComment.getParent() != null) ? routineComment.getParent().getId() : null;
 
 
@@ -89,8 +99,11 @@ public class RoutineCommentService {
      * 댓글/대댓글 식제
      */
     @Transactional
-    public void deleteComment(Long routineId, Long commentId) {
-        User user = getUserByEmail("yaejingo@naver.com");
+    public void deleteComment(Long routineId,
+                              Long commentId,
+                              OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         RoutineComment routineComment = routineCommentRepository.findByRoutineIdAndId(routineId, commentId).orElseThrow(NotFoundRoutineComment::new);
 
         String routineWriter = routineComment.getRoutine().getUser().getEmail();
@@ -113,8 +126,11 @@ public class RoutineCommentService {
      */
 
     @Transactional(readOnly = true)
-    public RoutineCommentResponse getRoutineComment(Long routineId, Pageable pageable) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public RoutineCommentResponse getRoutineComment(Long routineId,
+                                                    Pageable pageable,
+                                                    OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         Routine routine = getRoutine(routineId);
         boolean authority = checkAuthority(user, routine);
         int commentCount = routineCommentRepository.countByRoutineIdAndParentIdIsNull(routineId);
@@ -129,8 +145,11 @@ public class RoutineCommentService {
      * 최신순으로 댓글 정렬 : RoutineChildCommentResponse 안에서 처리
      */
     @Transactional(readOnly = true)
-    public RoutineChildCommentResponse getRoutineChildComment(Long routineId, Long commentId) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public RoutineChildCommentResponse getRoutineChildComment(Long routineId,
+                                                              Long commentId,
+                                                              OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         Routine routine = getRoutine(routineId);
         boolean authority = checkAuthority(user, routine);
         int childCommentsCnt = routineCommentRepository.countByRoutineIdAndParentIdIsNotNull(routineId);

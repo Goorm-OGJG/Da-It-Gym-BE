@@ -2,6 +2,7 @@ package com.ogjg.daitgym.like.feedExerciseJournal.service;
 
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundFeedJournal;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundUser;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalLike;
@@ -23,12 +24,13 @@ public class FeedExerciseJournalLikeService {
 
 
     @Transactional
-    public FeedExerciseJournalLikeResponse feedJournalLike(Long feedJournalId) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public FeedExerciseJournalLikeResponse feedJournalLike(Long feedJournalId,
+                                                           OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         FeedExerciseJournal feedExerciseJournal = feedJournalRepository.findById(feedJournalId).orElseThrow(NotFoundFeedJournal::new);
 
 
-        if (!feedJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(user.getEmail(),feedJournalId)) {
+        if (!feedJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(user.getEmail(), feedJournalId)) {
             feedJournalLikeRepository.save(new FeedExerciseJournalLike(user, feedExerciseJournal));
         }
         int likeCount = feedJournalLikeRepository.countByFeedJournalLikePkFeedExerciseJournalId(feedJournalId);
@@ -36,12 +38,14 @@ public class FeedExerciseJournalLikeService {
     }
 
     @Transactional
-    public FeedExerciseJournalLikeResponse feedJournalUnLike(Long feedJournalId) {
-        User user = getUserByEmail("yaejingo@gmail.com");
+    public FeedExerciseJournalLikeResponse feedJournalUnLike(Long feedJournalId,
+                                                             OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        User user = getUserByEmail(oAuth2JwtUserDetails.getEmail());
         FeedExerciseJournal feedExerciseJournal = feedJournalRepository.findById(feedJournalId).orElseThrow(NotFoundFeedJournal::new);
 
 
-        if (feedJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(user.getEmail(),feedJournalId)) {
+        if (feedJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(user.getEmail(), feedJournalId)) {
             feedJournalLikeRepository.delete(new FeedExerciseJournalLike(user, feedExerciseJournal));
         }
         int likeCount = feedJournalLikeRepository.countByFeedJournalLikePkFeedExerciseJournalId(feedJournalId);
