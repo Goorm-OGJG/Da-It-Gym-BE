@@ -1,9 +1,7 @@
 package com.ogjg.daitgym.config.security;
 
-import com.ogjg.daitgym.config.security.jwt.handler.JwtAuthenticationEntryPoint;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationProvider;
-import com.ogjg.daitgym.config.security.jwt.filter.JwtAccessTokenAuthenticationFilter;
-import com.ogjg.daitgym.config.security.jwt.filter.JwtRefreshTokenAuthenticationFilter;
+import com.ogjg.daitgym.config.security.jwt.handler.JwtAuthenticationEntryPoint;
 import com.ogjg.daitgym.config.security.oauth.CustomOAuth2UserService;
 import com.ogjg.daitgym.domain.Role;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +15,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -71,16 +68,16 @@ public class SecurityConfig {
                                         .frameOptions((frameOptionsConfig) -> frameOptionsConfig.sameOrigin())
                         )
                 )
-                .addFilterBefore(jwtAccessTokenAuthenticationFilter(), OAuth2AuthorizationRequestRedirectFilter.class)
-                .addFilterAfter(jwtRefreshTokenAuthenticationFilter(), JwtAccessTokenAuthenticationFilter.class)
+//                .addFilterBefore(jwtAccessTokenAuthenticationFilter(), OAuth2AuthorizationRequestRedirectFilter.class)
+//                .addFilterAfter(jwtRefreshTokenAuthenticationFilter(), JwtAccessTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(
                         authorize -> authorize
                                 .requestMatchers(CorsUtils::isPreFlightRequest)
                                 .permitAll()
+                                .requestMatchers("/**").permitAll()
                                 .requestMatchers("/api/admins/**").hasRole(Role.ADMIN.name())
                                 .requestMatchers("/api/trainers/**").hasRole(Role.TRAINER.name())
                                 .requestMatchers("/api/profiles/**").hasRole(Role.USER.name())
-                                .requestMatchers("/**").permitAll()
                                 .anyRequest().authenticated()
                 ).exceptionHandling((exceptionHandle) -> exceptionHandle
                         .accessDeniedHandler(accessDeniedHandler)
@@ -118,17 +115,17 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager() throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
-    @Bean
-    public JwtAccessTokenAuthenticationFilter jwtAccessTokenAuthenticationFilter() throws Exception {
-        authenticationManagerBuilder.authenticationProvider(jwtAuthenticationProvider());
-        return new JwtAccessTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint(), permitJwtUrlList);
-    }
-
-    @Bean
-    public JwtRefreshTokenAuthenticationFilter jwtRefreshTokenAuthenticationFilter() throws Exception {
-        return new JwtRefreshTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint());
-    }
+//
+//    @Bean
+//    public JwtAccessTokenAuthenticationFilter jwtAccessTokenAuthenticationFilter() throws Exception {
+//        authenticationManagerBuilder.authenticationProvider(jwtAuthenticationProvider());
+//        return new JwtAccessTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint(), permitJwtUrlList);
+//    }
+//
+//    @Bean
+//    public JwtRefreshTokenAuthenticationFilter jwtRefreshTokenAuthenticationFilter() throws Exception {
+//        return new JwtRefreshTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint());
+//    }
 
     @Bean
     public AuthenticationProvider jwtAuthenticationProvider() {
