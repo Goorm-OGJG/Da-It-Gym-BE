@@ -3,6 +3,8 @@ package com.ogjg.daitgym.feed.repository;
 
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
+import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
+import com.ogjg.daitgym.feed.dto.response.QFeedDetailResponse;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.ogjg.daitgym.domain.QUser.user;
 import static com.ogjg.daitgym.domain.exercise.QExercise.exercise;
@@ -164,6 +167,30 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                 .join(exerciseJournal).on(feedExerciseJournal.exerciseJournal.id.eq(exerciseJournal.id)).fetchJoin();
 
         return PageableExecutionUtils.getPage(userFeedJournalCollections, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 피드 운동일지 피드부분 상세보기
+     */
+    public Optional<FeedDetailResponse> feedDetail(
+            Long feedJournalId
+    ) {
+        FeedDetailResponse result = jpaQueryFactory
+                .select(
+                        new QFeedDetailResponse(
+                                feedExerciseJournal.id,
+                                user.nickname,
+                                user.imageUrl,
+                                feedExerciseJournal.createdAt
+                        )
+                )
+                .from(feedExerciseJournal)
+                .join(feedExerciseJournal.exerciseJournal, exerciseJournal)
+                .join(user).on(exerciseJournal.user.email.eq(user.email))
+                .where(feedExerciseJournal.id.eq(feedJournalId))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
 

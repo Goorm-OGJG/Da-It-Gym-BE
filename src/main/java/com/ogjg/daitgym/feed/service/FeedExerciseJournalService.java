@@ -8,8 +8,10 @@ import com.ogjg.daitgym.domain.feed.FeedExerciseJournalCollection;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalImage;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
+import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
+import com.ogjg.daitgym.feed.dto.response.FeedImageDto;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalCollectionRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalImageRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
@@ -181,6 +183,33 @@ public class FeedExerciseJournalService {
      * todo
      * 피드 운동일지 상세정보 가져오기
      */
+    public FeedDetailResponse feedDetail(
+            Long feedJournalId, String email
+    ) {
+        FeedDetailResponse feedDetail = feedExerciseJournalRepository.feedDetail(feedJournalId)
+                .orElseThrow(NotFoundFeedJournal::new);
+
+        feedDetail.setFeedDetails(
+                feedExerciseJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(email, feedJournalId),
+                feedExerciseJournalLikes(feedJournalId),
+                feedExerciseJournalScrapCounts(feedJournalId),
+                feedImageListsDto(feedJournalHelperService.findFeedJournalById(feedJournalId))
+        );
+
+        return feedDetail;
+    }
+
+    /**
+     * 피드 이미지목록 Dto로 변환
+     */
+    private List<FeedImageDto> feedImageListsDto(FeedExerciseJournal feedExerciseJournal){
+        return findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal)
+                .stream()
+                .map(feedExerciseJournalImage -> new FeedImageDto(
+                        feedExerciseJournalImage.getId(), feedExerciseJournalImage.getImageUrl())
+                )
+                .toList();
+    }
 
     /**
      * 운동일지로 피드 운동일지 찾기
