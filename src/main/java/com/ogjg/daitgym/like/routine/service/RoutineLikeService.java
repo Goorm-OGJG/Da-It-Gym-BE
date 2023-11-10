@@ -2,12 +2,12 @@ package com.ogjg.daitgym.like.routine.service;
 
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundUser;
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
-import com.ogjg.daitgym.comment.routine.repository.RoutineRepository;
-import com.ogjg.daitgym.domain.Routine;
-import com.ogjg.daitgym.domain.RoutineLike;
 import com.ogjg.daitgym.domain.User;
+import com.ogjg.daitgym.domain.routine.Routine;
+import com.ogjg.daitgym.domain.routine.RoutineLike;
 import com.ogjg.daitgym.like.routine.dto.RoutineLikeResponse;
 import com.ogjg.daitgym.like.routine.repository.RoutineLikeRepository;
+import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -14,3 +14,5 @@ public interface FollowRepository extends JpaRepository<Follow, Follow.PK>, Foll
 
     Optional<List<Follow>> findAllByTargetEmail(String followingEmail);
 
+}
+

@@ -14,11 +14,11 @@ import com.ogjg.daitgym.routine.repository.ExerciseDetailRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.print.Pageable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -38,9 +38,9 @@ public class RoutineService {
     private final RoutineLikeRepository routineLikeRepository;
 
     @Transactional(readOnly = true)
-    public RoutineListResponseDto getRoutines(Pageable pageable, String email) {
+    public RoutineListResponseDto getRoutines(Pageable pageable, Integer division, String email) {
 
-        Slice<Routine> routines = routineRepository.findAll(pageable)
+        Slice<Routine> routines = routineRepository.findAllByDivision(division, pageable)
                 .orElseThrow(NotFoundRoutine::new);
 
         return getRoutineListResponseDto(routines, email);
@@ -74,15 +74,15 @@ public class RoutineService {
     }
 
     @Transactional(readOnly = true)
-    public RoutineListResponseDto getUserRoutines(String userEmail, Pageable pageable) {
-        Slice<Routine> routines = routineRepository.findAllByUserEmail(userEmail, pageable)
+    public RoutineListResponseDto getUserRoutines(String userEmail, Integer division, Pageable pageable) {
+        Slice<Routine> routines = routineRepository.findByDivisionAndUserEmail(division, userEmail, pageable)
                 .orElseThrow(NotFoundRoutine::new);
 
         return getRoutineListResponseDto(routines, userEmail);
     }
 
     @Transactional(readOnly = true)
-    public RoutineListResponseDto getFollowerRoutines(Pageable pageable, String myEmail) {
+    public RoutineListResponseDto getFollowerRoutines(Pageable pageable, Integer division, String myEmail) {
 
         List<String> followingEmails = followRepository.findAllByTargetEmail(myEmail)
                 .orElse(Collections.emptyList())
@@ -90,7 +90,7 @@ public class RoutineService {
                 .map(follow -> follow.getTarget().getEmail())
                 .toList();
 
-        Slice<Routine> routines = routineRepository.findByUserEmailIn(followingEmails, pageable)
+        Slice<Routine> routines = routineRepository.findByDivisionAndUserEmailIn(division, followingEmails, pageable)
                 .orElseThrow(NotFoundRoutine::new);
 
         return getRoutineListResponseDto(routines, myEmail);
@@ -138,7 +138,7 @@ public class RoutineService {
 
                                 return ExerciseDto.builder()
                                         .id(exerciseDetail.getExercise().getId())
-                                        .order(exerciseDetail.getOrder())
+                                        .order(exerciseDetail.getExerciseOrder())
                                         .name(exerciseDetail.getExercise().getName())
                                         .part(exerciseDetail.getExercise().getExercisePart().getPart())
                                         .restTime(new RestTimeDto(

@@ -38,6 +38,8 @@ public class Routine extends BaseEntity {
 
     private int duration;
 
+    private int division;
+
     @Enumerated(STRING)
     private UnitType unitType;
 
