@@ -1,7 +1,7 @@
 package com.ogjg.daitgym.comment.routine.dto.response;
 
 import com.ogjg.daitgym.comment.routine.dto.RoutineCommentDto;
-import com.ogjg.daitgym.domain.RoutineComment;
+import com.ogjg.daitgym.domain.routine.RoutineComment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;

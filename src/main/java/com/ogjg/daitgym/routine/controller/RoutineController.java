@@ -8,13 +8,10 @@ import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
 import com.ogjg.daitgym.routine.service.RoutineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
 
 @Slf4j
 @RestController
@@ -27,8 +24,9 @@ public class RoutineController {
     @GetMapping
     public ApiResponse<RoutineListResponseDto> getRoutines(
             Pageable pageable,
+            @RequestParam(value = "division", required = false) Integer division,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
-        RoutineListResponseDto routines = routineService.getRoutines(pageable, oAuth2JwtUserDetails.getEmail());
+        RoutineListResponseDto routines = routineService.getRoutines(pageable, division, oAuth2JwtUserDetails.getEmail());
 
         return new ApiResponse<>(ErrorCode.SUCCESS, routines);
     }
@@ -36,8 +34,9 @@ public class RoutineController {
     @GetMapping("/{userEmail}")
     public ApiResponse<RoutineListResponseDto> getUserRoutines(
             @PathVariable("userEmail") String userEmail,
-            Pageable pageable) {
-        RoutineListResponseDto userRoutines = routineService.getUserRoutines(userEmail, pageable);
+            Pageable pageable,
+            @RequestParam(value = "division", required = false) Integer division) {
+        RoutineListResponseDto userRoutines = routineService.getUserRoutines(userEmail, division, pageable);
 
         return new ApiResponse<>(ErrorCode.SUCCESS, userRoutines);
     }
@@ -45,9 +44,10 @@ public class RoutineController {
     @GetMapping("/following")
     public ApiResponse<RoutineListResponseDto> getFollowerRoutines(
             Pageable pageable,
+            @RequestParam(value = "division", required = false) Integer division,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
 
-        RoutineListResponseDto routinesOfFollowing = routineService.getFollowerRoutines(pageable, oAuth2JwtUserDetails.getEmail());
+        RoutineListResponseDto routinesOfFollowing = routineService.getFollowerRoutines(pageable, division, oAuth2JwtUserDetails.getEmail());
 
         return new ApiResponse<>(ErrorCode.SUCCESS, routinesOfFollowing);
     }

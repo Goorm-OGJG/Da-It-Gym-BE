@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.comment.routine.dto;
 
-import com.ogjg.daitgym.domain.RoutineComment;
+import com.ogjg.daitgym.domain.routine.RoutineComment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
