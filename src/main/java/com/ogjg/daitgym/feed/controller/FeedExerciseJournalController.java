@@ -3,6 +3,7 @@ package com.ogjg.daitgym.feed.controller;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
+import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
@@ -100,7 +101,7 @@ public class FeedExerciseJournalController {
      * 피드 운동일지 상세보기
      */
     @GetMapping("{journalId}/journal-detail")
-    public ApiResponse<UserJournalDetailResponse> feedJournalDetail(
+    public ApiResponse<UserJournalDetailResponse> feedExerciseJournalDetail(
             @PathVariable("journalId") Long journalId
     ) {
         return new ApiResponse<>(
@@ -108,4 +109,21 @@ public class FeedExerciseJournalController {
         );
     }
 
+    /**
+     * 피드 상세보기
+     */
+    @GetMapping("{feedJournalId}/feed-details")
+    public ApiResponse<FeedDetailResponse> feedDetail(
+            @PathVariable("feedJournalId") Long feedJournalId,
+            //todo token useremail
+            String email
+
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                feedExerciseJournalService.feedDetail(feedJournalId, email1)
+        );
+    }
 }
