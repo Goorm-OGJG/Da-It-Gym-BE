@@ -1,13 +1,12 @@
 package com.ogjg.daitgym.domain.routine;
 
 import com.ogjg.daitgym.domain.BaseEntity;
+import com.ogjg.daitgym.domain.TimeTemplate;
 import com.ogjg.daitgym.domain.exercise.Exercise;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalTime;
 
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -38,10 +37,10 @@ public class ExerciseDetail extends BaseEntity {
 
     private int exerciseOrder;
 
-    private LocalTime restTime;
+    private TimeTemplate restTime;
 
     @Builder
-    public ExerciseDetail(Day day, Exercise exercise, int setCount, int repetitionCount, int weight, int exerciseOrder, LocalTime restTime) {
+    public ExerciseDetail(Day day, Exercise exercise, int setCount, int repetitionCount, int weight, int exerciseOrder, TimeTemplate restTime) {
         this.day = day;
         this.exercise = exercise;
         this.setCount = setCount;
@@ -49,5 +48,9 @@ public class ExerciseDetail extends BaseEntity {
         this.weight = weight;
         this.exerciseOrder = exerciseOrder;
         this.restTime = restTime;
+    }
+
+    public void setDay(Day day) {
+        this.day = day;
     }
 }

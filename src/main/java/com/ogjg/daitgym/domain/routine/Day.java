@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.domain.routine;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,9 +24,20 @@ public class Day {
     @JoinColumn(name = "routine_id")
     private Routine routine;
 
-    @OneToMany(mappedBy = "day", fetch = LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "day", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExerciseDetail> exerciseDetails;
 
     private int dayNumber;
 
+    @Builder
+    public Day(Routine routine, List<ExerciseDetail> exerciseDetails, int dayNumber) {
+        this.routine = routine;
+        this.exerciseDetails = exerciseDetails;
+        this.dayNumber = dayNumber;
+    }
+
+    public void addExerciseDetail(ExerciseDetail exerciseDetail) {
+        this.exerciseDetails.add(exerciseDetail);
+        exerciseDetail.setDay(this);
+    }
 }
