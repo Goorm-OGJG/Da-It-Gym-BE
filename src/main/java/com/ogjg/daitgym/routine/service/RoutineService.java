@@ -18,6 +18,7 @@ import com.ogjg.daitgym.routine.repository.DayRepository;
 import com.ogjg.daitgym.routine.repository.ExerciseDetailRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.user.exception.NotFoundUser;
+import com.ogjg.daitgym.user.exception.UnauthorizedUser;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -210,5 +211,17 @@ public class RoutineService {
                 });
             });
         });
+    }
+
+    @Transactional
+    public void deleteRoutine(Long routineId, String email) {
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(NotFoundRoutine::new);
+
+        if (!routine.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedUser("사용자에게 루틴을 삭제할 권한이 없습니다.");
+        }
+
+        routineRepository.deleteById(routineId);
     }
 }

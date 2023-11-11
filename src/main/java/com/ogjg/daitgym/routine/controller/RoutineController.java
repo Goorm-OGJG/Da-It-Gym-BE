@@ -72,4 +72,13 @@ public class RoutineController {
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
+
+    @DeleteMapping("/{routineId}")
+    public ApiResponse<Void> deleteRoutine(
+            @PathVariable("routineId") Long routineId,
+            @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        routineService.deleteRoutine(routineId, oAuth2JwtUserDetails.getEmail());
+
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
 }
