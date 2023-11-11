@@ -2,9 +2,11 @@ package com.ogjg.daitgym.routine.service;
 
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
 import com.ogjg.daitgym.domain.TimeTemplate;
+import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.routine.Day;
 import com.ogjg.daitgym.domain.routine.ExerciseDetail;
 import com.ogjg.daitgym.domain.routine.Routine;
+import com.ogjg.daitgym.domain.routine.UserRoutineCollection;
 import com.ogjg.daitgym.exercise.exception.NotFoundExercise;
 import com.ogjg.daitgym.exercise.repository.ExerciseRepository;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
@@ -17,6 +19,7 @@ import com.ogjg.daitgym.routine.exception.NoExerciseInRoutine;
 import com.ogjg.daitgym.routine.repository.DayRepository;
 import com.ogjg.daitgym.routine.repository.ExerciseDetailRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
+import com.ogjg.daitgym.routine.repository.UserRoutineCollectionRepository;
 import com.ogjg.daitgym.user.exception.NotFoundUser;
 import com.ogjg.daitgym.user.exception.UnauthorizedUser;
 import com.ogjg.daitgym.user.repository.UserRepository;
@@ -40,11 +43,11 @@ import static com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto.*;
 public class RoutineService {
     private final ExerciseRepository exerciseRepository;
     private final UserRepository userRepository;
+    private final UserRoutineCollectionRepository userRoutineCollectionRepository;
 
     private final RoutineRepository routineRepository;
     private final FollowRepository followRepository;
     private final DayRepository dayRepository;
-    private final ExerciseDetailRepository exerciseDetailRepository;
     private final RoutineLikeRepository routineLikeRepository;
 
     @Transactional(readOnly = true)
@@ -223,5 +226,17 @@ public class RoutineService {
         }
 
         routineRepository.deleteById(routineId);
+    }
+
+    @Transactional
+    public void scrapRoutine(Long routineId, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(NotFoundUser::new);
+
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(NotFoundRoutine::new);
+
+        UserRoutineCollection userRoutineCollection = new UserRoutineCollection(user, routine);
+        userRoutineCollectionRepository.save(userRoutineCollection);
     }
 }
