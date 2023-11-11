@@ -23,4 +23,10 @@ public class TimeTemplate {
         this.minutes = timeTemplate.getMinutes();
         this.seconds = timeTemplate.getSeconds();
     }
+
+    public TimeTemplate(int hours, int minutes, int seconds) {
+        this.hours = hours;
+        this.minutes = minutes;
+        this.seconds = seconds;
+    }
 }

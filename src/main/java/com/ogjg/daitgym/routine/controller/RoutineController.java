@@ -5,6 +5,7 @@ import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
+import com.ogjg.daitgym.routine.dto.RoutineRequestDto;
 import com.ogjg.daitgym.routine.service.RoutineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,5 +61,15 @@ public class RoutineController {
         RoutineDetailsResponseDto routineDetails = routineService.getRoutineDetails(routineId, oAuth2JwtUserDetails.getEmail());
 
         return new ApiResponse<>(ErrorCode.SUCCESS, routineDetails);
+    }
+
+    @PostMapping
+    public ApiResponse<Void> createRoutine(
+            @RequestBody RoutineRequestDto routineRequestDto,
+            @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+
+        routineService.createRoutine(routineRequestDto, oAuth2JwtUserDetails.getEmail());
+
+        return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 }

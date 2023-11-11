@@ -1,17 +1,24 @@
 package com.ogjg.daitgym.routine.service;
 
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
+import com.ogjg.daitgym.domain.TimeTemplate;
 import com.ogjg.daitgym.domain.routine.Day;
+import com.ogjg.daitgym.domain.routine.ExerciseDetail;
 import com.ogjg.daitgym.domain.routine.Routine;
+import com.ogjg.daitgym.exercise.exception.NotFoundExercise;
+import com.ogjg.daitgym.exercise.repository.ExerciseRepository;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
 import com.ogjg.daitgym.like.routine.repository.RoutineLikeRepository;
 import com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto;
 import com.ogjg.daitgym.routine.dto.RoutineDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
+import com.ogjg.daitgym.routine.dto.RoutineRequestDto;
 import com.ogjg.daitgym.routine.exception.NoExerciseInRoutine;
 import com.ogjg.daitgym.routine.repository.DayRepository;
 import com.ogjg.daitgym.routine.repository.ExerciseDetailRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
+import com.ogjg.daitgym.user.exception.NotFoundUser;
+import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +37,8 @@ import static com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto.*;
 @Service
 @RequiredArgsConstructor
 public class RoutineService {
+    private final ExerciseRepository exerciseRepository;
+    private final UserRepository userRepository;
 
     private final RoutineRepository routineRepository;
     private final FollowRepository followRepository;
@@ -142,9 +151,9 @@ public class RoutineService {
                                         .name(exerciseDetail.getExercise().getName())
                                         .part(exerciseDetail.getExercise().getExercisePart().getPart())
                                         .restTime(new RestTimeDto(
-                                                exerciseDetail.getRestTime().getHour(),
-                                                exerciseDetail.getRestTime().getMinute(),
-                                                exerciseDetail.getRestTime().getSecond()))
+                                                exerciseDetail.getRestTime().getHours(),
+                                                exerciseDetail.getRestTime().getMinutes(),
+                                                exerciseDetail.getRestTime().getSeconds()))
                                         .exerciseSets(Collections.singletonList(exerciseSet))
                                         .build();
                             })
@@ -159,5 +168,47 @@ public class RoutineService {
                 })
                 .toList();
         return dayDtos;
+    }
+
+    @Transactional
+    public void createRoutine(RoutineRequestDto routineRequestDto, String email) {
+
+        Routine routine = Routine.builder()
+                .user(userRepository.findByEmail(email)
+                        .orElseThrow(NotFoundUser::new))
+                .title(routineRequestDto.getTitle())
+                .content(routineRequestDto.getDescription())
+                .duration(routineRequestDto.getRoutine().getDays().size())
+                .build();
+
+        routineRepository.save(routine);
+
+        routineRequestDto.getRoutine().getDays().forEach(dayDto -> {
+            Day day = Day.builder()
+                    .routine(routine)
+                    .dayNumber(dayDto.getOrder())
+                    .build();
+
+            dayRepository.save(day);
+
+            dayDto.getExercises().forEach(exerciseDto -> {
+                exerciseDto.getExerciseSets().forEach(exerciseSetDto -> {
+                    RoutineRequestDto.RestTimeDto restTime = exerciseDto.getRestTime();
+                    TimeTemplate timeTemplate = new TimeTemplate(restTime.getHours(), restTime.getMinutes(), restTime.getSeconds());
+                    ExerciseDetail exerciseDetail = ExerciseDetail.builder()
+                            .day(day)
+                            .exercise(exerciseRepository.findByName(exerciseDto.getName())
+                                    .orElseThrow(NotFoundExercise::new))
+                            .exerciseOrder(exerciseDto.getOrder())
+                            .setCount(exerciseSetDto.getOrder())
+                            .repetitionCount(exerciseSetDto.getCounts())
+                            .weight(exerciseSetDto.getWeights())
+                            .restTime(timeTemplate)
+                            .build();
+
+                    day.addExerciseDetail(exerciseDetail);
+                });
+            });
+        });
     }
 }

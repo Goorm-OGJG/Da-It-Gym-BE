@@ -4,6 +4,7 @@ import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.UnitType;
 import com.ogjg.daitgym.domain.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -48,5 +49,15 @@ public class Routine extends BaseEntity {
 
     public int getLikesCount() {
         return routineLikes.size();
+    }
+
+    @Builder
+    public Routine(User user, Routine originalRoutine, String title, String content, int duration, int division) {
+        this.user = user;
+        this.originalRoutine = originalRoutine;
+        this.title = title;
+        this.content = content;
+        this.duration = duration;
+        this.division = division;
     }
 }
