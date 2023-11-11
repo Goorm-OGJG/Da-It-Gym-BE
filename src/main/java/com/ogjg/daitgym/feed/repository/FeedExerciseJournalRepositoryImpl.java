@@ -115,11 +115,6 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
     }
 
     /**
-     * 피드 운동일지 상세보기
-     */
-
-
-    /**
      * 유저 페이지 피드 운동일지 목록 가져오기
      */
     public Page<FeedExerciseJournal> userFeedExerciseJournalLists(

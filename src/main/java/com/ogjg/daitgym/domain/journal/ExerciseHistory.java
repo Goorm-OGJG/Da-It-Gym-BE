@@ -34,12 +34,25 @@ public class ExerciseHistory extends BaseEntity {
 
     private boolean isCompleted = false;
 
-    public static ExerciseHistory createExerciseHistory(ExerciseList exerciseList, ExerciseHistoryRequest exerciseHistoryRequest) {
+    public static ExerciseHistory createExerciseHistory(
+            ExerciseList exerciseList, ExerciseHistoryRequest exerciseHistoryRequest
+    ) {
         return builder()
                 .exerciseList(exerciseList)
                 .setNum(exerciseHistoryRequest.getSetNum())
                 .weight(exerciseHistoryRequest.getWeights())
                 .repetitionCount(exerciseHistoryRequest.getCounts())
+                .build();
+    }
+
+    public static ExerciseHistory replicateExerciseHistory(
+            ExerciseList replicatedExerciseList, ExerciseHistory originalExerciseHistory
+    ) {
+        return builder()
+                .exerciseList(replicatedExerciseList)
+                .setNum(originalExerciseHistory.getSetNum())
+                .weight(originalExerciseHistory.getWeight())
+                .repetitionCount(originalExerciseHistory.getRepetitionCount())
                 .build();
     }
 

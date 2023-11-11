@@ -196,4 +196,22 @@ public class ExerciseJournalController {
         exerciseJournalService.exerciseJournalShare(journalId, email1, exerciseJournalShareRequest, imgFiles);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
+
+    /**
+     * 피드 운동일지에서 다른사람의 일지 가져오기
+     */
+    @PostMapping("/{journalId}/replication")
+    public ApiResponse<Void> replicationExerciseJournal(
+            @PathVariable("journalId") Long journalId,
+            @RequestBody ReplicationExerciseJournalRequest replicationExerciseJournalRequest,
+//            todo 토큰에서 email
+            String email
+    ) {
+        String email1 = "dlehdwls21@naver.com";
+        exerciseJournalService.replicationExerciseJournal(
+                email1, journalId, replicationExerciseJournalRequest
+        );
+
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
 }

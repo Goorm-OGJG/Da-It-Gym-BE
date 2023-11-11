@@ -53,6 +53,18 @@ public class ExerciseList extends BaseEntity {
                 .build();
     }
 
+    public static ExerciseList replicateExerciseList(
+            ExerciseJournal replicatedExerciseJournal,
+            ExerciseList originalExerciseList
+    ) {
+        return builder()
+                .exerciseJournal(replicatedExerciseJournal)
+                .exercise(originalExerciseList.exercise)
+                .exerciseNum(originalExerciseList.getExerciseNum())
+                .restTime(new TimeTemplate(originalExerciseList.restTime))
+                .build();
+    }
+
     public void changeRestTime(
             UpdateRestTimeRequest updateRestTimeRequest
     ) {

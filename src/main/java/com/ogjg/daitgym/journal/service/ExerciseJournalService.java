@@ -7,6 +7,7 @@ import com.ogjg.daitgym.domain.exercise.Exercise;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
+import com.ogjg.daitgym.domain.journal.ExerciseJournalReplicationHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseList;
 import com.ogjg.daitgym.exercise.service.ExerciseService;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
@@ -23,8 +24,8 @@ import com.ogjg.daitgym.journal.exception.NotFoundJournal;
 import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
+import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalReplicationHistoryRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
-
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -46,16 +48,63 @@ public class ExerciseJournalService {
     private final UserRepository userRepository;
     private final ExerciseService exerciseService;
     private final FeedExerciseJournalService feedExerciseJournalService;
+    private final ExerciseJournalReplicationHistoryRepository exerciseJournalReplicationHistoryRepository;
 
     /**
      * 빈 운동일지 생성하기
      */
     @Transactional
-    public void createJournal(String email, LocalDate journalDate) {
-        exerciseJournalRepository.save(
+    public ExerciseJournal createJournal(String email, LocalDate journalDate) {
+        return exerciseJournalRepository.save(
                 ExerciseJournal.createJournal(findUserByEmail(email), journalDate)
         );
     }
+
+    /**
+     * 운동일지에 운동 추가하기
+     */
+    @Transactional
+    public void createExerciseList(
+            String email,
+            ExerciseListRequest exerciseListRequest
+    ) {
+
+        ExerciseJournal userJournal = isAuthorizedForJournal(email, exerciseListRequest.getId());
+        Exercise userExercise = exerciseService.findExercise(exerciseListRequest.getName());
+
+        ExerciseList exerciseList = exerciseListRepository.save(
+                ExerciseList.createExercise(
+                        userJournal,
+                        userExercise,
+                        exerciseListRequest
+                )
+        );
+
+        List<ExerciseHistoryRequest> defaultExerciseHistory =
+                exerciseListRequest.getExerciseSets()
+                        .stream()
+                        .map(exerciseHistoryRequest -> exerciseHistoryRequest.putExerciseListId(exerciseList.getId()))
+                        .toList();
+
+        defaultExerciseHistory.forEach(
+                exerciseHistoryRequest -> createExerciseHistory(email, exerciseHistoryRequest)
+        );
+    }
+
+    /**
+     * 운동목록에 운동 기록 생성하기
+     */
+    @Transactional
+    public void createExerciseHistory(String email, ExerciseHistoryRequest exerciseHistoryRequest) {
+
+        ExerciseList exerciseList = findExerciseList(exerciseHistoryRequest.getId());
+        isAuthorizedForJournal(email, exerciseList.getExerciseJournal().getId());
+
+        exerciseHistoryRepository.save(
+                ExerciseHistory.createExerciseHistory(exerciseList, exerciseHistoryRequest)
+        );
+    }
+
 
     /**
      * 운동일지 완료하기
@@ -68,6 +117,45 @@ public class ExerciseJournalService {
         isAuthorizedForJournal(email, journalId);
         ExerciseJournal exerciseJournal = findExerciseJournal(journalId);
         exerciseJournal.journalComplete(exerciseJournalCompleteRequest);
+    }
+
+
+    /**
+     * 다른 사람의 운동일지 가져오기
+     */
+    @Transactional
+    public void replicationExerciseJournal(
+            String email, Long originalJournalId,
+            ReplicationExerciseJournalRequest replicationExerciseJournalRequest
+    ) {
+//쿼리를 한방에 가져오기
+        exerciseJournalRepository.fetchCompleteExerciseJournalByJournalId(originalJournalId);
+
+        ExerciseJournal originalJournal = findExerciseJournal(originalJournalId);
+        List<ExerciseList> originalExerciseLists = findExerciseListByJournal(originalJournal);
+
+        ExerciseJournal replicatedUserJournal = createJournal(email, replicationExerciseJournalRequest.getJournalDate());
+
+        List<ExerciseHistory> replicatedExerciseHistories = new ArrayList<>();
+        originalExerciseLists.forEach(
+                originalJournalList -> {
+                    ExerciseList replicatedExerciseList = exerciseListRepository.save(
+                            ExerciseList.replicateExerciseList(replicatedUserJournal, originalJournalList)
+                    );
+
+                    findExerciseHistoryByExerciseLists(originalJournalList).forEach(
+                            exerciseHistory -> replicatedExerciseHistories.add(
+                                    ExerciseHistory.replicateExerciseHistory(replicatedExerciseList, exerciseHistory)
+                            )
+                    );
+                }
+        );
+
+        exerciseHistoryRepository.saveAll(replicatedExerciseHistories);
+
+        exerciseJournalReplicationHistoryRepository.save(
+                new ExerciseJournalReplicationHistory(findUserByEmail(email), originalJournal)
+        );
     }
 
     /**
@@ -92,8 +180,8 @@ public class ExerciseJournalService {
 
     /**
      * 운동일지 공개여부 확인
-     * */
-    private void checkDisclosure(Long journalId){
+     */
+    private void checkDisclosure(Long journalId) {
         if (!findExerciseJournal(journalId).isVisible())
             throw new UserNotAuthorizedForJournal("공개된 운동일지가 아닙니다");
     }
@@ -176,50 +264,6 @@ public class ExerciseJournalService {
         exerciseHistory.updateHistory(updateExerciseHistoryRequest);
     }
 
-    /**
-     * 운동일지에 운동 추가하기
-     */
-    @Transactional
-    public void createExerciseList(
-            String email,
-            ExerciseListRequest exerciseListRequest
-    ) {
-
-        ExerciseJournal userJournal = isAuthorizedForJournal(email, exerciseListRequest.getId());
-        Exercise userExercise = exerciseService.findExercise(exerciseListRequest.getName());
-
-        ExerciseList exerciseList = exerciseListRepository.save(
-                ExerciseList.createExercise(
-                        userJournal,
-                        userExercise,
-                        exerciseListRequest
-                )
-        );
-
-        List<ExerciseHistoryRequest> defaultExerciseHistory =
-                exerciseListRequest.getExerciseSets()
-                        .stream()
-                        .map(exerciseHistoryRequest -> exerciseHistoryRequest.putExerciseListId(exerciseList.getId()))
-                        .toList();
-
-        defaultExerciseHistory.forEach(
-                exerciseHistoryRequest -> createExerciseHistory(email, exerciseHistoryRequest)
-        );
-    }
-
-    /**
-     * 운동목록에 운동 기록 생성하기
-     */
-    @Transactional
-    public void createExerciseHistory(String email, ExerciseHistoryRequest exerciseHistoryRequest) {
-
-        ExerciseList exerciseList = findExerciseList(exerciseHistoryRequest.getId());
-        isAuthorizedForJournal(email, exerciseList.getExerciseJournal().getId());
-
-        exerciseHistoryRepository.save(
-                ExerciseHistory.createExerciseHistory(exerciseList, exerciseHistoryRequest)
-        );
-    }
 
     /**
      * 내 운동일지 목록
@@ -240,6 +284,7 @@ public class ExerciseJournalService {
     /**
      * 내 운동일지 상세보기
      * todo 개별조회로 인한 성능이슈 발생 가능성이 보임 추후 Join을 통해 한번에 가져오도록 개선필요로 보임
+     * => JOIN을 통해 가져오는게 정말 성능적으로 개선이 되는가? 중복된 데이터는?
      */
     @Transactional(readOnly = true)
     public UserJournalDetailResponse userJournalDetail(
@@ -294,7 +339,7 @@ public class ExerciseJournalService {
      * 운동 기록을 DTO로 변환
      */
     private List<UserJournalDetailExerciseHistoryDto> userJournalDetailExerciseHistoryDtos(ExerciseList exerciseList) {
-        return findExerciseHistoryByExerciseList(exerciseList)
+        return findExerciseHistoryByExerciseLists(exerciseList)
                 .stream()
                 .map(UserJournalDetailExerciseHistoryDto::new)
                 .toList();
@@ -310,7 +355,7 @@ public class ExerciseJournalService {
     /**
      * 운동목록으로 운동기록 찾기
      */
-    private List<ExerciseHistory> findExerciseHistoryByExerciseList(
+    private List<ExerciseHistory> findExerciseHistoryByExerciseLists(
             ExerciseList exerciseList
     ) {
         return exerciseHistoryRepository.findAllByExerciseList(exerciseList);
