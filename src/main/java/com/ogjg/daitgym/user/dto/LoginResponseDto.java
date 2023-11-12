@@ -1,38 +1,43 @@
-package com.ogjg.daitgym.config.security.oauth.dto;
+package com.ogjg.daitgym.user.dto;
 
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 @NoArgsConstructor
 public class LoginResponseDto {
-    private String email;
 
     private String nickname;
 
     private String userImg;
 
-    private String initialRequestUrl;
+    private String preferredSplit;
 
     private boolean isAlreadyJoined;
 
-    public LoginResponseDto(String email, String nickname, String userImg, String initialRequestUrl, boolean isAlreadyJoined) {
-        this.email = email;
+    private boolean isAdmin;
+
+    private boolean isDeleted;
+
+    @Builder
+    public LoginResponseDto(String nickname, String userImg, String preferredSplit, boolean isAlreadyJoined, boolean isAdmin, boolean isDeleted) {
         this.nickname = nickname;
         this.userImg = userImg;
-        this.initialRequestUrl = initialRequestUrl;
+        this.preferredSplit = preferredSplit;
         this.isAlreadyJoined = isAlreadyJoined;
+        this.isAdmin = isAdmin;
+        this.isDeleted = isDeleted;
     }
 
-    public static LoginResponseDto of(OAuth2JwtUserDetails oAuth2UserDetails, String initialRequestUrl) {
+    public static LoginResponseDto from(OAuth2JwtUserDetails oAuth2UserDetails) {
         return LoginResponseDto.builder()
-                .nickname(oAuth2UserDetails.getNickname())
-                .email(oAuth2UserDetails.getEmail())
+                .nickname(UUID.randomUUID().toString())
                 .userImg("default")
-                .initialRequestUrl(initialRequestUrl)
                 .isAlreadyJoined(oAuth2UserDetails.isAlreadyJoined())
                 .build();
     }

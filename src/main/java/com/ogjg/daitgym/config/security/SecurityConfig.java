@@ -1,9 +1,9 @@
 package com.ogjg.daitgym.config.security;
 
-import com.ogjg.daitgym.config.security.jwt.handler.JwtAuthenticationEntryPoint;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationProvider;
 import com.ogjg.daitgym.config.security.jwt.filter.JwtAccessTokenAuthenticationFilter;
 import com.ogjg.daitgym.config.security.jwt.filter.JwtRefreshTokenAuthenticationFilter;
+import com.ogjg.daitgym.config.security.jwt.handler.JwtAuthenticationEntryPoint;
 import com.ogjg.daitgym.config.security.oauth.CustomOAuth2UserService;
 import com.ogjg.daitgym.domain.Role;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
@@ -48,16 +49,17 @@ public class SecurityConfig {
 
     private final List<String> permitJwtUrlList = new ArrayList<>(
             List.of(
+
                     "/",
                     "/favicon.ico",
+                    "/login/oauth2/callback/kakao.*",
                     "/login/oauth2/code/.*",
-                    "/oauth2/authorization/.*",
                     "/api/users/token",
                     "/api/token/new",
                     "/health",
                     "/ws/.*",
-                    "/chat/.*"
-
+                    "/chat/.*",
+                    "/h2-console/.*"
             ));
 
     @Bean
@@ -77,10 +79,10 @@ public class SecurityConfig {
                         authorize -> authorize
                                 .requestMatchers(CorsUtils::isPreFlightRequest)
                                 .permitAll()
-                                .requestMatchers("/api/admins/**").hasRole(Role.ADMIN.name())
-                                .requestMatchers("/api/trainers/**").hasRole(Role.TRAINER.name())
-                                .requestMatchers("/api/profiles/**").hasRole(Role.USER.name())
-                                .requestMatchers("/**").permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/api/admins/**")).hasRole(Role.ADMIN.name())
+                                .requestMatchers(new AntPathRequestMatcher("/api/trainers/**")).hasRole(Role.TRAINER.name())
+                                .requestMatchers(new AntPathRequestMatcher("/api/profiles/**")).hasRole(Role.USER.name())
+                                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
                                 .anyRequest().authenticated()
                 ).exceptionHandling((exceptionHandle) -> exceptionHandle
                         .accessDeniedHandler(accessDeniedHandler)
