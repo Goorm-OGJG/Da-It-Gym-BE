@@ -13,12 +13,12 @@ public class RoutineDetailsResponseDto {
     private String title;
     private String description;
     private boolean liked;
-    private int likeCounts;
-    private int scrapCounts;
+    private long likeCounts;
+    private long scrapCounts;
     private RoutineDto routine;
 
     @Builder
-    public RoutineDetailsResponseDto(String writer, String writerImg, LocalDateTime createdAt, String title, String description, boolean liked, int likeCounts, int scrapCounts, RoutineDto routine) {
+    public RoutineDetailsResponseDto(String writer, String writerImg, LocalDateTime createdAt, String title, String description, boolean liked, long likeCounts, long scrapCounts, RoutineDto routine) {
         this.writer = writer;
         this.writerImg = writerImg;
         this.createdAt = createdAt;

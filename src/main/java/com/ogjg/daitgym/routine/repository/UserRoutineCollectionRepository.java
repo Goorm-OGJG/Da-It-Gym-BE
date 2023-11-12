@@ -15,4 +15,6 @@ public interface UserRoutineCollectionRepository extends JpaRepository<UserRouti
     @Query("SELECT urc.routine FROM UserRoutineCollection urc WHERE urc.pk.email = :email")
     Slice<Routine> findRoutinesByUserEmail(@Param("email") String email, Pageable pageable);
 
+    @Query("SELECT COUNT(urc) FROM UserRoutineCollection urc WHERE urc.pk.routineId = :routineId")
+    long countByRoutineId(@Param("routineId") Long routineId);
 }
