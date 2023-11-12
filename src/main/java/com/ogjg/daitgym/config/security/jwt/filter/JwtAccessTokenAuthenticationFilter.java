@@ -30,11 +30,6 @@ public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final List<String> permitUrlList;
 
-    /**
-     * AccessToken, RefreshToken에 사용하는 Provider의 기능이 완전히 같아서 1개의 Provider만 사용
-     * Provider에서 발생한 예외가 AccessToken에서 발생한 예외인지, RefreshToken에서 발생한 예외인지 구분이 필요했습니다.
-     * 그래서 기존 메시지를 집어넣어 되던졌습니다.
-     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (isPermitted(request.getRequestURI())) {
