@@ -39,6 +39,17 @@ public class UserController {
     }
 
     /**
+     * 닉네임 중복 검사
+     */
+    @GetMapping("/check-duplication")
+    public ApiResponse<?> checkNicknameDuplication(
+            @RequestParam("nickname") String nickname
+    ) {
+        String message = userService.checkNicknameDuplication(nickname);
+        return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage(message));
+    }
+
+    /**
      * 닉네임 초기 변경
      */
     @PatchMapping("/nickname")

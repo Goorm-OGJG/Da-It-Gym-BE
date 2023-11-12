@@ -187,6 +187,14 @@ public class UserService {
         return !userRepository.findByEmail(loginEmail).isPresent();
     }
 
+    @Transactional(readOnly = true)
+    public String checkNicknameDuplication(String nickname) {
+        if (isNicknameAlreadyExist(nickname)) {
+            return "중복";
+        }
+        return "사용가능";
+    }
+
     private boolean isNicknameAlreadyExist(String newNickname) {
         return userRepository.findByNickname(newNickname).isPresent();
     }
