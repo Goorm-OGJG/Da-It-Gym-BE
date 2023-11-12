@@ -23,7 +23,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                         new QFollowListDto(
                                 user.imageUrl,
                                 user.nickname,
-                                user.intro,
+                                user.introduction,
                                 inbody.score
                         ))
                 .from(follow)
@@ -40,7 +40,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                         new QFollowListDto(
                                 user.imageUrl,
                                 user.nickname,
-                                user.intro,
+                                user.introduction,
                                 inbody.score
                         )
                 ).from(follow)

@@ -66,6 +66,19 @@ public class UserController {
     }
 
     /**
+     * 회원 탈퇴
+     */
+    @PatchMapping("/withdraw")
+    public ApiResponse<?> withdraw(
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+        String loginEmail = userDetails.getEmail();
+
+        userService.updateUserDeleted(loginEmail);
+        return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage("회원탈퇴 성공"));
+    }
+
+    /**
      * 프로필 불러오기
      */
     @GetMapping("/{nickname}")
