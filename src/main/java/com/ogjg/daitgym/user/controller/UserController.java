@@ -8,6 +8,8 @@ import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
 import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
+import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
+import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
 import com.ogjg.daitgym.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,6 +36,22 @@ public class UserController {
     public ApiResponse<?> logout(HttpServletResponse response) {
         response.setHeader("Set-Cookie", userService.getExpiredResponseCookie().toString());
         return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage("로그아웃 성공"));
+    }
+
+    /**
+     * 닉네임 초기 변경
+     */
+    @PatchMapping("/nickname")
+    public ApiResponse<EditInitialNicknameResponse> editInitialNickname(
+            @RequestBody EditNicknameRequest request,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+        String loginEmail = userDetails.getEmail();
+
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS.changeMessage("닉네임 변경 완료"),
+                userService.editInitialNickname(loginEmail, request)
+        );
     }
 
     /**

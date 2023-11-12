@@ -31,7 +31,7 @@ public enum ErrorCode implements ErrorType {
     REFRESH_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Refresh Token 인증 오류"),
     ACCESS_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Access Token 인증 오류"),
     NOT_FOUND_SCRAPED_USER_ROUTINE(HttpStatus.NOT_FOUND, "404", "스크랩 된 유저의 루틴을 찾을 수 없습니다."),
-
+    ALREADY_EXIST_NICKNAME(HttpStatus.BAD_REQUEST, "400", "중복되는 닉네임입니다."),
     UNAUTHORIZED_USER_ACCESS(HttpStatus.FORBIDDEN, "403", "접근 권한이 부족합니다.")
     ;
 

@@ -13,6 +13,10 @@ import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.exception.NotFoundUser;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.InbodyRepository;
+import com.ogjg.daitgym.domain.User;
+import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
+import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
+import com.ogjg.daitgym.user.exception.AlreadyExistNickname;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
@@ -150,16 +154,6 @@ public class UserService {
         );
     }
 
-    private User findUserByNickname(String nickname) {
-        return userRepository.findByNickname(nickname)
-                .orElseThrow(NotFoundUser::new);
-    }
-
-    private User findUserByEmail(String nickname) {
-        return userRepository.findByEmail(nickname)
-                .orElseThrow(NotFoundUser::new);
-    }
-
     public ResponseCookie getExpiredResponseCookie() {
         return ResponseCookie.from("refreshToken", null)
                 .maxAge(0)
@@ -168,5 +162,42 @@ public class UserService {
                 .secure(true)
                 .sameSite("None")
                 .build();
+    }
+
+    @Transactional
+    public EditInitialNicknameResponse editInitialNickname(String loginEmail, EditNicknameRequest request) {
+        String newNickname = request.getNickname();
+
+        if (isNicknameAlreadyExist(newNickname)) {
+            throw new AlreadyExistNickname();
+        }
+
+        // 해당 메시지를 사용해야하는데 기존 에러코드를 수정할 수는 없어서 임시 사용
+        if (isUserNotFound(loginEmail)) {
+            throw new NotFoundUser("존재하지 않는 회원입니다.");
+        }
+
+        User findUser = findUserByEmail(loginEmail);
+        String nickname = findUser.changeNickname(newNickname);
+
+        return EditInitialNicknameResponse.of(nickname);
+    }
+
+    private boolean isUserNotFound(String loginEmail) {
+        return !userRepository.findByEmail(loginEmail).isPresent();
+    }
+
+    private boolean isNicknameAlreadyExist(String newNickname) {
+        return userRepository.findByNickname(newNickname).isPresent();
+    }
+
+    private User findUserByNickname(String nickname) {
+        return userRepository.findByNickname(nickname)
+                .orElseThrow(NotFoundUser::new);
+    }
+
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(NotFoundUser::new);
     }
 }
