@@ -1,6 +1,8 @@
 package com.ogjg.daitgym.config.security.jwt.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ogjg.daitgym.common.exception.ErrorCode;
+import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationToken;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
@@ -8,6 +10,7 @@ import com.ogjg.daitgym.config.security.jwt.exception.RefreshTokenException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
 
@@ -46,7 +50,16 @@ public class JwtRefreshTokenAuthenticationFilter extends OncePerRequestFilter {
             String accessToken = generateAccessToken(authentication);
             addTokenInHeader(response, accessToken);
 
-            filterChain.doFilter(request, response);
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            ApiResponse<?> apiResponse = new ApiResponse<>(ErrorCode.SUCCESS);
+            String successResponse = objectMapper.writeValueAsString(apiResponse);
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(successResponse);
+            response.getWriter().flush();
+
         } catch (JwtException jwtException) {
             authenticationEntryPoint.commence(
                     request, response,
@@ -60,18 +73,17 @@ public class JwtRefreshTokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private Authentication authenticate(HttpServletRequest request) {
-        String jwt = validAndGetAccessToken(request);
-        Authentication authentication = authenticationManager.authenticate(new JwtAuthenticationToken(jwt));
+        String refreshToken = getRefreshToken(request);
+        Authentication authentication = authenticationManager.authenticate(new JwtAuthenticationToken(refreshToken));
         return authentication;
     }
-
-    private String validAndGetAccessToken(HttpServletRequest request) {
-        String jwt = request.getHeader(HEADER_AUTHORIZATION);
-
-        TokenValidator.validateHasToken(jwt);
-        TokenValidator.validatePrefix(jwt);
-
-        return jwt.substring(TOKEN_PREFIX.length());
+    private String getRefreshToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        return Arrays.stream(cookies)
+                .filter(cookie -> "refreshToken".equals(cookie.getName()))
+                .findFirst()
+                .orElseThrow(RefreshTokenException::new)
+                .getValue();
     }
 
     private static String generateAccessToken(Authentication authentication) {
