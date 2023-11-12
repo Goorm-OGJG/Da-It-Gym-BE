@@ -50,7 +50,7 @@ public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException jwtException) {
             authenticationEntryPoint.commence(
                     request, response,
-                    new AccessTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage() + SPACE + jwtException.getMessage())
+                    new AccessTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage())
             );
         }
     }
