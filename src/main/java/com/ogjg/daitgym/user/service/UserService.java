@@ -56,7 +56,7 @@ public class UserService {
 
         return GetUserProfileGetResponse.builder()
                 .healthClubName(user.getHealthClub().getName())
-                .journalCount(exerciseJournalRepository.countByUserEmail(user.getEmail()))
+//                .journalCount(exerciseJournalRepository.countByUserEmail(user.getEmail()))
                 .followerCount(followRepository.countByFollowPKTargetEmail(user.getEmail()))
                 .followingCount(followRepository.countByFollowPKFollowerEmail(user.getEmail()))
                 .build();
@@ -173,7 +173,7 @@ public class UserService {
         }
 
         // 해당 메시지를 사용해야하는데 기존 에러코드를 수정할 수는 없어서 임시 사용
-        if (isUserNotFound(loginEmail)) {
+        if (isUserNotFoundByEmail(loginEmail)) {
             throw new NotFoundUser("존재하지 않는 회원입니다.");
         }
 
@@ -197,6 +197,20 @@ public class UserService {
 
     private boolean isNicknameAlreadyExist(String newNickname) {
         return userRepository.findByNickname(newNickname).isPresent();
+    }
+
+    @Transactional(readOnly = true)
+    public void updateUserDeleted(String loginEmail) {
+        if (isUserNotFoundByEmail(loginEmail)) {
+            throw new NotFoundUser("존재하지 않는 회원입니다.");
+        }
+
+        User findUser = findUserByEmail(loginEmail);
+        findUser.withdraw();
+    }
+
+    private boolean isUserNotFoundByEmail(String loginEmail) {
+        return !userRepository.findByEmail(loginEmail).isPresent();
     }
 
     private User findUserByNickname(String nickname) {

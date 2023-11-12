@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.domain;
 
+import com.ogjg.daitgym.domain.routine.Routine;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Builder;
@@ -11,7 +12,7 @@ import org.hibernate.annotations.Where;
 import java.time.LocalDate;
 
 import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.FetchType.*;
+import static jakarta.persistence.FetchType.LAZY;
 import static lombok.AccessLevel.PROTECTED;
 
 @Getter
@@ -79,6 +80,10 @@ public class User extends BaseEntity {
     public String changeNickname(String newNickname) {
         this.nickname = newNickname;
         return this.nickname;
+    }
+
+    public void withdraw() {
+        this.isDeleted = true;
     }
 
     public void changeHealthClub(HealthClub newHealthClub) {
