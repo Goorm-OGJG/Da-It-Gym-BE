@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +26,15 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    /**
+     * 로그아웃 - 메시지 지정 필요
+     */
+    @PostMapping("/logout")
+    public ApiResponse<?> logout(HttpServletResponse response) {
+        response.setHeader("Set-Cookie", userService.getExpiredResponseCookie().toString());
+        return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage("로그아웃 성공"));
+    }
 
     /**
      * 프로필 불러오기

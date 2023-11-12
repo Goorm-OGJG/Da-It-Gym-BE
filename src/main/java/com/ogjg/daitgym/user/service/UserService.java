@@ -15,6 +15,7 @@ import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -157,5 +158,15 @@ public class UserService {
     private User findUserByEmail(String nickname) {
         return userRepository.findByEmail(nickname)
                 .orElseThrow(NotFoundUser::new);
+    }
+
+    public ResponseCookie getExpiredResponseCookie() {
+        return ResponseCookie.from("refreshToken", null)
+                .maxAge(0)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .build();
     }
 }
