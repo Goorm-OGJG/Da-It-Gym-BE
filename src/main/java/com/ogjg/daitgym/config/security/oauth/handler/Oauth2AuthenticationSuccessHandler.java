@@ -1,11 +1,8 @@
 package com.ogjg.daitgym.config.security.oauth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ogjg.daitgym.common.exception.ErrorCode;
-import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
-import com.ogjg.daitgym.config.security.oauth.dto.LoginResponseDto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -49,13 +46,13 @@ public class Oauth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         String cachedUrl = getCachedUrlOrDefault(request, response);
 
-        objectMapper.writeValue(
-                response.getWriter(),
-                new ApiResponse<>(
-                        ErrorCode.SUCCESS,
-                        LoginResponseDto.of(OAuth2UserDetails, cachedUrl)
-                )
-        );
+//        objectMapper.writeValue(
+//                response.getWriter(),
+//                new ApiResponse<>(
+//                        ErrorCode.SUCCESS,
+//                        LoginResponseDto.of(OAuth2UserDetails, cachedUrl)
+//                )
+//        );
     }
 
     private void addTokensInHeader(HttpServletResponse response, JwtUserClaimsDto jwtUserClaimsDto) {

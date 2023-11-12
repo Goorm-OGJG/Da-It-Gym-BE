@@ -96,4 +96,8 @@ public class User extends BaseEntity {
         }
         this.healthClub = newHealthClub;
     }
+
+    public boolean isAdmin() {
+        return this.role == Role.ADMIN;
+    }
 }
