@@ -90,4 +90,13 @@ public class RoutineController {
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
+
+    @DeleteMapping("/scrap/{routineId}")
+    public ApiResponse<Void> unscrapRoutine(
+            @PathVariable("routineId") Long routineId,
+            @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
+        routineService.unscrapRoutine(routineId, oAuth2JwtUserDetails.getEmail());
+
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
 }
