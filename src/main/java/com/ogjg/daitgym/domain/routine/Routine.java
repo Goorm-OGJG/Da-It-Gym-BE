@@ -8,9 +8,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -46,6 +49,9 @@ public class Routine extends BaseEntity {
 
     @OneToMany(mappedBy = "routine", fetch = LAZY)
     private Set<RoutineLike> routineLikes = new HashSet<>();
+
+    @OneToMany(mappedBy = "routine", cascade = ALL, orphanRemoval = true)
+    private List<UserRoutineCollection> userRoutineCollections = new ArrayList<>();
 
     public int getLikesCount() {
         return routineLikes.size();
