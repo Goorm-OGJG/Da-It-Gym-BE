@@ -18,7 +18,6 @@ import com.ogjg.daitgym.routine.dto.RoutineRequestDto;
 import com.ogjg.daitgym.routine.exception.NoExerciseInRoutine;
 import com.ogjg.daitgym.routine.exception.NotFoundScrapedUserRoutine;
 import com.ogjg.daitgym.routine.repository.DayRepository;
-import com.ogjg.daitgym.routine.repository.ExerciseDetailRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.routine.repository.UserRoutineCollectionRepository;
 import com.ogjg.daitgym.user.exception.NotFoundUser;
@@ -252,5 +251,12 @@ public class RoutineService {
                 .orElseThrow(NotFoundScrapedUserRoutine::new);
 
         userRoutineCollectionRepository.delete(userRoutineCollection);
+    }
+
+    @Transactional(readOnly = true)
+    public RoutineListResponseDto getScrapedRoutines(String email, Pageable pageable) {
+        Slice<Routine> routinesByUserEmail = userRoutineCollectionRepository.findRoutinesByUserEmail(email, pageable);
+
+        return getRoutineListResponseDto(routinesByUserEmail, email);
     }
 }
