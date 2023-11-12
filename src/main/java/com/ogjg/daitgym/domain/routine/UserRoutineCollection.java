@@ -25,7 +25,7 @@ public class UserRoutineCollection extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    @MapsId("routine")
+    @MapsId("routineId")
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "routine_id")
     private Routine routine;

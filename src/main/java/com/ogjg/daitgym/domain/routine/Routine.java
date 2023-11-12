@@ -53,10 +53,6 @@ public class Routine extends BaseEntity {
     @OneToMany(mappedBy = "routine", cascade = ALL, orphanRemoval = true)
     private List<UserRoutineCollection> userRoutineCollections = new ArrayList<>();
 
-    public int getLikesCount() {
-        return routineLikes.size();
-    }
-
     @Builder
     public Routine(User user, Routine originalRoutine, String title, String content, int duration, int division) {
         this.user = user;

@@ -73,8 +73,8 @@ public class RoutineService {
                         .author(routine.getUser().getNickname())
                         .description(routine.getContent())
                         .liked(likedRoutineIdByUserEmail.contains(routine.getId()))
-                        .likeCounts(routine.getLikesCount())
-//                            .scrapCounts()
+                        .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
+                        .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
                         .createdAt(routine.getCreatedAt())
                         .build())
                 .toList();
@@ -126,8 +126,8 @@ public class RoutineService {
                 .description(routine.getContent())
                 .liked(routineLikeRepository
                         .existsByUserEmailAndRoutineId(userEmail, routine.getId()))
-                .likeCounts(routine.getLikesCount())
-                .scrapCounts(0)
+                .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
+                .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
                 .routine(RoutineDetailsResponseDto.RoutineDto.builder()
                         .id(routine.getId())
                         .days(dayDtos)
