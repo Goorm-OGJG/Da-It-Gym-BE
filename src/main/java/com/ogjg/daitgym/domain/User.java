@@ -76,6 +76,11 @@ public class User extends BaseEntity {
         this.preferredSplit = ExerciseSplit.titleFrom(split);
     }
 
+    public String changeNickname(String newNickname) {
+        this.nickname = newNickname;
+        return this.nickname;
+    }
+
     public void changeHealthClub(HealthClub newHealthClub) {
         if (this.healthClub != null) {
             this.healthClub.getUsers().remove(this);
