@@ -63,7 +63,7 @@ public class JwtRefreshTokenAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException jwtException) {
             authenticationEntryPoint.commence(
                     request, response,
-                    new RefreshTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage() + SPACE + jwtException.getMessage())
+                    new RefreshTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage())
             );
         }
     }
