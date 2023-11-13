@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.ogjg.daitgym.domain.ChatMessage;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatMessageDto {
 
+    private String messageType;
     private Long chatMessageId;
     private String sender;
     private String message;
@@ -34,7 +34,7 @@ public class ChatMessageDto {
         this.sender = chatMessage.getSender();
         this.message = chatMessage.getMessage();
         this.readCount = chatMessage.getReadCount();
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = chatMessage.getCreatedAt();
     }
 
 

@@ -4,17 +4,13 @@ package com.ogjg.daitgym.chat.pubsub;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ogjg.daitgym.chat.dto.ChatMessageDto;
 import com.ogjg.daitgym.chat.repository.ChatMessageRepository;
-import com.ogjg.daitgym.domain.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,18 +36,6 @@ public class RedisSubscriber implements MessageListener {
         try {
             String publishMessage = (String) redisTemplate.getStringSerializer().deserialize(message.getBody());
             ChatMessageDto chatMessageDto = objectMapper.readValue(publishMessage, ChatMessageDto.class);
-
-            Long chatMessageId = chatMessageDto.getChatMessageId();
-            String redisRoomId = chatMessageDto.getRedisRoomId();
-            ChatMessage chatMessage = chatMessageRepository.findByRedisRoomIdAndId(redisRoomId, chatMessageId);
-            chatMessageDto.setReadCount(chatMessage.setReadCount());
-
-            redisTemplateMessage.setValueSerializer(new Jackson2JsonRedisSerializer<>(ChatMessageDto.class));
-            redisTemplateMessage.opsForList().rightPush(chatMessage.getRedisRoomId(), chatMessageDto);
-            redisTemplateMessage.expire(chatMessage.getRedisRoomId(), 60, TimeUnit.MINUTES);
-            chatMessageRepository.save(chatMessage);
-
-
             messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessageDto.getRedisRoomId(), chatMessageDto);
 
         } catch (Exception e) {

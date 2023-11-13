@@ -28,36 +28,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChatRoomService {
 
-
     /**
-     * 채팅방(topic)에 발행되는 메시지를 처리할 Listner
-     */
-    private final RedisMessageListenerContainer redisMessageListener;
-
-    /**
-     * 구독 처리 서비스
-     */
-    private final RedisSubscriber redisSubscriber;
-
-    private final ChatMessageService chatMessageService;
-
-    /**
-     * Redis
-     * RedisTemplate
-     */
-    private static final String CHAT_ROOMS = "CHAT_ROOM";
-    private final RedisTemplate<String, Object> redisTemplate;
-    private HashOperations<String, String, ChatRoomDto> opsHashChatRoom;
-
-    /**
-     * 채팅방의 대화 메시지를 발행하기 위한 redis topic 정보. 서버별로 채팅방에 매치되는 topic정보를 Map에 넣어 roomId로 찾을수 있도록 한다.
+     * topics : 채팅방의 대화 메시지를 발행하기 위한 redis topic 정보. 서버별로 채팅방에 매치되는 topic정보를 Map에 넣어 roomId로 찾을수 있도록 한다.
      */
     private Map<String, ChannelTopic> topics;
-
-    private final UsersChattingRoomRepository usersChattingRoomRepository;
-
-    private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
+    private final RedisSubscriber redisSubscriber;
+    private static final String CHAT_ROOMS = "CHAT_ROOM";
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatMessageService chatMessageService;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisMessageListenerContainer redisMessageListener;
+    private HashOperations<String, String, ChatRoomDto> opsHashChatRoom;
+    private final UsersChattingRoomRepository usersChattingRoomRepository;
 
     @PostConstruct
     private void init() {
@@ -87,7 +70,6 @@ public class ChatRoomService {
 
             chatRoomRepository.save(saveChatRoom);
             usersChattingRoomRepository.save(new UsersChattingRoom(user, saveChatRoom));
-
             return new ChatRoomResponse(saveChatRoom);
 
         } else {
@@ -116,7 +98,9 @@ public class ChatRoomService {
                         chatRoom.getRedisRoomId(),
                         chatRoom.getSender(),
                         chatRoom.getReceiver(),
-                        msg);
+                        msg,
+                        chatRoom.getImageUrl(),
+                        chatRoom.getCreatedAt());
 
                 chatRoomDtos.add(chatMessageResponseDto);
             } else if (user.getNickname().equals(chatRoom.getReceiver())) {
@@ -126,8 +110,11 @@ public class ChatRoomService {
                         chatRoom.getRedisRoomId(),
                         chatRoom.getSender(),
                         chatRoom.getReceiver(),
-                        msg
+                        msg,
+                        chatRoom.getImageUrl(),
+                        chatRoom.getCreatedAt()
                 );
+
                 chatRoomDtos.add(chatMessageResponseDto);
             }
         }

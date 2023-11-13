@@ -28,9 +28,8 @@ public class ChatRoomResponse {
         this.sender = chatRoom.getSender();
         this.redisRoomId = chatRoom.getRedisRoomId();
         this.receiver = chatRoom.getReceiver();
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = chatRoom.getCreatedAt();
     }
-
     public ChatRoomResponse(String redisRoomId) {
         this.redisRoomId = redisRoomId;
     }

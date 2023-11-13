@@ -174,4 +174,10 @@ public class JwtUtils {
         }
         return null;
     }
+
+    public String getUid(String token) {
+
+        Claims claims = Jwts.parserBuilder().setSigningKey(SIGNATURE_KEY).build().parseClaimsJws(token).getBody();
+        return claims.get("email", String.class);
+    }
 }
