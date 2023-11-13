@@ -12,13 +12,13 @@ public class RoutineRequestDto {
     private RoutineDto routine;
 
     @Getter
-    public class RoutineDto {
+    public static class RoutineDto {
         private Long id;
         private List<DayDto> days;
     }
 
     @Getter
-    public class DayDto {
+    public static class DayDto {
         private Long id;
         private int order;
         private long dayDate;
@@ -29,7 +29,7 @@ public class RoutineRequestDto {
     }
 
     @Getter
-    public class ExerciseDto {
+    public static class ExerciseDto {
         private Long id;
         private int order;
         private String name;
@@ -40,7 +40,7 @@ public class RoutineRequestDto {
     }
 
     @Getter
-    public class ExerciseSetDto {
+    public static class ExerciseSetDto {
         private Long id;
         private int order;
         private int weights;
@@ -49,14 +49,14 @@ public class RoutineRequestDto {
     }
 
     @Getter
-    public class RestTimeDto {
+    public static class RestTimeDto {
         private int hours;
         private int minutes;
         private int seconds;
     }
 
     @Getter
-    public class ExerciseTimeDto {
+    public static class ExerciseTimeDto {
         private int hours;
         private int minutes;
         private int seconds;
