@@ -2,6 +2,7 @@ package com.ogjg.daitgym.feed.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,11 +34,9 @@ public class FeedExerciseJournalController {
     @DeleteMapping("{feedJournalId}")
     public ApiResponse<Void> deleteFeedJournal(
             @PathVariable("feedJournalId") Long feedJournalId,
-//            todo Token User
-            String email
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        feedExerciseJournalService.deleteFeedJournal(email1, feedJournalId);
+        feedExerciseJournalService.deleteFeedJournal(userDetails.getEmail(), feedJournalId);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -58,11 +58,9 @@ public class FeedExerciseJournalController {
     @PostMapping("/{feedJournalId}/scrap")
     public ApiResponse<Void> feedExerciseJournalScrap(
             @PathVariable("feedJournalId") Long feedJournalId,
-            //todo token 추출
-            String email
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        feedExerciseJournalService.feedExerciseJournalScrap(email1, feedJournalId);
+        feedExerciseJournalService.feedExerciseJournalScrap(userDetails.getEmail(), feedJournalId);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -85,15 +83,15 @@ public class FeedExerciseJournalController {
      */
     @GetMapping("/follow")
     public ApiResponse<List<FeedExerciseJournalListResponse>> getFollowFeedJournalLists(
-            //todo token useremail
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PageableDefault(page = 0, size = 12) Pageable pageable,
             @ModelAttribute FeedSearchConditionRequest feedSearchConditionRequest
     ) {
-        String email1 = "test@naver.com";
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
-                feedExerciseJournalService.followFeedJournalLists(email1, pageable, feedSearchConditionRequest)
+                feedExerciseJournalService.followFeedJournalLists(
+                        userDetails.getEmail(), pageable, feedSearchConditionRequest
+                )
         );
     }
 
@@ -115,15 +113,11 @@ public class FeedExerciseJournalController {
     @GetMapping("{feedJournalId}/feed-details")
     public ApiResponse<FeedDetailResponse> feedDetail(
             @PathVariable("feedJournalId") Long feedJournalId,
-            //todo token useremail
-            String email
-
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String email1 = "dlehdwls21@naver.com";
-
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
-                feedExerciseJournalService.feedDetail(feedJournalId, email1)
+                feedExerciseJournalService.feedDetail(feedJournalId, userDetails.getEmail())
         );
     }
 }

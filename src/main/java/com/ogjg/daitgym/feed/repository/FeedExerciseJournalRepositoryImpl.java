@@ -79,7 +79,6 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
             String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
 
-
         List<FeedExerciseJournal> followerFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal)
                 .from(follow)
                 .where(follow.follower.email.eq(email))
