@@ -9,6 +9,7 @@ public enum ErrorCode implements ErrorType {
 
     SUCCESS(HttpStatus.OK, "200", "OK"),
     ALREADY_FOLLOW_USER(HttpStatus.NOT_FOUND, "404", "이미 팔로우한 유저입니다"),
+    RANGE_OVER_IMAGES(HttpStatus.BAD_REQUEST,"400","이미지의 개수는 10개를 초과할 수 없습니다"),
     NOT_FOUND_FOLLOW(HttpStatus.NOT_FOUND, "404", "팔로우를 먼저 해주세요"),
     NOT_FOUND_EXERCISE(HttpStatus.NOT_FOUND, "404", "운동을 찾을 수 없습니다"),
     NOT_FOUND_FEED_JOURNAL_IMAGE(HttpStatus.NOT_FOUND, "404", "운동일지 피드의 이미지를 찾을 수 없습니다"),
