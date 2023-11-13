@@ -16,7 +16,7 @@ public class Exercise {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne(mappedBy = "exercise")
     @JoinColumn(name = "exercise_part_id")
     private ExercisePart exercisePart;
 

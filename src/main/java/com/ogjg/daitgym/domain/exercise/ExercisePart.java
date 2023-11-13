@@ -17,7 +17,7 @@ public class ExercisePart {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = LAZY)
+    @OneToOne(fetch = LAZY)
     @JoinColumn(name = "exercise_id")
     private Exercise exercise;
 
