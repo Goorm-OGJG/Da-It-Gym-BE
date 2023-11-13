@@ -65,7 +65,7 @@ public class UserService {
 
         return GetUserProfileGetResponse.builder()
                 .healthClubName(user.getHealthClub().getName())
-//                .journalCount(exerciseJournalRepository.countByUserEmail(user.getEmail()))
+                .journalCount(exerciseJournalRepository.countByUserEmail(user.getEmail()))
                 .followerCount(followRepository.countByFollowPKTargetEmail(user.getEmail()))
                 .followingCount(followRepository.countByFollowPKFollowerEmail(user.getEmail()))
                 .build();
@@ -241,10 +241,6 @@ public class UserService {
         String nickname = findUser.changeNickname(newNickname);
 
         return EditInitialNicknameResponse.of(nickname);
-    }
-
-    private boolean isUserNotFound(String loginEmail) {
-        return !userRepository.findByEmail(loginEmail).isPresent();
     }
 
     @Transactional(readOnly = true)
