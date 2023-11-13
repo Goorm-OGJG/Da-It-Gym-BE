@@ -24,11 +24,11 @@ public class ChatMessage {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
-
     private String sender;
     private String message;
     private String redisRoomId;
-    private int readCount = 2;
+    private String imageUrl;
+    private int readCount;
 
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -44,18 +44,15 @@ public class ChatMessage {
     private ChatRoom chatRoom;
 
     @Builder
-    public ChatMessage( String sender, ChatRoom chatRoom, String message, String redisRoomId) {
+    public ChatMessage(String sender, ChatRoom chatRoom, String message, String redisRoomId, int readCount,String imageUrl) {
         super();
         this.sender = sender;
         this.chatRoom = chatRoom;
         this.message = message;
         this.redisRoomId = redisRoomId;
+        this.readCount = readCount;
+        this.imageUrl = imageUrl;
         this.createdAt = LocalDateTime.now();
+
     }
-
-
-    public int setReadCount() {
-        return --readCount;
-    }
-
 }

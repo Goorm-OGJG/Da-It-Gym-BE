@@ -7,4 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatMessageRequestDto {
     private String receiver;
+    private String receiverImageUrl;
 }

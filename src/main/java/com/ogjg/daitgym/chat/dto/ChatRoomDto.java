@@ -27,7 +27,7 @@ public class ChatRoomDto implements Serializable {
         chatRoomDto.roomName = messageRequestDto.getReceiver();
         chatRoomDto.redisRoomId = UUID.randomUUID().toString();
         chatRoomDto.sender = user.getNickname();
-        chatRoomDto.imageUrl = user.getImageUrl();
+        chatRoomDto.imageUrl = messageRequestDto.getReceiverImageUrl();
         chatRoomDto.receiver = messageRequestDto.getReceiver();
 
         return chatRoomDto;

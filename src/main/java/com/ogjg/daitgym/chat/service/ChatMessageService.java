@@ -1,7 +1,6 @@
 package com.ogjg.daitgym.chat.service;
 
 import com.ogjg.daitgym.chat.dto.ChatMessageDto;
-import com.ogjg.daitgym.chat.exception.NotFoundChattingRoom;
 import com.ogjg.daitgym.chat.repository.ChatMessageRepository;
 import com.ogjg.daitgym.chat.repository.ChatRoomRepository;
 import com.ogjg.daitgym.domain.ChatMessage;
@@ -12,20 +11,24 @@ import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatMessageService {
 
-    private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final RedisTemplate<String, ChatMessageDto> redisTemplateMessage;
 
     /**
@@ -36,77 +39,86 @@ public class ChatMessageService {
      * 이때 상대방도 sub이 되면 readCount는 0이 되므로, readCount가 0일 때 읽음 표시를 해주면 된다.
      */
 
+    @Transactional
     public ChatMessageDto save(ChatMessageDto chatMessageDto) {
+        String sender = chatMessageDto.getSender();
+        User user = userRepository.findByNickname(sender).orElseThrow(NotFoundUser::new);
 
         ChatRoom chatroom = chatRoomRepository.findByRedisRoomId(chatMessageDto.getRedisRoomId());
+        int size = Math.toIntExact(redisTemplate.opsForSet().size(chatroom.getRedisRoomId() + "set"));
+        if (size == 2) {
+            chatMessageDto.setReadCount(0);
+        } else {
+            chatMessageDto.setReadCount(1);
+        }
+
         ChatMessage chatMessage = ChatMessage.builder()
                 .sender(chatMessageDto.getSender())
                 .chatRoom(chatroom)
                 .message(chatMessageDto.getMessage())
                 .redisRoomId(chatMessageDto.getRedisRoomId())
+                .imageUrl(user.getImageUrl())
                 .build();
+
         chatMessageRepository.save(chatMessage);
         chatMessageDto.setChatMessageId(chatMessage.getId());
         chatMessageDto.setReadCount(2);
+
+        redisTemplateMessage.setValueSerializer(new Jackson2JsonRedisSerializer<>(ChatMessageDto.class));
+        redisTemplateMessage.opsForList().rightPush(chatMessageDto.getRedisRoomId(), chatMessageDto);
+        redisTemplateMessage.expire(chatMessageDto.getRedisRoomId(), 60, TimeUnit.MINUTES);
         return chatMessageDto;
     }
 
     /**
      * 전체 메세지 로드하기
-     * 1. 먼저 Redisd에 저장된 100개의 값을 가져온다.
-     * 2. 만약 Redis에 값이 비어있다면, chatMessageRepository에서 100개까지의 값을 가져온다.
-     * 3. 그리고 메세지가 로드되었을 때, readCount값을 추가적으로 설정해주어야 한다.
-     * 4. 로드된 메세지의 readCouont값이 1일 때, 메신저를 보낸 사람과 유저가 같지 않다면 읽었다는 의미로 1의 값을 0으로 세팅해줘야 한다.
+     * 1. 먼저 Redisd에 저장된 50개의 값을 가져온다.
+     * 2. 레디스에 저장되어있는 값이 10개밖에 없다면, 10개만 가져오는 현상이 발생하기에 레디스에 저장된 값이 50개보다 작으면 RDB 에서 가져옴
+     * 3. Connect 되어 두사람이 채팅방에 있을 때, readCount가 0이 되어야하기 때문에 redis에 저장된 readCount값이 1이라면 0으로 바꿔준다.
+     * 4. Long size 란 채팅방에 접속해있는 인원을 의미한다.
      */
+    @Transactional
     public List<ChatMessageDto> loadMessage(String roomId, String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUser::new);
-        String nickName = user.getNickname();
+
+        SetOperations<String, Object> setOperations = redisTemplate.opsForSet();
+        Long size = setOperations.size(roomId + "set");
+        updateReadCount(roomId, size);
 
         List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
 
         List<ChatMessageDto> redisMessageList = redisTemplateMessage.opsForList().range(roomId, 0, 99);
 
-        if (redisMessageList == null || redisMessageList.isEmpty() || redisMessageList.size()<50) {
+        if (redisMessageList == null || redisMessageList.isEmpty() || redisMessageList.size() < 100) {
             List<ChatMessage> dbMessageList = chatMessageRepository.findTop100ByRedisRoomIdOrderByCreatedAtAsc(roomId);
 
-            for (ChatMessage chatMessage : dbMessageList) {
-                ChatMessageDto chatMessageDto = new ChatMessageDto(chatMessage);
+            for (int i = 0; i < redisMessageList.size(); i++) {
+                ChatMessageDto chatMessageDto = new ChatMessageDto(dbMessageList.get(i));
                 chatMessageDtos.add(chatMessageDto);
-
+                redisTemplateMessage.opsForList().set(roomId, i, chatMessageDto);
+            }
+            for (int i = redisMessageList.size(); i < dbMessageList.size(); i++) {
+                ChatMessageDto chatMessageDto = new ChatMessageDto(dbMessageList.get(i));
+                chatMessageDtos.add(chatMessageDto);
                 redisTemplateMessage.opsForList().rightPush(roomId, chatMessageDto);
             }
+
         } else {
-            chatMessageDtos.addAll(redisMessageList);
-        }
-
-        List<ChatMessageDto> modifiedChatMessageDtos = new ArrayList<>(chatMessageDtos);
-
-        Iterator<ChatMessageDto> iterator = modifiedChatMessageDtos.iterator();
-        while (iterator.hasNext()) {
-            ChatMessageDto chatMessageDto = iterator.next();
-            Long chatMessageId = chatMessageDto.getChatMessageId();
-            String redisRoomId = chatMessageDto.getRedisRoomId();
-            ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElseThrow(NotFoundChattingRoom::new);
-
-            if (!nickName.equals(chatMessageDto.getSender())) {
-                if (chatMessageDto.getReadCount() == 1) {
-                    chatMessageDto.setReadCount(chatMessageDto.getReadCount() - 1);
-
-                    redisTemplateMessage.opsForList().set(redisRoomId, chatMessageDtos.indexOf(chatMessageDto), chatMessageDto);
-                    chatMessage.setReadCount(0);
-                    chatMessageRepository.save(chatMessage);
-
+            for (int i = 0; i < redisMessageList.size(); i++) {
+                if (redisMessageList.get(i).getReadCount() == 1 && size == 2) {
+                    redisMessageList.get(i).setReadCount(0);
+                    redisTemplateMessage.opsForList().set(roomId, i, redisMessageList.get(i));
                 }
             }
+            chatMessageDtos.addAll(redisMessageList);
         }
-
-        return modifiedChatMessageDtos;
+        return chatMessageDtos;
     }
 
     /**
      * 채팅 목록 가져올 때, 가장 최신 메시지 하나만 보여주기 위한 로직
      */
-
+    @Transactional
     public ChatMessageDto latestMessage(String roomId) {
 
         ChatMessageDto latestMessage = redisTemplateMessage.opsForList().index(roomId, -1);
@@ -120,5 +132,24 @@ public class ChatMessageService {
             }
         }
         return latestMessage;
+    }
+
+    @Transactional
+    public void updateReadCount(String redisRoomId, Long size) {
+        List<ChatMessage> chatMessages = chatMessageRepository.findAllByRedisRoomId(redisRoomId);
+        if (!chatMessages.isEmpty()) {
+            if (size == 2) {
+                for (ChatMessage chatMessage : chatMessages) {
+                    chatMessage.setReadCount(0);
+                    chatMessageRepository.save(chatMessage);
+                }
+            } else {
+                for (ChatMessage chatMessage : chatMessages) {
+                    chatMessage.setReadCount(1);
+                    chatMessageRepository.save(chatMessage);
+
+                }
+            }
+        }
     }
 }

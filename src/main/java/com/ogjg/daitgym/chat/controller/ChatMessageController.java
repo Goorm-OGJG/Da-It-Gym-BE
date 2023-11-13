@@ -11,6 +11,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -31,9 +32,12 @@ public class ChatMessageController {
         log.info("채팅 메시지");
         chatRoomService.enterChatRoom(chatMessageDto.getRedisRoomId());
         chatMessageDto.setCreatedAt(LocalDateTime.now());
+        ChatMessageDto savedChatMessageDto = chatMessageDto;
 
         ChannelTopic topic = chatRoomService.getTopic(chatMessageDto.getRedisRoomId());
-        ChatMessageDto savedChatMessageDto = messageService.save(chatMessageDto);
+        if (!Objects.equals(chatMessageDto.getMessageType(), "ENTER")) {
+            savedChatMessageDto = messageService.save(chatMessageDto);
+        }
         redisPublisher.publish(topic, savedChatMessageDto);
     }
 }

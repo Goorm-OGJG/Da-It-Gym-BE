@@ -3,6 +3,8 @@ package com.ogjg.daitgym.chat.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 public class ChatMessageResponseDto {
@@ -12,13 +14,17 @@ public class ChatMessageResponseDto {
     private String redisRoomId;
     private String receiver;
     private String message;
+    private String imageUrl;
+    private LocalDateTime createdAt;
 
-    public ChatMessageResponseDto(Long id, String roomName, String redisRoomId, String sender, String receiver, String message) {
+    public ChatMessageResponseDto(Long id, String roomName, String redisRoomId, String sender, String receiver, String message, String imageUrl,LocalDateTime createdAt) {
         this.id = id;
         this.roomName = roomName;
         this.redisRoomId = redisRoomId;
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
+        this.imageUrl = imageUrl;
+        this.createdAt = createdAt;
     }
 }
