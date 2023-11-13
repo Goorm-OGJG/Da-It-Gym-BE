@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
+import com.ogjg.daitgym.domain.ExerciseSplit;
 import com.ogjg.daitgym.user.dto.LoginResponseDto;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
@@ -45,6 +46,9 @@ public class AuthService {
 
     @Value("${kakao.user-info-uri}")
     private String KAKAO_USER_INFO_URI;
+
+    @Value("${cloud.aws.default.profile-img}")
+    private String AWS_DEFAULT_PROFILE_IMG_URL;
 
     // 토큰으로 사용자 정보 가져오기 -> 처음 로그인인지 체크하고 로그인 응답 생성
     @Transactional
@@ -116,8 +120,9 @@ public class AuthService {
             return LoginResponseDto.builder()
                     .isAlreadyJoined(isAlreadyJoined)
                     .isDeleted(isDeleted)
+                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
                     .isAdmin(false)
-                    .userImg("defaultUrl")
+                    .userImg(AWS_DEFAULT_PROFILE_IMG_URL)
                     .nickname(tempNickname)
                     .build();
 
@@ -129,8 +134,9 @@ public class AuthService {
             return LoginResponseDto.builder()
                     .isAlreadyJoined(isAlreadyJoined)
                     .isDeleted(isDeleted)
+                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
                     .isAdmin(false)
-                    .userImg("defaultUrl")
+                    .userImg(AWS_DEFAULT_PROFILE_IMG_URL)
                     .nickname(tempNickname)
                     .build();
 
@@ -148,6 +154,7 @@ public class AuthService {
             return LoginResponseDto.builder()
                     .isAlreadyJoined(isAlreadyJoined)
                     .isDeleted(isDeleted)
+                    .preferredSplit(existUser.getPreferredSplit().getTitle())
                     .isAdmin(existUser.isAdmin())
                     .userImg(existUser.getImageUrl())
                     .nickname(existUser.getNickname())
