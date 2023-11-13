@@ -12,20 +12,24 @@ import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedImageDto;
+import com.ogjg.daitgym.feed.exception.RangeOverImages;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalCollectionRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalImageRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
 import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.like.feedExerciseJournal.repository.FeedExerciseJournalLikeRepository;
+import com.ogjg.daitgym.s3.repository.S3Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,10 +45,11 @@ public class FeedExerciseJournalService {
     private final FeedExerciseJournalLikeRepository feedExerciseJournalLikeRepository;
     private final FeedExerciseJournalCollectionRepository feedExerciseJournalCollectionRepository;
     private final FeedJournalHelperService feedJournalHelperService;
+    private final S3Repository s3Repository;
+    @Value("${cloud.aws.default.img}")
+    private String s3defaultImage;
 
     /*
-     * todo 이미지 넘어올시 이미지 저장 추가
-     * todo 이미지 null 이면 기본 이미지 저장
      * 운동일지 공유시 피드에 생성
      * 이미지가 넘어오면 저장
      * */
@@ -54,14 +59,31 @@ public class FeedExerciseJournalService {
     ) {
         FeedExerciseJournal feedExercise = feedExerciseJournalRepository.save(new FeedExerciseJournal(exerciseJournal));
 
-        if (!imgFiles.isEmpty()) {
-            imgFiles.forEach(
-                    multipartFile -> feedExerciseJournalImageRepository.save(
-                            //todo s3에 저장 후 이미지경로 입력하기
-                            new FeedExerciseJournalImage(feedExercise, "s3 이미지 파일 경로")
-                    )
-            );
+        feedImagesSaveAll(feedExercise, imgFiles);
+    }
+
+    private void feedImagesSaveAll(
+            FeedExerciseJournal feedExercise, List<MultipartFile> imgFiles
+    ) {
+        if (imgFiles == null || imgFiles.isEmpty()) {
+            feedExerciseJournalImageRepository.save(new FeedExerciseJournalImage(feedExercise, s3defaultImage));
+            return;
         }
+
+        if (imgFiles.size() > 10) {
+            throw new RangeOverImages();
+        }
+
+        List<FeedExerciseJournalImage> feedExerciseJournalImages = new ArrayList<>();
+
+        imgFiles.forEach(
+                multipartFile -> {
+                    String uploadImageUrL = s3Repository.uploadImageToS3(multipartFile);
+                    feedExerciseJournalImages.add(new FeedExerciseJournalImage(feedExercise, uploadImageUrL));
+                }
+        );
+
+        feedExerciseJournalImageRepository.saveAll(feedExerciseJournalImages);
     }
 
     /**
@@ -157,7 +179,8 @@ public class FeedExerciseJournalService {
         FeedExerciseJournal feedJournal = feedJournalHelperService.findFeedJournalById(feedJournalId);
         feedExerciseJournalCommentRepository.deleteAllByFeedExerciseJournal(feedJournal);
         feedExerciseJournalLikeRepository.deleteAllByFeedExerciseJournal(feedJournal);
-        feedExerciseJournalImageRepository.deleteAllByFeedExerciseJournal(feedJournal);
+        feedImagesDelete(feedJournal);
+        feedExerciseJournalCollectionRepository.deleteAllByFeedExerciseJournal(feedJournal);
 
         if (!feedJournal.getExerciseJournal().getUser().getEmail().equals(email))
             throw new UserNotAuthorizedForJournal();
@@ -165,6 +188,30 @@ public class FeedExerciseJournalService {
         feedExerciseJournalRepository.delete(feedJournal);
 
         feedJournal.getExerciseJournal().changeToPrivate();
+    }
+
+    /**
+     * 피드 운동일지 이미지 삭제하기
+     * s3 업로드된 이미지 삭제하고 db에서도 삭제
+     */
+    private void feedImagesDelete(
+            FeedExerciseJournal feedJournal
+    ) {
+
+        List<FeedExerciseJournalImage> feedJournalImages = findFeedExerciseJournalImagesByFeedExerciseJournal(feedJournal);
+
+        if (feedJournalImages != null && !feedJournalImages.isEmpty()) {
+
+            if (feedJournalImages.get(0).getImageUrl().equals(s3defaultImage))
+                return;
+
+            feedJournalImages.forEach(
+                    feedExerciseJournalImage ->
+                            s3Repository.deleteImageFromS3(feedExerciseJournalImage.getImageUrl())
+            );
+
+            feedExerciseJournalImageRepository.deleteAllByFeedExerciseJournal(feedJournal);
+        }
     }
 
     /**
@@ -202,7 +249,7 @@ public class FeedExerciseJournalService {
     /**
      * 피드 이미지목록 Dto로 변환
      */
-    private List<FeedImageDto> feedImageListsDto(FeedExerciseJournal feedExerciseJournal){
+    private List<FeedImageDto> feedImageListsDto(FeedExerciseJournal feedExerciseJournal) {
         return findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal)
                 .stream()
                 .map(feedExerciseJournalImage -> new FeedImageDto(
