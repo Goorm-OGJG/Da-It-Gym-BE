@@ -7,14 +7,14 @@ import com.ogjg.daitgym.common.exception.ErrorData;
 public class EmptyTrainerApplyException extends CustomException {
 
     public EmptyTrainerApplyException() {
-        super(ErrorCode.EMPTY_TRANIER_APPLY_APPROVAL);
+        super(ErrorCode.EMPTY_TRAINER_APPLY_APPROVAL);
     }
 
     public EmptyTrainerApplyException(String message) {
-        super(ErrorCode.EMPTY_TRANIER_APPLY_APPROVAL, message);
+        super(ErrorCode.EMPTY_TRAINER_APPLY_APPROVAL, message);
     }
 
     public EmptyTrainerApplyException(ErrorData errorData) {
-        super(ErrorCode.EMPTY_TRANIER_APPLY_APPROVAL, errorData);
+        super(ErrorCode.EMPTY_TRAINER_APPLY_APPROVAL, errorData);
     }
 }

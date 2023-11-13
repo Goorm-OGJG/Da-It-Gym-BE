@@ -27,7 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+
+import static com.ogjg.daitgym.domain.ApproveStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +54,6 @@ public class UserService {
 
     private final InbodyRepository inbodyRepository;
 
-
     private final ExerciseJournalRepository exerciseJournalRepository;
 
     private final S3Repository s3Repository;
@@ -72,7 +74,7 @@ public class UserService {
     }
 
     @Transactional
-    public void editUserProfile(String loginEmail, String nickname, MultipartFile multipartFile, EditUserProfileRequest request) {
+    public void editUserProfile(String loginEmail, String nickname, EditUserProfileRequest request, MultipartFile multipartFile) {
         User user = findUserByNickname(nickname);
 
         if (!loginEmail.equals(user.getEmail())) {
@@ -121,71 +123,88 @@ public class UserService {
         return healthClubRepository.save(healthClub);
     }
 
+    /**
+     * 트레이너 심사 요청 기능
+     */
     @Transactional
     public void applyForApproval(String loginEmail, ApplyForApprovalRequest request, List<MultipartFile> awardImgs, List<MultipartFile> certificationImgs) {
         User user = findUserByEmail(loginEmail);
 
-       /* //  수상 경력은 있으나 이미지가 누락됨
-        if (isEmptyCollection(request.getAwards()) && !isEmptyCollection(awardImgs)) {
+        validateOmittedCases(request, awardImgs, certificationImgs);
 
-        }
-        // 자격증은 있으나 이미지가 누락됨
-        if (isEmptyCollection(request.getCertifications()) && !isEmptyCollection(awardImgs)) {
+        // s3에 이미지들 저장
+        List<String> awardImgUrls = saveInS3IfExistBoth(request.getAwards(), awardImgs);
+        List<String> certificationImgUrls = saveInS3IfExistBoth(request.getCertifications(), certificationImgs);
 
-        }*/
+        // db에 저장
+        Approval savedApproval = approvalRepository.save(Approval.builder().approveStatus(WAITING).build());
 
-        if (isEmptySubmit(request.getAwards(), awardImgs) && isEmptySubmit(request.getCertifications(), certificationImgs)) {
+        List<Award> awards = request.getAwards().stream()
+                .map((dto) -> dto.toAward(user, savedApproval))
+                .toList();
+        List<Certification> certifications = request.getCertifications().stream()
+                .map((dto) -> dto.toCertification(user, savedApproval))
+                .toList();
+
+        List<Award> savedAwards = awardRepository.saveAll(awards);
+        List<Certification> savedCertifications = certificationRepository.saveAll(certifications);
+
+        List<AwardImage> awardImages = awardImgUrls.stream()
+                .map(AwardImage::of)
+                .map((awardImage -> awardImage.addAward(savedAwards.get(0))))
+                .toList();
+
+        List<CertificationImage> certificationImages = certificationImgUrls.stream()
+                .map(CertificationImage::of)
+                .map((certificationImage -> certificationImage.addAward(savedCertifications.get(0))))
+                .toList();
+
+        awardImageRepository.saveAll(awardImages);
+        certificationImageRepository.saveAll(certificationImages);
+    }
+
+    private void validateOmittedCases(ApplyForApprovalRequest request, List<MultipartFile> awardImgs, List<MultipartFile> certificationImgs) {
+        validateAllOmitted(request);
+        validateOnlyHasImagesCases(request, awardImgs, certificationImgs);
+    }
+
+    private void validateAllOmitted(ApplyForApprovalRequest request) {
+        if (isEmptyCollection(request.getAwards()) && isEmptyCollection(request.getCertifications())) {
             throw new EmptyTrainerApplyException();
-        }
-
-        // db 저장 로직
-        Approval savedApproval = approvalRepository.save(Approval.builder().build());
-
-        // 수상 경력 관련해서 입력된 경우만 수행
-        if (!isEmptySubmit(request.getAwards(), awardImgs)) {
-            // s3 저장 로직
-            List<String> awardImgUrls = awardImgs.stream()
-                    .map((imgFile) -> s3Repository.uploadImageToS3(imgFile))
-                    .toList();
-
-            // db 저장 로직
-            List<Award> awards = awardRepository.saveAll(toAwards(user, request, awardImgUrls, savedApproval));
-            awards.stream()
-                    .forEach(award -> awardImageRepository.saveAll(award.getAwardImages()));
-        }
-
-        // 자격증 관련해서 입력된 경우만 수행
-        if (!isEmptySubmit(request.getCertifications(), certificationImgs)) {
-            // s3 저장 로직
-            List<String> certificationImgUrls = certificationImgs.stream()
-                    .map((imgFile) -> s3Repository.uploadImageToS3(imgFile))
-                    .toList();
-
-            // db 저장 로직
-            List<Certification> certifications = certificationRepository.saveAll(toCertifications(user, request, certificationImgUrls, savedApproval));
-            certifications.stream()
-                    .forEach(certification -> certificationImageRepository.saveAll(certification.getCertificationImages()));
         }
     }
 
-    private boolean isEmptySubmit(Collection<?> submitted, List<MultipartFile> awardImgs) {
-        return isEmptyCollection(submitted) && isEmptyCollection(awardImgs);
+    private void validateOnlyHasImagesCases(ApplyForApprovalRequest request, List<MultipartFile> awardImgs, List<MultipartFile> certificationImgs) {
+        if (isEmptyCollection(request.getAwards()) && !isFilesListNull(awardImgs)) {
+            throw new EmptyTrainerApplyException();
+        }
+
+        if (isEmptyCollection(request.getCertifications()) && !isFilesListNull(certificationImgs)) {
+            throw new EmptyTrainerApplyException();
+        }
+    }
+
+    /**
+     * 자격증과 이미지 혹은 수상과 이미지가 모두 값이 존재           -->  s3에 저장하고 url들을 반환
+     * 자격증과 이미지 혹은 수상과 이미지가 모두 null 혹은 비어있다면 -->  빈 리스트 반환
+     */
+    private List<String> saveInS3IfExistBoth(Collection<?> submitted, List<MultipartFile> imgFiles) {
+        if (!isEmptyCollection(submitted) && !isFilesListNull(imgFiles)) {
+            return imgFiles.stream()
+                    .map((imgFile) -> s3Repository.uploadImageToS3(imgFile))
+                    .toList();
+        }
+
+        return Collections.emptyList();
     }
 
     private boolean isEmptyCollection(Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
-    private List<Award> toAwards(User user, ApplyForApprovalRequest request, List<String> awardImgUrls, Approval approval) {
-        return request.getAwards().stream()
-                .map(awardsDto -> awardsDto.toAward(user, awardImgUrls, approval))
-                .toList();
-    }
-
-    private List<Certification> toCertifications(User user, ApplyForApprovalRequest request, List<String> certificationImgUrls, Approval approval) {
-        return request.getCertifications().stream()
-                .map(certificationDto -> certificationDto.toCertification(user, certificationImgUrls, approval))
-                .toList();
+    // List<MultipartFile>은 빈 파일보내면 길이 1의 리스트를 반환
+    private boolean isFilesListNull(List<MultipartFile> imgFiles) {
+        return imgFiles == null || imgFiles.get(0).isEmpty();
     }
 
     @Transactional
