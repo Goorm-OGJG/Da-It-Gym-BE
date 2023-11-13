@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -32,13 +33,13 @@ public class ApplyForApprovalRequest {
             this.acquisitionAt = acquisitionAt;
         }
 
-        public Certification toCertification(User user, List<String> imgUrls, Approval approval) {
+        public Certification toCertification(User user, Approval approval) {
             return Certification.builder()
                     .user(user)
                     .approval(approval)
                     .name(this.name)
                     .acquisitionAt(this.acquisitionAt)
-                    .certificationImages(toCertificationImgs(imgUrls))
+                    .certificationImages(new ArrayList<>())
                     .build();
         }
 
@@ -59,14 +60,14 @@ public class ApplyForApprovalRequest {
         private LocalDate awardAt;
         private String org;
 
-        public Award toAward(User user, List<String> imgUrls, Approval approval) {
+        public Award toAward(User user, Approval approval) {
             return Award.builder()
                     .user(user)
                     .approval(approval)
                     .awardName(this.name)
                     .awardAt(this.awardAt)
                     .hostOrganization(this.org)
-                    .awardImages(toAwardImages(imgUrls))
+                    .awardImages(new ArrayList<>())
                     .build();
         }
 

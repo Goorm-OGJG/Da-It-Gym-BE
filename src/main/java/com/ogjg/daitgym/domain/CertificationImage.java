@@ -30,4 +30,15 @@ public class CertificationImage extends BaseEntity {
         this.certification = certification;
         this.url = url;
     }
+
+    public static CertificationImage of(String url) {
+        return CertificationImage.builder()
+                .url(url)
+                .build();
+    }
+
+    public CertificationImage addAward(Certification savedCertification) {
+        this.certification = savedCertification;
+        return this;
+    }
 }

@@ -1,5 +1,7 @@
 package com.ogjg.daitgym.user.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
@@ -25,6 +27,8 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    private final ObjectMapper objectMapper;
 
     /**
      * 로그아웃 - 메시지 지정 필요
@@ -54,11 +58,9 @@ public class UserController {
             @RequestBody EditNicknameRequest request,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String loginEmail = userDetails.getEmail();
-
         return new ApiResponse<>(
                 ErrorCode.SUCCESS.changeMessage("닉네임 변경 완료"),
-                userService.editInitialNickname(loginEmail, request)
+                userService.editInitialNickname(userDetails.getEmail(), request)
         );
     }
 
@@ -69,9 +71,7 @@ public class UserController {
     public ApiResponse<?> withdraw(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String loginEmail = userDetails.getEmail();
-
-        userService.updateUserDeleted(loginEmail);
+        userService.updateUserDeleted(userDetails.getEmail());
         return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage("회원탈퇴 성공"));
     }
 
@@ -83,10 +83,9 @@ public class UserController {
             @PathVariable("nickname") String nickname,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String loginEmail = userDetails.getEmail();
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
-                userService.getUserProfile(loginEmail, nickname)
+                userService.getUserProfile(userDetails.getEmail(), nickname)
         );
     }
 
@@ -96,12 +95,17 @@ public class UserController {
     @PutMapping("/{nickname}")
     public ApiResponse<Void> editUserProfile(
             @PathVariable("nickname") String nickname,
+            @RequestPart String request,
             @RequestPart(required = false) MultipartFile userProfileImg,
-            @RequestPart EditUserProfileRequest request,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
-    ) {
-        String loginEmail = userDetails.getEmail();
-        userService.editUserProfile(loginEmail, nickname, userProfileImg, request);
+    ) throws JsonProcessingException {
+
+        userService.editUserProfile(
+                userDetails.getEmail(),
+                nickname,
+                objectMapper.readValue(request, EditUserProfileRequest.class),
+                userProfileImg
+        );
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -110,14 +114,18 @@ public class UserController {
      */
     @PostMapping("/career/submit")
     public ApiResponse<Void> applyForApproval(
-            @RequestPart ApplyForApprovalRequest request,
+            @RequestPart String request,
             @RequestPart(required = false) List<MultipartFile> certificationImgs,
             @RequestPart(required = false) List<MultipartFile> awardImgs,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
-    ) {
-        String loginEmail = userDetails.getEmail();
+    ) throws JsonProcessingException {
 
-        userService.applyForApproval(loginEmail, request, awardImgs, certificationImgs);
+        userService.applyForApproval(
+                userDetails.getEmail(),
+                objectMapper.readValue(request, ApplyForApprovalRequest.class),
+                awardImgs,
+                certificationImgs
+        );
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -129,9 +137,7 @@ public class UserController {
             @RequestBody RegisterInbodyRequest request,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String loginEmail = userDetails.getEmail();
-
-        userService.registerInbody(loginEmail, request);
+        userService.registerInbody(userDetails.getEmail(), request);
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -143,8 +149,6 @@ public class UserController {
             @PathVariable("nickname") String nickname,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String loginEmail = userDetails.getEmail();
-
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
                 userService.getInbodies(nickname)

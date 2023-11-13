@@ -48,4 +48,8 @@ public class Certification extends BaseEntity {
         this.issuingOrganization = issuingOrganization;
         this.acquisitionAt = acquisitionAt;
     }
+
+    public void addImage(CertificationImage certificationImage) {
+        this.certificationImages.add(certificationImage);
+    }
 }

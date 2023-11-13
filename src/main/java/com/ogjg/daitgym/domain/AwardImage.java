@@ -30,4 +30,15 @@ public class AwardImage extends BaseEntity {
         this.award = award;
         this.url = url;
     }
+
+    public static AwardImage of(String url) {
+        return AwardImage.builder()
+                .url(url)
+                .build();
+    }
+
+    public AwardImage addAward(Award savedAward) {
+        this.award = savedAward;
+        return this;
+    }
 }
