@@ -3,6 +3,7 @@ package com.ogjg.daitgym.domain;
 import com.ogjg.daitgym.domain.routine.Routine;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +37,8 @@ public class User extends BaseEntity {
     private Routine activeRoutine;
 
     @Column(unique = true)
+    @Pattern(regexp = "^[A-Za-z0-9_]{3,11}$",
+            message = "사용 불가")
     private String nickname;
 
     private LocalDate birth;
@@ -70,8 +73,8 @@ public class User extends BaseEntity {
         this.isDeleted = isDeleted;
     }
 
-    public void editProfile(String awsImageUrl, String introduction, HealthClub healthClub, String split) {
-        this.imageUrl = awsImageUrl;
+    public void editProfile(String newImgUrl, String introduction, HealthClub healthClub, String split) {
+        this.imageUrl = newImgUrl;
         this.introduction = introduction;
         changeHealthClub(healthClub);
         this.preferredSplit = ExerciseSplit.titleFrom(split);
