@@ -8,6 +8,8 @@ import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import com.ogjg.daitgym.config.security.jwt.util.JwtUtils;
 import com.ogjg.daitgym.domain.Role;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -77,11 +79,13 @@ public class TokenController {
         response.setCharacterEncoding(CHARSET_UTF_8);
     }
 
+    @Getter
+    @NoArgsConstructor
     static class TokenTestRequest {
         private String email;
         private String nickname;
-
         private String role;
+
         public TokenTestRequest(String email, String nickname, String role) {
             this.email = email;
             this.nickname = nickname;
