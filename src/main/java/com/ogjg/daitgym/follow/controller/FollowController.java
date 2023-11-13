@@ -2,12 +2,14 @@ package com.ogjg.daitgym.follow.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.follow.dto.request.FollowRequest;
 import com.ogjg.daitgym.follow.dto.response.FollowCountResponse;
 import com.ogjg.daitgym.follow.dto.response.FollowListResponse;
 import com.ogjg.daitgym.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -23,12 +25,10 @@ public class FollowController {
      */
     @PostMapping
     public ApiResponse<Void> follow(
-//            todo token에서 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody FollowRequest followRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        followService.follow(email1, followRequest);
+        followService.follow(userDetails.getEmail(), followRequest);
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
@@ -38,12 +38,10 @@ public class FollowController {
      */
     @DeleteMapping
     public ApiResponse<Void> unfollow(
-//            todo token에서 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody FollowRequest followRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        followService.unfollow(email1, followRequest);
+        followService.unfollow(userDetails.getEmail(), followRequest);
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }

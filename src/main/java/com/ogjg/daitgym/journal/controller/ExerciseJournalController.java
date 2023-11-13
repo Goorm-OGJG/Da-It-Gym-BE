@@ -2,12 +2,14 @@ package com.ogjg.daitgym.journal.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
 import com.ogjg.daitgym.journal.service.ExerciseJournalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,12 +29,12 @@ public class ExerciseJournalController {
      */
     @PostMapping
     public ApiResponse<Void> createJournal(
-//            todo 토큰에서 유저이메일 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody CreateJournalRequest createJournalRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.createJournal(email1, createJournalRequest.getJournalDate());
+        exerciseJournalService.createJournal(
+                userDetails.getEmail(), createJournalRequest.getJournalDate()
+        );
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
@@ -42,12 +44,12 @@ public class ExerciseJournalController {
      */
     @PostMapping("/exercise-list")
     public ApiResponse<Void> addExerciseToJournal(
-//            todo 토큰에서 유저이메일 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody ExerciseListRequest exerciseListRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.createExerciseList(email1, exerciseListRequest);
+        exerciseJournalService.createExerciseList(
+                userDetails.getEmail(), exerciseListRequest
+        );
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
@@ -57,12 +59,12 @@ public class ExerciseJournalController {
      */
     @PostMapping("/exercise-history")
     public ApiResponse<Void> addExerciseHistoryToExerciseList(
-//            todo 토큰에서 유저이메일 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody ExerciseHistoryRequest exerciseHistoryRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.createExerciseHistory(email1, exerciseHistoryRequest);
+        exerciseJournalService.createExerciseHistory(
+                userDetails.getEmail(), exerciseHistoryRequest
+        );
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
@@ -72,12 +74,11 @@ public class ExerciseJournalController {
      */
     @DeleteMapping("/{journalId}")
     public ApiResponse<Void> deleteJournal(
-            //todo email가져오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("journalId") Long journalId
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.deleteJournal(email1, journalId);
+        exerciseJournalService.deleteJournal(userDetails.getEmail(), journalId);
+
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -86,12 +87,11 @@ public class ExerciseJournalController {
      */
     @DeleteMapping("/exercise-list/{exerciseListId}")
     public ApiResponse<Void> deleteExerciseList(
-            //            todo 토큰에서 유저이메일 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("exerciseListId") Long exerciseListId
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.deleteExerciseList(email1, exerciseListId);
+        exerciseJournalService.deleteExerciseList(userDetails.getEmail(), exerciseListId);
+
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -100,12 +100,13 @@ public class ExerciseJournalController {
      */
     @DeleteMapping("/exercise-history/{exerciseHistoryId}")
     public ApiResponse<Void> deleteExerciseHistory(
-            //            todo 토큰에서 유저이메일 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("exerciseHistoryId") Long exerciseHistoryId
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.deleteExerciseHistory(email1, exerciseHistoryId);
+        exerciseJournalService.deleteExerciseHistory(
+                userDetails.getEmail(), exerciseHistoryId
+        );
+
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -114,13 +115,14 @@ public class ExerciseJournalController {
      */
     @PatchMapping("/exercise-history/{exerciseHistoryId}")
     public ApiResponse<Void> updateExerciseHistory(
-            //            todo 토큰에서 유저이메일 받아오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("exerciseHistoryId") Long exerciseHistoryId,
             @RequestBody UpdateExerciseHistoryRequest updateExerciseHistoryRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.updateExerciseHistory(email1, exerciseHistoryId, updateExerciseHistoryRequest);
+        exerciseJournalService.updateExerciseHistory(
+                userDetails.getEmail(), exerciseHistoryId, updateExerciseHistoryRequest
+        );
+
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -129,12 +131,12 @@ public class ExerciseJournalController {
      */
     @GetMapping
     public ApiResponse<UserJournalListResponse> userJournalList(
-//      todo email 가져오기
-            String email
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        UserJournalListResponse userJournalList = exerciseJournalService.userJournalList(email1);
-        return new ApiResponse<>(ErrorCode.SUCCESS, userJournalList);
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                exerciseJournalService.userJournalList(userDetails.getEmail())
+        );
     }
 
     /**
@@ -142,13 +144,13 @@ public class ExerciseJournalController {
      */
     @GetMapping("/{journalDate}")
     public ApiResponse<UserJournalDetailResponse> userJournalDetail(
-//      todo email 가져오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("journalDate") LocalDate journalDate
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        UserJournalDetailResponse userJournalDetail = exerciseJournalService.userJournalDetail(journalDate, email1);
-        return new ApiResponse<>(ErrorCode.SUCCESS, userJournalDetail);
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                exerciseJournalService.userJournalDetail(journalDate, userDetails.getEmail())
+        );
     }
 
     /**
@@ -156,13 +158,14 @@ public class ExerciseJournalController {
      */
     @PostMapping("/exercise-list/{exerciseListId}/rest-time")
     public ApiResponse<Void> changeExerciseListRestTime(
-//            todo email가져오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("exerciseListId") Long exerciseListId,
             @RequestBody UpdateRestTimeRequest updateRestTimeRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.changeExerciseListRestTime(email1, exerciseListId, updateRestTimeRequest);
+        exerciseJournalService.changeExerciseListRestTime(
+                userDetails.getEmail(), exerciseListId, updateRestTimeRequest
+        );
+
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -171,13 +174,14 @@ public class ExerciseJournalController {
      */
     @PatchMapping("/{journalId}/complete")
     public ApiResponse<Void> exerciseJournalComplete(
-//            todo email가져오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("journalId") Long journalId,
             @RequestBody ExerciseJournalCompleteRequest exerciseJournalCompleteRequest
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.exerciseJournalComplete(journalId, email1, exerciseJournalCompleteRequest);
+        exerciseJournalService.exerciseJournalComplete(
+                journalId, userDetails.getEmail(), exerciseJournalCompleteRequest
+        );
+
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -186,14 +190,15 @@ public class ExerciseJournalController {
      */
     @PatchMapping("/{journalId}/share")
     public ApiResponse<Void> exerciseJournalShare(
-//            todo email가져오기
-            String email,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PathVariable("journalId") Long journalId,
             @RequestPart("share") ExerciseJournalShareRequest exerciseJournalShareRequest,
             @RequestPart(value = "imgFiles", required = false) List<MultipartFile> imgFiles
     ) {
-        String email1 = "dlehdwls21@naver.com";
-        exerciseJournalService.exerciseJournalShare(journalId, email1, exerciseJournalShareRequest, imgFiles);
+        exerciseJournalService.exerciseJournalShare(
+                journalId, userDetails.getEmail(), exerciseJournalShareRequest, imgFiles
+        );
+
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
@@ -204,12 +209,10 @@ public class ExerciseJournalController {
     public ApiResponse<Void> replicationExerciseJournal(
             @PathVariable("journalId") Long journalId,
             @RequestBody ReplicationExerciseJournalRequest replicationExerciseJournalRequest,
-//            todo 토큰에서 email
-            String email
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String email1 = "dlehdwls21@naver.com";
         exerciseJournalService.replicationExerciseJournal(
-                email1, journalId, replicationExerciseJournalRequest
+                userDetails.getEmail(), journalId, replicationExerciseJournalRequest
         );
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
