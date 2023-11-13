@@ -4,23 +4,20 @@ import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
+import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
+import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
 import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
-import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
-import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
 import com.ogjg.daitgym.user.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -99,7 +96,7 @@ public class UserController {
     @PutMapping("/{nickname}")
     public ApiResponse<Void> editUserProfile(
             @PathVariable("nickname") String nickname,
-            @RequestPart MultipartFile userProfileImg,
+            @RequestPart(required = false) MultipartFile userProfileImg,
             @RequestPart EditUserProfileRequest request,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
@@ -114,8 +111,8 @@ public class UserController {
     @PostMapping("/career/submit")
     public ApiResponse<Void> applyForApproval(
             @RequestPart ApplyForApprovalRequest request,
-            @RequestPart List<MultipartFile> certificationImgs,
-            @RequestPart List<MultipartFile> awardImgs,
+            @RequestPart(required = false) List<MultipartFile> certificationImgs,
+            @RequestPart(required = false) List<MultipartFile> awardImgs,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
         String loginEmail = userDetails.getEmail();
