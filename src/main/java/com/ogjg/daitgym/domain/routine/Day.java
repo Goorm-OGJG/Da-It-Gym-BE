@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.FetchType.*;
@@ -25,7 +26,7 @@ public class Day {
     private Routine routine;
 
     @OneToMany(mappedBy = "day", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ExerciseDetail> exerciseDetails;
+    private List<ExerciseDetail> exerciseDetails = new ArrayList<>();
 
     private int dayNumber;
 
