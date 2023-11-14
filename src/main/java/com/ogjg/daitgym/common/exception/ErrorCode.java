@@ -35,7 +35,8 @@ public enum ErrorCode implements ErrorType {
     ALREADY_EXIST_NICKNAME(HttpStatus.BAD_REQUEST, "400", "중복되는 닉네임입니다."),
     UNAUTHORIZED_USER_ACCESS(HttpStatus.FORBIDDEN, "403", "접근 권한이 부족합니다."),
     NO_EXERCISE_IN_ROUTINE(HttpStatus.NOT_FOUND, "404", "루틴의 운동을 찾을 수 없습니다."),
-    EMPTY_TRAINER_APPLY_APPROVAL(HttpStatus.BAD_REQUEST, "400", "잘못된 승인 신청입니다. 자격 혹은 수상내역 입력이 누락되었습니다.");
+    EMPTY_TRAINER_APPLY_APPROVAL(HttpStatus.BAD_REQUEST, "400", "잘못된 승인 신청입니다. 자격 혹은 수상내역 입력이 누락되었습니다."),
+    ALREADY_SCRAPED_ROUTINE(HttpStatus.BAD_REQUEST, "400", "이미 스크랩한 루틴입니다.");
 
     @JsonIgnore
     private final HttpStatus statusCode;
