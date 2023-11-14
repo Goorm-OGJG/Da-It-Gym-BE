@@ -8,10 +8,9 @@ import com.ogjg.daitgym.domain.feed.FeedExerciseJournalCollection;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalImage;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
-import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
-import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
-import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
-import com.ogjg.daitgym.feed.dto.response.FeedImageDto;
+import com.ogjg.daitgym.feed.dto.response.*;
+import com.ogjg.daitgym.feed.exception.AlreadyExistFeedJournalCollection;
+import com.ogjg.daitgym.feed.exception.NotFoundFeedJournalCollection;
 import com.ogjg.daitgym.feed.exception.RangeOverImages;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalCollectionRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalImageRepository;
@@ -31,7 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -92,20 +91,28 @@ public class FeedExerciseJournalService {
      * todo 개선하기
      */
     @Transactional(readOnly = true)
-    public List<FeedExerciseJournalListResponse> feedExerciseJournalLists(
+    public FeedExerciseJournalListResponse feedExerciseJournalLists(
             Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
         Page<FeedExerciseJournal> feedExerciseJournals = feedExerciseJournalRepository
                 .feedExerciseJournalLists(pageable, feedSearchConditionRequest);
 
-        return feedExerciseJournals.getContent()
+        List<FeedExerciseJournalListDto> content = feedExerciseJournals.getContent()
                 .stream()
-                .map(feedExerciseJournal -> new FeedExerciseJournalListResponse(
+                .map(feedExerciseJournal -> new FeedExerciseJournalListDto(
                         feedExerciseJournal.getId(),
                         feedExerciseJournalLikes(feedExerciseJournal.getId()),
                         feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
                         findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
-                )).collect(Collectors.toList());
+                )).toList();
+
+        int totalpage = feedExerciseJournals.getTotalPages();
+        if (!content.isEmpty()) {
+            totalpage -= 1;
+
+        }
+
+        return new FeedExerciseJournalListResponse(totalpage, content);
     }
 
     /**
@@ -113,19 +120,28 @@ public class FeedExerciseJournalService {
      * 분할 및 부위 분할 및 부위로 검색가능
      */
     @Transactional(readOnly = true)
-    public List<FeedExerciseJournalListResponse> followFeedJournalLists(
+    public FeedExerciseJournalListResponse followFeedJournalLists(
             String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
         Page<FeedExerciseJournal> feedExerciseJournals = feedExerciseJournalRepository
                 .feedExerciseJournalListsByFollow(email, pageable, feedSearchConditionRequest);
 
-        return feedExerciseJournals.getContent().stream()
-                .map(feedExerciseJournal -> new FeedExerciseJournalListResponse(
+        List<FeedExerciseJournalListDto> content = feedExerciseJournals.getContent()
+                .stream()
+                .map(feedExerciseJournal -> new FeedExerciseJournalListDto(
                         feedExerciseJournal.getId(),
                         feedExerciseJournalLikes(feedExerciseJournal.getId()),
                         feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
                         findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
-                )).collect(Collectors.toList());
+                )).toList();
+
+        int totalpage = feedExerciseJournals.getTotalPages();
+
+        if (!content.isEmpty()) {
+            totalpage -= 1;
+        }
+
+        return new FeedExerciseJournalListResponse(totalpage, content);
     }
 
     /**
@@ -154,14 +170,43 @@ public class FeedExerciseJournalService {
     /**
      * 피드 운동일지 스크랩
      */
+    @Transactional
     public void feedExerciseJournalScrap(
             String email, Long feedExerciseJournalId
     ) {
+        if (findFeedExerciseJournalCollectionByUserAndFeedExerciseJournal(email, feedExerciseJournalId).isPresent())
+            throw new AlreadyExistFeedJournalCollection();
+
         feedExerciseJournalCollectionRepository.save(
                 new FeedExerciseJournalCollection(
                         feedJournalHelperService.findUserByEmail(email),
                         feedJournalHelperService.findFeedJournalById(feedExerciseJournalId)
                 )
+        );
+    }
+
+    /**
+     * 피드 운동일지 스크랩 취소
+     */
+    @Transactional
+    public void feedExerciseJournalDeleteScrap(
+            String email, Long feedExerciseJournalId
+    ) {
+        feedExerciseJournalCollectionRepository.delete(
+                findFeedExerciseJournalCollectionByUserAndFeedExerciseJournal(email, feedExerciseJournalId)
+                        .orElseThrow(NotFoundFeedJournalCollection::new)
+        );
+    }
+
+    /**
+     * 유저이메일과 피드 운동일지 Id를 통해 컬렉션 검색
+     */
+    private Optional<FeedExerciseJournalCollection> findFeedExerciseJournalCollectionByUserAndFeedExerciseJournal(
+            String email, Long feedExerciseJournalId
+    ) {
+        return feedExerciseJournalCollectionRepository.findByUserAndFeedExerciseJournal(
+                feedJournalHelperService.findUserByEmail(email),
+                feedJournalHelperService.findFeedJournalById(feedExerciseJournalId)
         );
     }
 

@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.feed.service;
 
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
+import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListDto;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,44 +19,60 @@ public class UserFeedExerciseJournalService {
 
     private final FeedExerciseJournalRepository feedExerciseJournalRepository;
     private final FeedExerciseJournalService feedExerciseJournalService;
-    private final FeedJournalHelperService feedJournalHelperService;
 
     /**
      * 유저 페이지 피드 운동일지 목록 가져오기
      */
-    public List<FeedExerciseJournalListResponse> userFeedExerciseJournalLists(
+    public FeedExerciseJournalListResponse userFeedExerciseJournalLists(
             String nickname, Pageable pageable
     ) {
         Page<FeedExerciseJournal> userFeedExerciseJournals = feedExerciseJournalRepository.userFeedExerciseJournalLists(nickname, pageable);
 
-        return userFeedExerciseJournals.getContent()
+        List<FeedExerciseJournalListDto> content = userFeedExerciseJournals.getContent()
                 .stream().map(
-                        feedExerciseJournal -> new FeedExerciseJournalListResponse(
+                        feedExerciseJournal -> new FeedExerciseJournalListDto(
                                 feedExerciseJournal.getId(),
                                 feedExerciseJournalService.feedExerciseJournalLikes(feedExerciseJournal.getId()),
                                 feedExerciseJournalService.feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
                                 feedExerciseJournalService.findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
                         )
                 ).toList();
+
+        int totalpage = userFeedExerciseJournals.getTotalPages();
+
+        if (!content.isEmpty()) {
+            totalpage -= 1;
+        }
+
+        return new FeedExerciseJournalListResponse(totalpage, content);
     }
 
     /**
      * 피드 운동일지 보관함 조회 목록보기
      */
-    public List<FeedExerciseJournalListResponse> userFeedExerciseJournalCollectionLists(
+    public FeedExerciseJournalListResponse userFeedExerciseJournalCollectionLists(
             String nickname, Pageable pageable
     ) {
         Page<FeedExerciseJournal> userFeedJournalCollections = feedExerciseJournalRepository.userFeedExerciseJournalCollectionLists(nickname, pageable);
 
-        return userFeedJournalCollections.getContent()
+        List<FeedExerciseJournalListDto> content = userFeedJournalCollections.getContent()
                 .stream()
                 .map(
-                        feedExerciseJournal -> new FeedExerciseJournalListResponse(
+                        feedExerciseJournal -> new FeedExerciseJournalListDto(
                                 feedExerciseJournal.getId(),
                                 feedExerciseJournalService.feedExerciseJournalLikes(feedExerciseJournal.getId()),
                                 feedExerciseJournalService.feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
                                 feedExerciseJournalService.findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
                         )
                 ).toList();
+
+
+        int totalpage = userFeedJournalCollections.getTotalPages();
+        if (!content.isEmpty()) {
+            totalpage -= 1;
+
+        }
+
+        return new FeedExerciseJournalListResponse(totalpage, content);
     }
 }
