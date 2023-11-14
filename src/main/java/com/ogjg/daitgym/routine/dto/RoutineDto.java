@@ -1,9 +1,11 @@
 package com.ogjg.daitgym.routine.dto;
 
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Getter
 public class RoutineDto {
 
     private Long id;
