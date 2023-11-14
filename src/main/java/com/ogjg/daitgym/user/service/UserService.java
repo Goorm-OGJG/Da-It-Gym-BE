@@ -66,6 +66,10 @@ public class UserService {
         User user = findUserByNickname(nickname);
 
         return GetUserProfileGetResponse.builder()
+                .nickname(user.getNickname())
+                .preferredSplit(user.getPreferredSplit().getTitle())
+                .userProfileImgUrl(user.getImageUrl())
+                .introduction(user.getIntroduction())
                 .healthClubName(user.getHealthClub().getName())
                 .journalCount(exerciseJournalRepository.countByUserEmail(user.getEmail()))
                 .followerCount(followRepository.countByFollowPKTargetEmail(user.getEmail()))
