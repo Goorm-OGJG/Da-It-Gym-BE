@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.chat.controller;
 
-import com.ogjg.daitgym.chat.dto.ChatMessageRequestDto;
+import com.ogjg.daitgym.chat.dto.CreateChatRoomRequest;
 import com.ogjg.daitgym.chat.dto.ChatMessageResponseDto;
 import com.ogjg.daitgym.chat.dto.ChatRoomResponse;
 import com.ogjg.daitgym.chat.dto.SelectedChatRoomResponse;
@@ -27,9 +27,9 @@ public class ChatRoomController {
      */
     @PostMapping("/rooms")
     public ApiResponse<ChatRoomResponse> createRoom(@RequestParam String email,
-                                                    @RequestBody ChatMessageRequestDto chatMessageRequestDto) {
+                                                    @RequestBody CreateChatRoomRequest createChatRoomRequest) {
 
-        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.createChatRoom(email, chatMessageRequestDto));
+        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.createChatRoom(email, createChatRoomRequest));
     }
 
     /**

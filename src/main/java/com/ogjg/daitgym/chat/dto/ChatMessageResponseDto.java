@@ -15,9 +15,9 @@ public class ChatMessageResponseDto {
     private String receiver;
     private String message;
     private String imageUrl;
-    private LocalDateTime createdAt;
+    private LocalDateTime messageCreatedAt;
 
-    public ChatMessageResponseDto(Long id, String roomName, String redisRoomId, String sender, String receiver, String message, String imageUrl,LocalDateTime createdAt) {
+    public ChatMessageResponseDto(Long id, String roomName, String redisRoomId, String sender, String receiver, String message, String imageUrl, LocalDateTime messageCreatedAt) {
         this.id = id;
         this.roomName = roomName;
         this.redisRoomId = redisRoomId;
@@ -25,6 +25,6 @@ public class ChatMessageResponseDto {
         this.receiver = receiver;
         this.message = message;
         this.imageUrl = imageUrl;
-        this.createdAt = createdAt;
+        this.messageCreatedAt = messageCreatedAt;
     }
 }

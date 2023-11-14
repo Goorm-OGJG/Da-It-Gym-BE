@@ -19,6 +19,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,12 +56,14 @@ public class ChatRoomService {
      * 만약 채팅방이 존재한다면 존재하고 있는 chatRoomd의 redisRoomId 값을 return한다.
      */
     @Transactional
-    public ChatRoomResponse createChatRoom(String email, ChatMessageRequestDto chatMessageRequestDto) {
+    public ChatRoomResponse createChatRoom(String email, CreateChatRoomRequest createChatRoomRequest) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUser::new);
-        ChatRoom chatRoom = chatRoomRepository.findBySenderAndReceiver(user.getNickname(), chatMessageRequestDto.getReceiver());
+        User receiver = userRepository.findByNickname(createChatRoomRequest.getReceiver()).orElseThrow(NotFoundUser::new);
 
-        if ((chatRoom == null) || (chatRoom != null && (!user.getNickname().equals(chatRoom.getSender()) && !chatMessageRequestDto.getReceiver().equals(chatRoom.getReceiver())))) {
-            ChatRoomDto chatRoomDto = ChatRoomDto.create(chatMessageRequestDto, user);
+        ChatRoom chatRoom = chatRoomRepository.findBySenderAndReceiver(user.getNickname(), createChatRoomRequest.getReceiver());
+
+        if ((chatRoom == null) || (chatRoom != null && (!user.getNickname().equals(chatRoom.getSender()) && !createChatRoomRequest.getReceiver().equals(chatRoom.getReceiver())))) {
+            ChatRoomDto chatRoomDto = ChatRoomDto.create(createChatRoomRequest, user, receiver);
             opsHashChatRoom.put(CHAT_ROOMS, chatRoomDto.getRedisRoomId(), chatRoomDto);
 
             ChatRoom saveChatRoom = ChatRoom.builder()
@@ -91,6 +94,8 @@ public class ChatRoomService {
         for (ChatRoom chatRoom : chatRooms) {
             ChatMessageDto latestMsg = chatMessageService.latestMessage(chatRoom.getRedisRoomId());
             String msg = (latestMsg != null) ? latestMsg.getMessage() : "";
+            LocalDateTime messageCreatedAt = (latestMsg!=null)? latestMsg.getMessageCreatedAt() : null;
+
             if (user.getNickname().equals(chatRoom.getSender())) {
                 ChatMessageResponseDto chatMessageResponseDto = new ChatMessageResponseDto(
                         chatRoom.getId(),
@@ -100,9 +105,10 @@ public class ChatRoomService {
                         chatRoom.getReceiver(),
                         msg,
                         chatRoom.getImageUrl(),
-                        chatRoom.getCreatedAt());
-
+                        messageCreatedAt
+                );
                 chatRoomDtos.add(chatMessageResponseDto);
+
             } else if (user.getNickname().equals(chatRoom.getReceiver())) {
                 ChatMessageResponseDto chatMessageResponseDto = new ChatMessageResponseDto(
                         chatRoom.getId(),
@@ -112,7 +118,7 @@ public class ChatRoomService {
                         chatRoom.getReceiver(),
                         msg,
                         chatRoom.getImageUrl(),
-                        chatRoom.getCreatedAt()
+                        messageCreatedAt
                 );
 
                 chatRoomDtos.add(chatMessageResponseDto);

@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class ChatMessageRequestDto {
+public class CreateChatRoomRequest {
     private String receiver;
-    private String receiverImageUrl;
 }

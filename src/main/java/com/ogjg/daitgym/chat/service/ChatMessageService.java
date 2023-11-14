@@ -62,7 +62,6 @@ public class ChatMessageService {
 
         chatMessageRepository.save(chatMessage);
         chatMessageDto.setChatMessageId(chatMessage.getId());
-        chatMessageDto.setReadCount(2);
         chatMessageDto.setImageUrl(user.getImageUrl());
 
         redisTemplateMessage.setValueSerializer(new Jackson2JsonRedisSerializer<>(ChatMessageDto.class));
@@ -84,14 +83,14 @@ public class ChatMessageService {
 
         SetOperations<String, Object> setOperations = redisTemplate.opsForSet();
         Long size = setOperations.size(roomId + "set");
-        updateReadCount(roomId, size);
+        updateReadCount(roomId, user);
 
         List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
 
         List<ChatMessageDto> redisMessageList = redisTemplateMessage.opsForList().range(roomId, 0, 99);
 
         if (redisMessageList == null || redisMessageList.isEmpty() || redisMessageList.size() < 100) {
-            List<ChatMessage> dbMessageList = chatMessageRepository.findTop100ByRedisRoomIdOrderByCreatedAtAsc(roomId);
+            List<ChatMessage> dbMessageList = chatMessageRepository.findTop100ByRedisRoomIdOrderByMessageCreatedAtAsc(roomId);
 
             for (int i = 0; i < redisMessageList.size(); i++) {
                 ChatMessageDto chatMessageDto = new ChatMessageDto(dbMessageList.get(i));
@@ -125,7 +124,7 @@ public class ChatMessageService {
         ChatMessageDto latestMessage = redisTemplateMessage.opsForList().index(roomId, -1);
 
         if (latestMessage == null) {
-            ChatMessage dbLatestMessage = chatMessageRepository.findTop1ByRedisRoomIdOrderByCreatedAtDesc(roomId);
+            ChatMessage dbLatestMessage = chatMessageRepository.findTop1ByRedisRoomIdOrderByMessageCreatedAtDesc(roomId);
 
             if (dbLatestMessage != null) {
                 latestMessage = new ChatMessageDto(dbLatestMessage);
@@ -136,21 +135,13 @@ public class ChatMessageService {
     }
 
     @Transactional
-    public void updateReadCount(String redisRoomId, Long size) {
-        List<ChatMessage> chatMessages = chatMessageRepository.findAllByRedisRoomId(redisRoomId);
-        if (!chatMessages.isEmpty()) {
-            if (size == 2) {
-                for (ChatMessage chatMessage : chatMessages) {
-                    chatMessage.setReadCount(0);
-                    chatMessageRepository.save(chatMessage);
-                }
-            } else {
-                for (ChatMessage chatMessage : chatMessages) {
-                    chatMessage.setReadCount(1);
-                    chatMessageRepository.save(chatMessage);
+    public void updateReadCount(String redisRoomId, User user) {
+        String nickName = user.getNickname();
+        List<ChatMessage> chatMessages = chatMessageRepository.findAllByRedisRoomIdAndReadCountAndSenderNot(redisRoomId, 1, nickName);
 
-                }
-            }
+        for (ChatMessage chatMessage : chatMessages) {
+            chatMessage.setReadCount(0);
+            chatMessageRepository.save(chatMessage);
         }
     }
 }
