@@ -12,6 +12,7 @@ import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
 import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
+import com.ogjg.daitgym.user.dto.response.EditUserProfileResponse;
 import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.exception.AlreadyExistNickname;
@@ -81,11 +82,15 @@ public class UserService {
     }
 
     @Transactional
-    public void editUserProfile(String loginEmail, String nickname, EditUserProfileRequest request, MultipartFile multipartFile) {
+    public EditUserProfileResponse editUserProfile(String loginEmail, String nickname, EditUserProfileRequest request, MultipartFile multipartFile) {
         User user = findUserByNickname(nickname);
 
         if (!loginEmail.equals(user.getEmail())) {
             throw new WrongApproach("본인의 프로필만 수정할 수 있습니다.");
+        }
+
+        if (isNicknameAlreadyExist(request.getNickname())) {
+            throw new AlreadyExistNickname();
         }
 
         String newImgUrl;
@@ -115,6 +120,8 @@ public class UserService {
         );
 
         userRepository.save(user);
+
+        return EditUserProfileResponse.of(user);
     }
 
     private static boolean isEmptyFile(MultipartFile multipartFile) {
