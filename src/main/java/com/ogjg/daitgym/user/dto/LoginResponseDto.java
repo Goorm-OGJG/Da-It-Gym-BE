@@ -14,30 +14,36 @@ public class LoginResponseDto {
 
     private String nickname;
 
-    private String userImg;
+    private String userProfileImgUrl;
 
     private String preferredSplit;
 
+    private String introduction;
+
+    private String healthClubName;
+
     private boolean isAlreadyJoined;
 
-    private boolean isAdmin;
+    private String role;
 
     private boolean isDeleted;
 
     @Builder
-    public LoginResponseDto(String nickname, String userImg, String preferredSplit, boolean isAlreadyJoined, boolean isAdmin, boolean isDeleted) {
+    public LoginResponseDto(String nickname, String userProfileImgUrl, String preferredSplit, String introduction, String healthClubName, boolean isAlreadyJoined, String role, boolean isDeleted) {
         this.nickname = nickname;
-        this.userImg = userImg;
+        this.userProfileImgUrl = userProfileImgUrl;
         this.preferredSplit = preferredSplit;
+        this.introduction = introduction;
+        this.healthClubName = healthClubName;
         this.isAlreadyJoined = isAlreadyJoined;
-        this.isAdmin = isAdmin;
+        this.role = role;
         this.isDeleted = isDeleted;
     }
 
     public static LoginResponseDto from(OAuth2JwtUserDetails oAuth2UserDetails) {
         return LoginResponseDto.builder()
                 .nickname(UUID.randomUUID().toString())
-                .userImg("default")
+                .userProfileImgUrl("default")
                 .isAlreadyJoined(oAuth2UserDetails.isAlreadyJoined())
                 .build();
     }

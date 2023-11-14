@@ -27,4 +27,9 @@ public enum ExerciseSplit {
                 .findAny()
                 .orElseThrow(() -> new NotFoundSplitTitle());
     }
+
+    public String getTitleOrDefault() {
+        if (title == null) return THREE_DAY.title;
+        else return title;
+    }
 }

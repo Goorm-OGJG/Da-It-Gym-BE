@@ -117,7 +117,6 @@ public class AuthService {
                     .healthClub(defaultHealthClub)
                     .build();
 
-
             userRepository.save(user);
 
             JwtUserClaimsDto jwtUserClaimsDto = JwtUserClaimsDto.builder()
@@ -127,12 +126,14 @@ public class AuthService {
             addTokensInHeader(servletResponse, jwtUserClaimsDto);
 
             return LoginResponseDto.builder()
+                    .nickname(tempNickname)
+                    .userProfileImgUrl(AWS_DEFAULT_PROFILE_IMG_URL)
+                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
+                    .introduction("")
+                    .healthClubName(defaultHealthClub.getName())
                     .isAlreadyJoined(isAlreadyJoined)
                     .isDeleted(isDeleted)
-                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
-                    .isAdmin(false)
-                    .userImg(AWS_DEFAULT_PROFILE_IMG_URL)
-                    .nickname(tempNickname)
+                    .role(Role.USER.getTitle())
                     .build();
 
         // todo : 가입했다 탈퇴한 회원 처리
@@ -141,12 +142,14 @@ public class AuthService {
             isDeleted = true;
 
             return LoginResponseDto.builder()
+                    .nickname(tempNickname)
+                    .userProfileImgUrl(AWS_DEFAULT_PROFILE_IMG_URL)
+                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
+                    .introduction("")
+                    .healthClubName(defaultHealthClub.getName())
                     .isAlreadyJoined(isAlreadyJoined)
                     .isDeleted(isDeleted)
-                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
-                    .isAdmin(false)
-                    .userImg(AWS_DEFAULT_PROFILE_IMG_URL)
-                    .nickname(tempNickname)
+                    .role(Role.USER.getTitle())
                     .build();
 
         // 가입한 회원 -> 유저정보를 불러온다.
@@ -161,12 +164,14 @@ public class AuthService {
             addTokensInHeader(servletResponse, jwtUserClaimsDto);
 
             return LoginResponseDto.builder()
-                    .isAlreadyJoined(isAlreadyJoined)
-                    .isDeleted(isDeleted)
-                    .preferredSplit(existUser.getPreferredSplit().getTitle())
-                    .isAdmin(existUser.isAdmin())
-                    .userImg(existUser.getImageUrl())
                     .nickname(existUser.getNickname())
+                    .userProfileImgUrl(existUser.getImageUrl())
+                    .preferredSplit(existUser.getPreferredSplit().getTitleOrDefault())
+                    .introduction(existUser.getIntroduction())
+                    .healthClubName(defaultHealthClub.getName())
+                    .isAlreadyJoined(isAlreadyJoined)
+                    .role(existUser.getRole().getTitleOrDefault())
+                    .isDeleted(isDeleted)
                     .build();
         }
     }
