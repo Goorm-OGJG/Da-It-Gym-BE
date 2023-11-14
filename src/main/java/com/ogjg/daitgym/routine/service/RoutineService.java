@@ -63,6 +63,7 @@ public class RoutineService {
     private RoutineListResponseDto getRoutineListResponseDto(Slice<Routine> routines, String identifier) {
 
         Set<Long> likedRoutineIds = getLikedRoutineIds(identifier);
+        Set<Long> scrapedRoutineIds = getScrapedRoutineIds(identifier);
 
         List<RoutineDto> routineDtos = routines.stream()
                 .map(routine -> RoutineDto.builder()
@@ -73,6 +74,7 @@ public class RoutineService {
                         .description(routine.getContent())
                         .liked(likedRoutineIds.contains(routine.getId()))
                         .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
+                        .scraped(scrapedRoutineIds.contains(routine.getId()))
                         .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
                         .createdAt(routine.getCreatedAt())
                         .build())
@@ -85,11 +87,20 @@ public class RoutineService {
                 .build();
     }
 
+
     private Set<Long> getLikedRoutineIds(String identifier) {
         if (isEmail(identifier)) {
             return routineLikeRepository.findLikedRoutineIdByUserEmail(identifier);
         } else {
             return routineLikeRepository.findLikedRoutineIdByUserNickname(identifier);
+        }
+    }
+
+    private Set<Long> getScrapedRoutineIds(String identifier) {
+        if (isEmail(identifier)) {
+            return userRoutineCollectionRepository.findScrapedRoutineIdByUserEmail(identifier);
+        } else {
+            return userRoutineCollectionRepository.findScrapedRoutineIdByUserNickname(identifier);
         }
     }
 

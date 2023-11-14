@@ -15,11 +15,12 @@ public class RoutineDto {
     private String description;
     private boolean liked;
     private long likeCounts;
+    private boolean scraped;
     private long scrapCounts;
     private LocalDateTime createdAt;
 
     @Builder
-    public RoutineDto(Long id, String title, String author, String authorImg, String description, boolean liked, long likeCounts, long scrapCounts, LocalDateTime createdAt) {
+    public RoutineDto(Long id, String title, String author, String authorImg, String description, boolean liked, long likeCounts, boolean scraped, long scrapCounts, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -27,6 +28,7 @@ public class RoutineDto {
         this.description = description;
         this.liked = liked;
         this.likeCounts = likeCounts;
+        this.scraped = scraped;
         this.scrapCounts = scrapCounts;
         this.createdAt = createdAt;
     }
