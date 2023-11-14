@@ -171,14 +171,14 @@ public class AuthService {
         }
     }
 
-    // todo : 삭제 요망 로직
     private HealthClub findDefaultHealthClub() {
         List<HealthClub> clubs = healthClubRepository.findByName("");
         HealthClub defaultHealthClub;
         if (clubs.isEmpty()) {
-            return defaultHealthClub = HealthClub.builder()
+            defaultHealthClub = HealthClub.builder()
                     .name("")
                     .build();
+            return healthClubRepository.save(defaultHealthClub);
         } else {
             return defaultHealthClub = clubs.get(0);
         }
