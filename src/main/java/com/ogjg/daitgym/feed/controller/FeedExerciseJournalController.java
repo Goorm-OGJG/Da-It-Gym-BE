@@ -17,8 +17,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -43,7 +41,7 @@ public class FeedExerciseJournalController {
     /**
      * 운동일지 수 가져오기
      */
-    @GetMapping("/count/{nickname}")
+    @GetMapping("/counts/{nickname}")
     public ApiResponse<FeedExerciseJournalCountResponse> countExerciseJournal(
             @PathVariable("nickname") String nickname
     ) {
@@ -65,10 +63,22 @@ public class FeedExerciseJournalController {
     }
 
     /**
+     * 피드 운동일지 스크랩 취소하기
+     */
+    @DeleteMapping("/{feedJournalId}/scrap")
+    public ApiResponse<Void> feedExerciseJournalDeleteScrap(
+            @PathVariable("feedJournalId") Long feedJournalId,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+        feedExerciseJournalService.feedExerciseJournalDeleteScrap(userDetails.getEmail(), feedJournalId);
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
+
+    /**
      * 피드 운동일지 목록 가져오기
      */
     @GetMapping
-    public ApiResponse<List<FeedExerciseJournalListResponse>> getFeedJournalLists(
+    public ApiResponse<FeedExerciseJournalListResponse> getFeedJournalLists(
             @PageableDefault(page = 0, size = 12) Pageable pageable,
             @ModelAttribute FeedSearchConditionRequest feedSearchConditionRequest
     ) {
@@ -82,7 +92,7 @@ public class FeedExerciseJournalController {
      * 팔로우 피드 목록 가져오기
      */
     @GetMapping("/follow")
-    public ApiResponse<List<FeedExerciseJournalListResponse>> getFollowFeedJournalLists(
+    public ApiResponse<FeedExerciseJournalListResponse> getFollowFeedJournalLists(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @PageableDefault(page = 0, size = 12) Pageable pageable,
             @ModelAttribute FeedSearchConditionRequest feedSearchConditionRequest

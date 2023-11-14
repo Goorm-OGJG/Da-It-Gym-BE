@@ -9,9 +9,9 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class FeedExerciseJournalCountResponse {
 
-    private int count;
+    private int counts;
 
-    public FeedExerciseJournalCountResponse(int count) {
-        this.count = count;
+    public FeedExerciseJournalCountResponse(int counts) {
+        this.counts = counts;
     }
 }

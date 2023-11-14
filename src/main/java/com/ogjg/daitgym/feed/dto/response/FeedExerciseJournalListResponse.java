@@ -3,23 +3,20 @@ package com.ogjg.daitgym.feed.dto.response;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static lombok.AccessLevel.PROTECTED;
 
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 public class FeedExerciseJournalListResponse {
 
-    private Long feedJournalId;
-    private int likes;
-    private int scrapCounts;
-    private String image;
+    private int totalPage;
+    private List<FeedExerciseJournalListDto> feedExerciseJournalLists = new ArrayList<>();
 
-    public FeedExerciseJournalListResponse(
-            Long feedJournalId, int likes, int scrapCounts, String image
-    ) {
-        this.feedJournalId = feedJournalId;
-        this.likes = likes;
-        this.scrapCounts = scrapCounts;
-        this.image = image;
+    public FeedExerciseJournalListResponse(int totalPage, List<FeedExerciseJournalListDto> feedExerciseJournalLists) {
+        this.totalPage = totalPage;
+        this.feedExerciseJournalLists = feedExerciseJournalLists;
     }
 }

@@ -14,11 +14,11 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class UserJournalDetailExerciseListDto {
 
-    private Long exerciseListId;
+    private Long id;
     private final boolean isSpread = false;
-    private String exerciseName;
+    private String name;
     private String part;
-    private int exerciseNum;
+    private int order;
     private TimeTemplate restTime;
     private List<UserJournalDetailExerciseHistoryDto> exerciseSets = new ArrayList<>();
 
@@ -26,10 +26,10 @@ public class UserJournalDetailExerciseListDto {
             ExerciseList exerciseList, String part,
             List<UserJournalDetailExerciseHistoryDto> exerciseSets
     ) {
-        this.exerciseListId = exerciseList.getId();
-        this.exerciseName = exerciseList.getExercise().getName();
+        this.id = exerciseList.getId();
+        this.name = exerciseList.getExercise().getName();
         this.part = part;
-        this.exerciseNum = exerciseList.getExerciseNum();
+        this.order = exerciseList.getExerciseNum();
         this.restTime = exerciseList.getRestTime();
         this.exerciseSets = exerciseSets;
     }

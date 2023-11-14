@@ -10,17 +10,17 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class UserJournalDetailExerciseHistoryDto {
 
-    private Long exerciseHistoryId;
-    private int setNum;
-    private int weight;
-    private int count;
+    private Long id;
+    private int order;
+    private int weights;
+    private int counts;
     private boolean isCompleted;
 
     public UserJournalDetailExerciseHistoryDto(ExerciseHistory exerciseHistory) {
-        this.exerciseHistoryId = exerciseHistory.getId();
-        this.setNum = exerciseHistory.getSetNum();
-        this.weight = exerciseHistory.getWeight();
-        this.count = exerciseHistory.getRepetitionCount();
+        this.id = exerciseHistory.getId();
+        this.order = exerciseHistory.getSetNum();
+        this.weights = exerciseHistory.getWeight();
+        this.counts = exerciseHistory.getRepetitionCount();
         this.isCompleted = exerciseHistory.isCompleted();
     }
 }

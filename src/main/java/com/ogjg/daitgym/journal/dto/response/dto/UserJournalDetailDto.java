@@ -15,10 +15,10 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class UserJournalDetailDto {
 
-    private Long journalId;
-    private final int dayNum = 1;
+    private Long id;
+    private final int order = 1;
     private final boolean isSpread = false;
-    private LocalDate journalDate;
+    private LocalDate dayDate;
     private boolean isCompleted;
     private TimeTemplate exerciseTime;
     private List<UserJournalDetailExerciseListDto> exercises = new ArrayList<>();
@@ -27,8 +27,8 @@ public class UserJournalDetailDto {
             ExerciseJournal exerciseJournal,
             List<UserJournalDetailExerciseListDto> exercises
     ) {
-        this.journalId = exerciseJournal.getId();
-        this.journalDate = exerciseJournal.getJournalDate();
+        this.id = exerciseJournal.getId();
+        this.dayDate = exerciseJournal.getJournalDate();
         this.isCompleted = exerciseJournal.isCompleted();
         this.exerciseTime = exerciseJournal.getExerciseTime();
         this.exercises = exercises;
