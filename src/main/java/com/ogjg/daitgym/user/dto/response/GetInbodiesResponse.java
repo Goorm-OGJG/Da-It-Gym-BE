@@ -30,7 +30,7 @@ public class GetInbodiesResponse {
         private LocalDate measureAt;
         private int inbodyScore;
         private double skeletalMuscleMass;
-        private double bodyFatRatio ;
+        private double bodyFatRatio;
         private double weight;
         private int basalMetabolicRate;
 
@@ -78,7 +78,7 @@ public class GetInbodiesResponse {
             }
 
             private static double getRoundedAverage(double total, double count) {
-                return Math.round(total / count * 100.0) / 10000.0;
+                return Math.round(total / count * 100.0) / 100.0;
             }
         }
     }

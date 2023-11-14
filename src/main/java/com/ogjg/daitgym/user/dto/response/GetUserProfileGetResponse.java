@@ -10,25 +10,24 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class GetUserProfileGetResponse {
 
+    private String nickname;
+    private String preferredSplit;
+    private String userProfileImgUrl;
+    private String introduction;
     private String healthClubName;
     private int journalCount;
     private int followerCount;
     private int followingCount;
 
     @Builder
-    public GetUserProfileGetResponse(String healthClubName, int journalCount, int followerCount, int followingCount) {
+    public GetUserProfileGetResponse(String nickname, String preferredSplit, String userProfileImgUrl, String introduction, String healthClubName, int journalCount, int followerCount, int followingCount) {
+        this.nickname = nickname;
+        this.preferredSplit = preferredSplit;
+        this.userProfileImgUrl = userProfileImgUrl;
+        this.introduction = introduction;
         this.healthClubName = healthClubName;
         this.journalCount = journalCount;
         this.followerCount = followerCount;
         this.followingCount = followingCount;
-    }
-
-    public static GetUserProfileGetResponse of(int journalCount, int followerCount, int followingCount, String healthClubName) {
-        return GetUserProfileGetResponse.builder()
-                .healthClubName(healthClubName)
-                .journalCount(journalCount)
-                .followerCount(followerCount)
-                .followingCount(followingCount)
-                .build();
     }
 }
