@@ -78,7 +78,7 @@ public class GetInbodiesResponse {
             }
 
             private static double getRoundedAverage(double total, double count) {
-                return Math.round(total / count * 100.0) / 100.0;
+                return Math.round(total / count * 100.0) / 10000.0;
             }
         }
     }
