@@ -22,6 +22,7 @@ public class ChatMessageDto {
     private String message;
     private String redisRoomId;
     private int readCount;
+    private String imageUrl;
 
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -34,6 +35,7 @@ public class ChatMessageDto {
         this.sender = chatMessage.getSender();
         this.message = chatMessage.getMessage();
         this.readCount = chatMessage.getReadCount();
+        this.imageUrl = chatMessage.getImageUrl();
         this.createdAt = chatMessage.getCreatedAt();
     }
 
