@@ -189,6 +189,7 @@ public class RoutineService {
                         .orElseThrow(NotFoundUser::new))
                 .title(routineRequestDto.getTitle())
                 .content(routineRequestDto.getDescription())
+                .division(routineRequestDto.getDivision())
                 .duration(routineRequestDto.getRoutine().getDays().size())
                 .build();
 
