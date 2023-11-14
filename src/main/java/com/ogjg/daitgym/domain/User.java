@@ -73,8 +73,9 @@ public class User extends BaseEntity {
         this.isDeleted = isDeleted;
     }
 
-    public void editProfile(String newImgUrl, String introduction, HealthClub healthClub, String split) {
+    public void editProfile(String newImgUrl, String nickname, String introduction, HealthClub healthClub, String split) {
         this.imageUrl = newImgUrl;
+        this.nickname = nickname;
         this.introduction = introduction;
         changeHealthClub(healthClub);
         this.preferredSplit = ExerciseSplit.titleFrom(split);
