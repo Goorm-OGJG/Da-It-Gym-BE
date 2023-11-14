@@ -27,7 +27,7 @@ public class ChatMessageDto {
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime createdAt;
+    private LocalDateTime messageCreatedAt;
 
     public ChatMessageDto(ChatMessage chatMessage) {
         this.chatMessageId = chatMessage.getId();
@@ -36,7 +36,7 @@ public class ChatMessageDto {
         this.message = chatMessage.getMessage();
         this.readCount = chatMessage.getReadCount();
         this.imageUrl = chatMessage.getImageUrl();
-        this.createdAt = chatMessage.getCreatedAt();
+        this.messageCreatedAt = chatMessage.getMessageCreatedAt();
     }
 
 

@@ -22,13 +22,13 @@ public class ChatRoomDto implements Serializable {
     private String receiver;
     private String imageUrl;
 
-    public static ChatRoomDto create(ChatMessageRequestDto messageRequestDto, User user) {
+    public static ChatRoomDto create(CreateChatRoomRequest createChatRoomRequest, User user, User receiver) {
         ChatRoomDto chatRoomDto = new ChatRoomDto();
-        chatRoomDto.roomName = messageRequestDto.getReceiver();
+        chatRoomDto.roomName = createChatRoomRequest.getReceiver();
         chatRoomDto.redisRoomId = UUID.randomUUID().toString();
         chatRoomDto.sender = user.getNickname();
-        chatRoomDto.imageUrl = messageRequestDto.getReceiverImageUrl();
-        chatRoomDto.receiver = messageRequestDto.getReceiver();
+        chatRoomDto.imageUrl = receiver.getImageUrl();
+        chatRoomDto.receiver = createChatRoomRequest.getReceiver();
 
         return chatRoomDto;
     }

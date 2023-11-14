@@ -31,7 +31,7 @@ public class ChatMessageController {
     public void message(ChatMessageDto chatMessageDto) {
         log.info("채팅 메시지");
         chatRoomService.enterChatRoom(chatMessageDto.getRedisRoomId());
-        chatMessageDto.setCreatedAt(LocalDateTime.now());
+        chatMessageDto.setMessageCreatedAt(LocalDateTime.now());
         ChatMessageDto savedChatMessageDto = chatMessageDto;
 
         ChannelTopic topic = chatRoomService.getTopic(chatMessageDto.getRedisRoomId());

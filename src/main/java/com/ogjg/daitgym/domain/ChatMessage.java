@@ -33,7 +33,7 @@ public class ChatMessage {
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime createdAt;
+    private LocalDateTime messageCreatedAt;
 
     @ManyToOne
     @JoinColumn(name = "email")
@@ -52,7 +52,6 @@ public class ChatMessage {
         this.redisRoomId = redisRoomId;
         this.readCount = readCount;
         this.imageUrl = imageUrl;
-        this.createdAt = LocalDateTime.now();
-
+        this.messageCreatedAt = LocalDateTime.now();
     }
 }
