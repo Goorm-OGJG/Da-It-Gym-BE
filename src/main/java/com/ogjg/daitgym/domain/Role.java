@@ -23,4 +23,9 @@ public enum Role {
         }
         return Role.USER;
     }
+
+    public String getTitleOrDefault() {
+        if (title == null) return USER.title;
+        else return title;
+    }
 }
