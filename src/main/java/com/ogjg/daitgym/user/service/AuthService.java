@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import com.ogjg.daitgym.domain.ExerciseSplit;
-import com.ogjg.daitgym.user.dto.LoginResponseDto;
+import com.ogjg.daitgym.domain.HealthClub;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.user.dto.KakaoAccountDto;
+import com.ogjg.daitgym.user.dto.LoginResponseDto;
+import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
@@ -22,6 +24,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
@@ -31,6 +34,8 @@ import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
 public class AuthService {
 
     private final UserRepository userRepository;
+
+    private final HealthClubRepository healthClubRepository;
 
     @Value("${kakao.client-id}")
     private String KAKAO_CLIENT_ID;
@@ -97,6 +102,8 @@ public class AuthService {
         boolean isDeleted = false;
         String tempNickname = UUID.randomUUID().toString();
 
+        HealthClub defaultHealthClub = findDefaultHealthClub();
+
         // 첫 가입
         if (existUser == null) {
             isAlreadyJoined = false;
@@ -107,7 +114,9 @@ public class AuthService {
                     .email(kakaoAccountDto.getKakao_account().getEmail())
                     .nickname(tempNickname)
                     .role(Role.USER)
+                    .healthClub(defaultHealthClub)
                     .build();
+
 
             userRepository.save(user);
 
@@ -161,6 +170,20 @@ public class AuthService {
                     .build();
         }
     }
+
+    // todo : 삭제 요망 로직
+    private HealthClub findDefaultHealthClub() {
+        List<HealthClub> clubs = healthClubRepository.findByName("");
+        HealthClub defaultHealthClub;
+        if (clubs.isEmpty()) {
+            return defaultHealthClub = HealthClub.builder()
+                    .name("")
+                    .build();
+        } else {
+            return defaultHealthClub = clubs.get(0);
+        }
+    }
+
     private void addTokensInHeader(HttpServletResponse response, JwtUserClaimsDto jwtUserClaimsDto) {
         String accessToken = TokenGenerator.generateAccessToken(jwtUserClaimsDto);
         String refreshToken = TokenGenerator.generateRefreshToken(jwtUserClaimsDto);
