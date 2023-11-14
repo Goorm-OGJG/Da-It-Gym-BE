@@ -10,7 +10,6 @@ import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.*;
 import com.ogjg.daitgym.feed.exception.AlreadyExistFeedJournalCollection;
-import com.ogjg.daitgym.feed.exception.NotFoundFeedJournalCollection;
 import com.ogjg.daitgym.feed.exception.RangeOverImages;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalCollectionRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalImageRepository;
@@ -30,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -174,7 +172,7 @@ public class FeedExerciseJournalService {
     public void feedExerciseJournalScrap(
             String email, Long feedExerciseJournalId
     ) {
-        if (findFeedExerciseJournalCollectionByUserAndFeedExerciseJournal(email, feedExerciseJournalId).isPresent())
+        if (feedExerciseJournalCollectionScrapStatus(email,feedExerciseJournalId))
             throw new AlreadyExistFeedJournalCollection();
 
         feedExerciseJournalCollectionRepository.save(
@@ -194,20 +192,31 @@ public class FeedExerciseJournalService {
     ) {
         feedExerciseJournalCollectionRepository.delete(
                 findFeedExerciseJournalCollectionByUserAndFeedExerciseJournal(email, feedExerciseJournalId)
-                        .orElseThrow(NotFoundFeedJournalCollection::new)
         );
     }
 
     /**
      * 유저이메일과 피드 운동일지 Id를 통해 컬렉션 검색
      */
-    private Optional<FeedExerciseJournalCollection> findFeedExerciseJournalCollectionByUserAndFeedExerciseJournal(
+    private FeedExerciseJournalCollection findFeedExerciseJournalCollectionByUserAndFeedExerciseJournal(
             String email, Long feedExerciseJournalId
     ) {
         return feedExerciseJournalCollectionRepository.findByUserAndFeedExerciseJournal(
                 feedJournalHelperService.findUserByEmail(email),
                 feedJournalHelperService.findFeedJournalById(feedExerciseJournalId)
-        );
+        ).orElseThrow();
+    }
+
+    /**
+     * 피드에 대한 스크랩 여부
+     */
+    private boolean feedExerciseJournalCollectionScrapStatus(
+            String email, Long feedExerciseJournalId
+    ) {
+        return feedExerciseJournalCollectionRepository.findByUserAndFeedExerciseJournal(
+                feedJournalHelperService.findUserByEmail(email),
+                feedJournalHelperService.findFeedJournalById(feedExerciseJournalId)
+        ).isPresent();
     }
 
     /**
@@ -283,6 +292,7 @@ public class FeedExerciseJournalService {
 
         feedDetail.setFeedDetails(
                 feedExerciseJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(email, feedJournalId),
+                feedExerciseJournalCollectionScrapStatus(email,feedJournalId),
                 feedExerciseJournalLikes(feedJournalId),
                 feedExerciseJournalScrapCounts(feedJournalId),
                 feedImageListsDto(feedJournalHelperService.findFeedJournalById(feedJournalId))
