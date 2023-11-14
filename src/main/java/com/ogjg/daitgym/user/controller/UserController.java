@@ -10,6 +10,7 @@ import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
 import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
+import com.ogjg.daitgym.user.dto.response.EditUserProfileResponse;
 import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
 import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
 import com.ogjg.daitgym.user.service.UserService;
@@ -93,20 +94,21 @@ public class UserController {
      * 프로필 편집
      */
     @PutMapping("/{nickname}")
-    public ApiResponse<Void> editUserProfile(
+    public ApiResponse<EditUserProfileResponse> editUserProfile(
             @PathVariable("nickname") String nickname,
             @RequestPart String request,
             @RequestPart(required = false) MultipartFile userProfileImg,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) throws JsonProcessingException {
 
-        userService.editUserProfile(
-                userDetails.getEmail(),
-                nickname,
-                objectMapper.readValue(request, EditUserProfileRequest.class),
-                userProfileImg
-        );
-        return new ApiResponse<>(ErrorCode.SUCCESS);
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                userService.editUserProfile(
+                        userDetails.getEmail(),
+                        nickname,
+                        objectMapper.readValue(request, EditUserProfileRequest.class),
+                        userProfileImg
+                ));
     }
 
     /**
