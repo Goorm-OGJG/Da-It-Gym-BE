@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Set;
+
 import static com.ogjg.daitgym.domain.routine.UserRoutineCollection.*;
 
 public interface UserRoutineCollectionRepository extends JpaRepository<UserRoutineCollection, PK> {
@@ -17,4 +19,10 @@ public interface UserRoutineCollectionRepository extends JpaRepository<UserRouti
 
     @Query("SELECT COUNT(urc) FROM UserRoutineCollection urc WHERE urc.pk.routineId = :routineId")
     long countByRoutineId(@Param("routineId") Long routineId);
+
+    @Query("SELECT urc.routine.id FROM UserRoutineCollection urc WHERE urc.user.email = :email")
+    Set<Long> findScrapedRoutineIdByUserEmail(String email);
+
+    @Query("SELECT urc.routine.id FROM UserRoutineCollection urc WHERE urc.user.nickname = :nickname")
+    Set<Long> findScrapedRoutineIdByUserNickname(String nickname);
 }
