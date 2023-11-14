@@ -18,6 +18,7 @@ public class FeedDetailResponse {
     private String writerImg;
     private LocalDateTime createdAt;
     private boolean liked;
+    private boolean scraped;
     private int likeCounts;
     private int scrapCounts;
     private List<FeedImageDto> imageLists;
@@ -34,10 +35,11 @@ public class FeedDetailResponse {
     }
 
     public void setFeedDetails(
-            boolean liked, int likeCounts,
+            boolean liked, boolean scraped, int likeCounts,
             int scrapCounts, List<FeedImageDto> imageLists
     ) {
         this.liked = liked;
+        this.scraped = scraped;
         this.likeCounts = likeCounts;
         this.scrapCounts = scrapCounts;
         this.imageLists = imageLists;
