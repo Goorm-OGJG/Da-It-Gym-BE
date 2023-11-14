@@ -69,6 +69,7 @@ public class RoutineService {
                         .id(routine.getId())
                         .title(routine.getTitle())
                         .author(routine.getUser().getNickname())
+                        .authorImg(routine.getUser().getImageUrl())
                         .description(routine.getContent())
                         .liked(likedRoutineIdByUserEmail.contains(routine.getId()))
                         .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
