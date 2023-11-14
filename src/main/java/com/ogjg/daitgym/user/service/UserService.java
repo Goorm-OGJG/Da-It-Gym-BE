@@ -85,7 +85,7 @@ public class UserService {
         String findImgUrl = user.getImageUrl();
 
         // default 이미지 url 사용 시 삭제 방지
-        if (!findImgUrl.equals(AWS_DEFAULT_PROFILE_IMG)) {
+        if (!AWS_DEFAULT_PROFILE_IMG.equals(findImgUrl)) {
             s3Repository.deleteImageFromS3(findImgUrl);
         }
 
@@ -101,10 +101,13 @@ public class UserService {
 
         user.editProfile(
                 newImgUrl,
+                request.getNickname(),
                 request.getIntroduction(),
                 healthClub,
                 request.getPreferredSplit()
         );
+
+        userRepository.save(user);
     }
 
     private static boolean isEmptyFile(MultipartFile multipartFile) {
