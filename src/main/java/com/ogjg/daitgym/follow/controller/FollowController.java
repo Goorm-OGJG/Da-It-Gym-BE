@@ -3,7 +3,6 @@ package com.ogjg.daitgym.follow.controller;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
-import com.ogjg.daitgym.follow.dto.request.FollowRequest;
 import com.ogjg.daitgym.follow.dto.response.FollowCountResponse;
 import com.ogjg.daitgym.follow.dto.response.FollowListResponse;
 import com.ogjg.daitgym.follow.service.FollowService;
@@ -23,12 +22,12 @@ public class FollowController {
     /**
      * 팔로우 하기
      */
-    @PostMapping
+    @PostMapping("/{nickname}")
     public ApiResponse<Void> follow(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
-            @RequestBody FollowRequest followRequest
+            @PathVariable("nickname") String nickname
     ) {
-        followService.follow(userDetails.getEmail(), followRequest);
+        followService.follow(userDetails.getEmail(), nickname);
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
@@ -36,12 +35,12 @@ public class FollowController {
     /**
      * 언팔로우 하기
      */
-    @DeleteMapping
+    @DeleteMapping("/{nickname}")
     public ApiResponse<Void> unfollow(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
-            @RequestBody FollowRequest followRequest
+            @PathVariable String nickname
     ) {
-        followService.unfollow(userDetails.getEmail(), followRequest);
+        followService.unfollow(userDetails.getEmail(), nickname);
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
@@ -49,22 +48,20 @@ public class FollowController {
     /**
      * 내가 팔로우한 유저 수
      */
-    @GetMapping("/following-count/{nickname}")
+    @GetMapping("/following-counts/{nickname}")
     public ApiResponse<FollowCountResponse> followingCount(
             @PathVariable("nickname") String nickname
     ) {
-        String email1 = "dlehdwls21@naver.com";
         return new ApiResponse<>(ErrorCode.SUCCESS, followService.followingCount(nickname));
     }
 
     /**
      * 나를 팔로우한 유저 수
      */
-    @GetMapping("/follower-count/{nickname}")
+    @GetMapping("/follower-counts/{nickname}")
     public ApiResponse<FollowCountResponse> followerCount(
             @PathVariable("nickname") String nickname
     ) {
-        String email1 = "dlehdwls21@naver.com";
         return new ApiResponse<>(ErrorCode.SUCCESS, followService.followerCount(nickname));
     }
 

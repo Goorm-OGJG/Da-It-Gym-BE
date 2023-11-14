@@ -2,7 +2,6 @@ package com.ogjg.daitgym.follow.service;
 
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.follow.Follow;
-import com.ogjg.daitgym.follow.dto.request.FollowRequest;
 import com.ogjg.daitgym.follow.dto.response.FollowCountResponse;
 import com.ogjg.daitgym.follow.dto.response.FollowListResponse;
 import com.ogjg.daitgym.follow.exception.AlreadyFollowUser;
@@ -27,10 +26,15 @@ public class FollowService {
      * 팔로우
      */
     @Transactional
-    public void follow(String email, FollowRequest followRequest) {
+    public void follow(String email, String targetNickname) {
         User user = findUserByEmail(email);
-        User targetUser = findUserByEmail(followRequest.getEmail());
-        Follow.PK followPK = Follow.createFollowPK(followRequest.getEmail(), email);
+        User targetUser = findUserByNickName(targetNickname);
+
+        if (user.getEmail().equals(targetUser.getEmail())) {
+            throw new AlreadyFollowUser("자신은 팔로우 할 수 없습니다");
+        }
+
+        Follow.PK followPK = Follow.createFollowPK(targetUser.getEmail(), email);
 
         if (followRepository.findById(followPK).isPresent())
             throw new AlreadyFollowUser();
@@ -44,9 +48,9 @@ public class FollowService {
      * 언팔로우
      */
     @Transactional
-    public void unfollow(String email, FollowRequest followRequest) {
-        findUserByEmail(followRequest.getEmail());
-        Follow.PK followPK = Follow.createFollowPK(followRequest.getEmail(), email);
+    public void unfollow(String email, String targetNickname) {
+        User targetUser = findUserByNickName(targetNickname);
+        Follow.PK followPK = Follow.createFollowPK(targetUser.getEmail(), email);
         findFollowByFollowPK(followPK);
         followRepository.deleteById(followPK);
     }

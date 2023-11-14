@@ -9,9 +9,9 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class FollowCountResponse {
 
-    private int followCount;
+    private int followCounts;
 
     public FollowCountResponse(int followCount) {
-        this.followCount = followCount;
+        this.followCounts = followCount;
     }
 }
