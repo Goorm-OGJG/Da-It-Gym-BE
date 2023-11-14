@@ -34,12 +34,12 @@ public class RoutineController {
         return new ApiResponse<>(ErrorCode.SUCCESS, routines);
     }
 
-    @GetMapping("/{userEmail}")
+    @GetMapping("/{nickname}")
     public ApiResponse<RoutineListResponseDto> getUserRoutines(
-            @PathVariable("userEmail") String userEmail,
+            @PathVariable("nickname") String nickname,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(value = "division", required = false) Integer division) {
-        RoutineListResponseDto userRoutines = routineService.getUserRoutines(userEmail, division, pageable);
+        RoutineListResponseDto userRoutines = routineService.getUserRoutines(nickname, division, pageable);
 
         return new ApiResponse<>(ErrorCode.SUCCESS, userRoutines);
     }

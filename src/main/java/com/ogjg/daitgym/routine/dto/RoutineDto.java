@@ -19,7 +19,6 @@ public class RoutineDto {
     private LocalDateTime createdAt;
 
     @Builder
-
     public RoutineDto(Long id, String title, String author, String authorImg, String description, boolean liked, long likeCounts, long scrapCounts, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;

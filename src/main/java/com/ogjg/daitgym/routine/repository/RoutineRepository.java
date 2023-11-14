@@ -15,8 +15,8 @@ public interface RoutineRepository extends JpaRepository<Routine, Long> {
     @Query("SELECT r FROM Routine r WHERE (:division IS NULL OR r.division = :division)")
     Optional<Slice<Routine>> findAllByDivision(@Param("division") Integer division, Pageable pageable);
 
-    @Query("SELECT r FROM Routine r WHERE (:division IS NULL OR r.division = :division) AND r.user.email = :email")
-    Optional<Slice<Routine>> findByDivisionAndUserEmail(@Param("division") Integer division, @Param("email") String email, Pageable pageable);
+    @Query("SELECT r FROM Routine r WHERE (:division IS NULL OR r.division = :division) AND r.user.nickname = :nickname")
+    Optional<Slice<Routine>> findByDivisionAndUserNickname(@Param("division") Integer division, @Param("nickname") String nickname, Pageable pageable);
 
     @Query("SELECT r FROM Routine r WHERE (:division IS NULL OR r.division = :division) AND r.user.email IN :followerEmails")
     Optional<Slice<Routine>> findByDivisionAndUserEmailIn(@Param("division") Integer division, @Param("followerEmails") List<String> followerEmails, Pageable pageable);
