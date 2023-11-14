@@ -63,6 +63,7 @@ public class ChatMessageService {
         chatMessageRepository.save(chatMessage);
         chatMessageDto.setChatMessageId(chatMessage.getId());
         chatMessageDto.setReadCount(2);
+        chatMessageDto.setImageUrl(user.getImageUrl());
 
         redisTemplateMessage.setValueSerializer(new Jackson2JsonRedisSerializer<>(ChatMessageDto.class));
         redisTemplateMessage.opsForList().rightPush(chatMessageDto.getRedisRoomId(), chatMessageDto);
