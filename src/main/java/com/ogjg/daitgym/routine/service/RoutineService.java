@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -114,7 +115,7 @@ public class RoutineService {
         List<Day> days = dayRepository.findAllWithExerciseDetailsByRoutineId(routine.getId())
                 .orElseThrow(NoExerciseInRoutine::new);
 
-        List<DayDto> dayDtos = getDayDtos(days);
+        List<DayDto> dayDtos = getDaysDto(days);
 
         return RoutineDetailsResponseDto.builder()
                 .writer(routine.getUser().getNickname())
@@ -133,32 +134,42 @@ public class RoutineService {
                 .build();
     }
 
-    private static List<DayDto> getDayDtos(List<Day> days) {
-        List<DayDto> dayDtos = days.stream()
+    private List<DayDto> getDaysDto(List<Day> days) {
+        return days.stream()
                 .map(day -> {
-                    List<ExerciseDto> exerciseDtos = day.getExerciseDetails().stream()
-                            .map(exerciseDetail -> {
-                                ExerciseSets exerciseSet = ExerciseSets.builder()
-                                        .id(exerciseDetail.getId())
-                                        .order(exerciseDetail.getSetCount())
-                                        .weights(exerciseDetail.getWeight())
-                                        .counts(exerciseDetail.getRepetitionCount())
-                                        .completed(false)
-                                        .build();
+                    Map<Integer, List<ExerciseDetail>> groupedByExerciseOrder = day.getExerciseDetails().stream()
+                            .collect(Collectors.groupingBy(ExerciseDetail::getExerciseOrder));
+
+                    List<ExerciseDto> exerciseDtos = groupedByExerciseOrder.entrySet().stream()
+                            .map(orderEntry -> {
+                                List<ExerciseSets> exerciseSets = orderEntry.getValue().stream()
+                                        .map(exerciseDetail -> ExerciseSets.builder()
+                                                .id(exerciseDetail.getId())
+                                                .order(exerciseDetail.getSetOrder())
+                                                .weights(exerciseDetail.getWeight())
+                                                .counts(exerciseDetail.getRepetitionCount())
+                                                .restTime(exerciseDetail.getRestTime())
+                                                .completed(false)
+                                                .build())
+                                        .toList();
+
+                                int exerciseOrder = orderEntry.getKey();
+                                ExerciseDetail exerciseDetail = orderEntry.getValue().get(0);
 
                                 return ExerciseDto.builder()
                                         .id(exerciseDetail.getExercise().getId())
-                                        .order(exerciseDetail.getExerciseOrder())
-                                        .name(exerciseDetail.getExercise().getName())
+                                        .order(exerciseOrder)
                                         .part(exerciseDetail.getExercise().getExercisePart().getPart())
-                                        .restTime(new RestTimeDto(
-                                                exerciseDetail.getRestTime().getHours(),
-                                                exerciseDetail.getRestTime().getMinutes(),
-                                                exerciseDetail.getRestTime().getSeconds()))
-                                        .exerciseSets(Collections.singletonList(exerciseSet))
+                                        .name(exerciseDetail.getExercise().getName())
+                                        .restTime(RestTimeDto.builder()
+                                                .hours(0)
+                                                .minutes(0)
+                                                .seconds(0)
+                                                .build())
+                                        .exerciseSets(exerciseSets)
                                         .build();
                             })
-                            .collect(Collectors.toList());
+                            .toList();
 
                     return DayDto.builder()
                             .id(day.getId())
@@ -168,7 +179,6 @@ public class RoutineService {
                             .build();
                 })
                 .toList();
-        return dayDtos;
     }
 
     @Transactional
@@ -184,33 +194,35 @@ public class RoutineService {
 
         routineRepository.save(routine);
 
-        routineRequestDto.getRoutine().getDays().forEach(dayDto -> {
-            Day day = Day.builder()
-                    .routine(routine)
-                    .dayNumber(dayDto.getOrder())
-                    .build();
-
-            dayRepository.save(day);
-
-            dayDto.getExercises().forEach(exerciseDto -> {
-                exerciseDto.getExerciseSets().forEach(exerciseSetDto -> {
-                    RoutineRequestDto.RestTimeDto restTime = exerciseDto.getRestTime();
-                    TimeTemplate timeTemplate = new TimeTemplate(restTime.getHours(), restTime.getMinutes(), restTime.getSeconds());
-                    ExerciseDetail exerciseDetail = ExerciseDetail.builder()
-                            .day(day)
-                            .exercise(exerciseRepository.findByName(exerciseDto.getName())
-                                    .orElseThrow(NotFoundExercise::new))
-                            .exerciseOrder(exerciseDto.getOrder())
-                            .setCount(exerciseSetDto.getOrder())
-                            .repetitionCount(exerciseSetDto.getCounts())
-                            .weight(exerciseSetDto.getWeights())
-                            .restTime(timeTemplate)
+        routineRequestDto.getRoutine().getDays()
+                .forEach(dayDto -> {
+                    Day day = Day.builder()
+                            .routine(routine)
+                            .dayNumber(dayDto.getOrder())
                             .build();
 
-                    day.addExerciseDetail(exerciseDetail);
+                    dayRepository.save(day);
+
+                    dayDto.getExercises().forEach(exerciseDto -> {
+                        exerciseDto.getExerciseSets().forEach(exerciseSetDto -> {
+                            RoutineRequestDto.RestTimeDto restTime = exerciseDto.getRestTime();
+                            TimeTemplate timeTemplate = new TimeTemplate(restTime.getHours(), restTime.getMinutes(), restTime.getSeconds());
+                            ExerciseDetail exerciseDetail = ExerciseDetail.builder()
+                                    .day(day)
+                                    .exercise(exerciseRepository.findByName(exerciseDto.getName())
+                                            .orElseThrow(NotFoundExercise::new))
+                                    .exerciseOrder(exerciseDto.getOrder())
+                                    .setOrder(exerciseSetDto.getOrder())
+                                    .setCount(exerciseSetDto.getOrder())
+                                    .repetitionCount(exerciseSetDto.getCounts())
+                                    .weight(exerciseSetDto.getWeights())
+                                    .restTime(timeTemplate)
+                                    .build();
+
+                            day.addExerciseDetail(exerciseDetail);
+                        });
+                    });
                 });
-            });
-        });
     }
 
     @Transactional

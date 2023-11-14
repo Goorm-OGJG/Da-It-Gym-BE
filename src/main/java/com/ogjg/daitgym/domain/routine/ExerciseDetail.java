@@ -37,16 +37,19 @@ public class ExerciseDetail extends BaseEntity {
 
     private int exerciseOrder;
 
+    private int setOrder;
+
     private TimeTemplate restTime;
 
     @Builder
-    public ExerciseDetail(Day day, Exercise exercise, int setCount, int repetitionCount, int weight, int exerciseOrder, TimeTemplate restTime) {
+    public ExerciseDetail(Day day, Exercise exercise, int setCount, int repetitionCount, int weight, int exerciseOrder, int setOrder, TimeTemplate restTime) {
         this.day = day;
         this.exercise = exercise;
         this.setCount = setCount;
         this.repetitionCount = repetitionCount;
         this.weight = weight;
         this.exerciseOrder = exerciseOrder;
+        this.setOrder = setOrder;
         this.restTime = restTime;
     }
 

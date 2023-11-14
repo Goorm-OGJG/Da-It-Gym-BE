@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.routine.dto;
 
+import com.ogjg.daitgym.domain.TimeTemplate;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -100,14 +101,16 @@ public class RoutineDetailsResponseDto {
         private int order;
         private int weights;
         private int counts;
+        private TimeTemplate restTime;
         private boolean completed;
 
         @Builder
-        public ExerciseSets(Long id, int order, int weights, int counts, boolean completed) {
+        public ExerciseSets(Long id, int order, int weights, int counts, TimeTemplate restTime, boolean completed) {
             this.id = id;
             this.order = order;
             this.weights = weights;
             this.counts = counts;
+            this.restTime = restTime;
             this.completed = completed;
         }
     }
