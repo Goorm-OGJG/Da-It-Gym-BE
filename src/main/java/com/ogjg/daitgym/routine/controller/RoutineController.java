@@ -84,7 +84,7 @@ public class RoutineController {
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
-    @GetMapping("/scrap/{routineId}")
+    @PostMapping("/scrap/{routineId}")
     public ApiResponse<Void> scrapRoutine(
             @PathVariable("routineId") Long routineId,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
