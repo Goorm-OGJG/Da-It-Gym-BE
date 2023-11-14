@@ -10,6 +10,8 @@ import com.ogjg.daitgym.routine.service.RoutineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +26,7 @@ public class RoutineController {
 
     @GetMapping
     public ApiResponse<RoutineListResponseDto> getRoutines(
-            Pageable pageable,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(value = "division", required = false) Integer division,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
         RoutineListResponseDto routines = routineService.getRoutines(pageable, division, oAuth2JwtUserDetails.getEmail());
@@ -35,7 +37,7 @@ public class RoutineController {
     @GetMapping("/{userEmail}")
     public ApiResponse<RoutineListResponseDto> getUserRoutines(
             @PathVariable("userEmail") String userEmail,
-            Pageable pageable,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(value = "division", required = false) Integer division) {
         RoutineListResponseDto userRoutines = routineService.getUserRoutines(userEmail, division, pageable);
 
@@ -44,7 +46,7 @@ public class RoutineController {
 
     @GetMapping("/following")
     public ApiResponse<RoutineListResponseDto> getFollowerRoutines(
-            Pageable pageable,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(value = "division", required = false) Integer division,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
 
