@@ -47,10 +47,13 @@ public class Routine extends BaseEntity {
     @Enumerated(STRING)
     private UnitType unitType;
 
+    @OneToMany(mappedBy = "routine", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    private List<Day> days = new ArrayList<>();
+
     @OneToMany(mappedBy = "routine", fetch = LAZY)
     private Set<RoutineLike> routineLikes = new HashSet<>();
 
-    @OneToMany(mappedBy = "routine", cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "routine", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     private List<UserRoutineCollection> userRoutineCollections = new ArrayList<>();
 
     @Builder
