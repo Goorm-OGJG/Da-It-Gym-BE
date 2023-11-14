@@ -60,9 +60,9 @@ public class RoutineService {
         return getRoutineListResponseDto(routines, email);
     }
 
-    private RoutineListResponseDto getRoutineListResponseDto(Slice<Routine> routines, String email) {
+    private RoutineListResponseDto getRoutineListResponseDto(Slice<Routine> routines, String identifier) {
 
-        Set<Long> likedRoutineIdByUserEmail = routineLikeRepository.findLikedRoutineIdByUserEmail(email);
+        Set<Long> likedRoutineIds = getLikedRoutineIds(identifier);
 
         List<RoutineDto> routineDtos = routines.stream()
                 .map(routine -> RoutineDto.builder()
@@ -71,7 +71,7 @@ public class RoutineService {
                         .author(routine.getUser().getNickname())
                         .authorImg(routine.getUser().getImageUrl())
                         .description(routine.getContent())
-                        .liked(likedRoutineIdByUserEmail.contains(routine.getId()))
+                        .liked(likedRoutineIds.contains(routine.getId()))
                         .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
                         .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
                         .createdAt(routine.getCreatedAt())
@@ -85,12 +85,25 @@ public class RoutineService {
                 .build();
     }
 
+    private Set<Long> getLikedRoutineIds(String identifier) {
+        if (isEmail(identifier)) {
+            return routineLikeRepository.findLikedRoutineIdByUserEmail(identifier);
+        } else {
+            return routineLikeRepository.findLikedRoutineIdByUserNickname(identifier);
+        }
+    }
+
+    private boolean isEmail(String value) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+        return value.matches(emailRegex);
+    }
+
     @Transactional(readOnly = true)
-    public RoutineListResponseDto getUserRoutines(String userEmail, Integer division, Pageable pageable) {
-        Slice<Routine> routines = routineRepository.findByDivisionAndUserEmail(division, userEmail, pageable)
+    public RoutineListResponseDto getUserRoutines(String nickname, Integer division, Pageable pageable) {
+        Slice<Routine> routines = routineRepository.findByDivisionAndUserNickname(division, nickname, pageable)
                 .orElseThrow(NotFoundRoutine::new);
 
-        return getRoutineListResponseDto(routines, userEmail);
+        return getRoutineListResponseDto(routines, nickname);
     }
 
     @Transactional(readOnly = true)
