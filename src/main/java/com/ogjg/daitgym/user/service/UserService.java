@@ -3,6 +3,7 @@ package com.ogjg.daitgym.user.service;
 import com.ogjg.daitgym.approval.repository.*;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
 import com.ogjg.daitgym.domain.*;
+import com.ogjg.daitgym.domain.follow.Follow;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.s3.repository.S3Repository;
@@ -63,17 +64,19 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public GetUserProfileGetResponse getUserProfile(String loginEmail, String nickname) {
-        User user = findUserByNickname(nickname);
+        User targetUser = findUserByNickname(nickname);
 
         return GetUserProfileGetResponse.builder()
-                .nickname(user.getNickname())
-                .preferredSplit(user.getPreferredSplit().getTitle())
-                .userProfileImgUrl(user.getImageUrl())
-                .introduction(user.getIntroduction())
-                .healthClubName(user.getHealthClub().getName())
-                .journalCount(exerciseJournalRepository.countByUserEmail(user.getEmail()))
-                .followerCount(followRepository.countByFollowPKTargetEmail(user.getEmail()))
-                .followingCount(followRepository.countByFollowPKFollowerEmail(user.getEmail()))
+                .nickname(targetUser.getNickname())
+                .preferredSplit(targetUser.getPreferredSplit().getTitle())
+                .userProfileImgUrl(targetUser.getImageUrl())
+                .introduction(targetUser.getIntroduction())
+                .healthClubName(targetUser.getHealthClub().getName())
+                .isFollower(followRepository.findByFollowPK(Follow.createFollowPK(targetUser.getEmail(), loginEmail)).isPresent())
+                .role(targetUser.getRole())
+                .journalCount(exerciseJournalRepository.countByUserEmail(targetUser.getEmail()))
+                .followerCount(followRepository.countByFollowPKTargetEmail(targetUser.getEmail()))
+                .followingCount(followRepository.countByFollowPKFollowerEmail(targetUser.getEmail()))
                 .build();
     }
 
