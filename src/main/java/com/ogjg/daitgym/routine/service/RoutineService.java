@@ -60,9 +60,6 @@ public class RoutineService {
     }
 
     private RoutineListResponseDto getRoutineListResponseDto(Slice<Routine> routines, String email) {
-        if (!routines.hasNext()) {
-            throw new NotFoundRoutine("더 이상 루틴이 존재하지 않습니다.");
-        }
 
         Set<Long> likedRoutineIdByUserEmail = routineLikeRepository.findLikedRoutineIdByUserEmail(email);
 

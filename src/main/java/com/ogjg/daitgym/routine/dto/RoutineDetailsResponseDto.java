@@ -1,10 +1,12 @@
 package com.ogjg.daitgym.routine.dto;
 
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
 public class RoutineDetailsResponseDto {
 
     private String writer;
@@ -30,6 +32,7 @@ public class RoutineDetailsResponseDto {
         this.routine = routine;
     }
 
+    @Getter
     public static class RoutineDto {
         private Long id;
         private List<DayDto> days;
@@ -41,6 +44,7 @@ public class RoutineDetailsResponseDto {
         }
     }
 
+    @Getter
     public static class DayDto {
         private Long id;
         private int order;
@@ -56,6 +60,7 @@ public class RoutineDetailsResponseDto {
         }
     }
 
+    @Getter
     public static class ExerciseDto {
         private Long id;
         private int order;
@@ -75,6 +80,7 @@ public class RoutineDetailsResponseDto {
         }
     }
 
+    @Getter
     public static class RestTimeDto {
         private int hours;
         private int minutes;
@@ -88,6 +94,7 @@ public class RoutineDetailsResponseDto {
         }
     }
 
+    @Getter
     public static class ExerciseSets {
         private Long id;
         private int order;

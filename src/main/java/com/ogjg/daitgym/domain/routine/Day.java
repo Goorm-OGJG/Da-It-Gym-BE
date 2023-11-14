@@ -31,9 +31,8 @@ public class Day {
     private int dayNumber;
 
     @Builder
-    public Day(Routine routine, List<ExerciseDetail> exerciseDetails, int dayNumber) {
+    public Day(Routine routine, int dayNumber) {
         this.routine = routine;
-        this.exerciseDetails = exerciseDetails;
         this.dayNumber = dayNumber;
     }
 
