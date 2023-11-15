@@ -73,6 +73,7 @@ public class RoutineService {
                         .author(routine.getUser().getNickname())
                         .authorImg(routine.getUser().getImageUrl())
                         .description(routine.getContent())
+                        .division(routine.getDivision())
                         .liked(likedRoutineIds.contains(routine.getId()))
                         .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
                         .scrapped(scrappedRoutineIds.contains(routine.getId()))
@@ -148,6 +149,7 @@ public class RoutineService {
                 .writerImg(routine.getUser().getImageUrl())
                 .title(routine.getTitle())
                 .description(routine.getContent())
+                .division(routine.getDivision())
                 .liked(routineLikeRepository
                         .existsByUserEmailAndRoutineId(userEmail, routine.getId()))
                 .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
