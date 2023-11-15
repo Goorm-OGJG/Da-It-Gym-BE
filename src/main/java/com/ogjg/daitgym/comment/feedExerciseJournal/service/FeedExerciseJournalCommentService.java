@@ -132,7 +132,7 @@ public class FeedExerciseJournalCommentService {
 
         int commentCount = feedJournalCommentRepository.countByFeedExerciseJournalIdAndParentIdIsNull(feedJournalId);
 
-        Page<FeedExerciseJournalComment> feedComments = feedJournalCommentRepository.findByFeedExerciseJournalIdAndParentIdIsNull(feedJournalId, pageable);
+        Page<FeedExerciseJournalComment> feedComments = feedJournalCommentRepository.findByFeedExerciseJournalIdAndParentIdIsNullOrderByCreatedAtDesc(feedJournalId, pageable);
         return new FeedJournalCommentResponse(commentCount, authority, feedComments);
     }
 
@@ -151,7 +151,7 @@ public class FeedExerciseJournalCommentService {
         boolean authority = checkAuthority(user, exerciseJournal);
 
         int childCommentsCnt = feedJournalCommentRepository.countByFeedExerciseJournalIdAndParentIdIsNotNull(feedJournalId);
-        List<FeedExerciseJournalComment> feedJournalChildComments = feedJournalCommentRepository.findByFeedExerciseJournalIdAndParentId(feedJournalId, commentId);
+        List<FeedExerciseJournalComment> feedJournalChildComments = feedJournalCommentRepository.findByFeedExerciseJournalIdAndParentIdOrderByCreatedAtDesc(feedJournalId, commentId);
 
         return new FeedJournalChildCommentResponse(childCommentsCnt, authority, feedJournalChildComments);
     }
