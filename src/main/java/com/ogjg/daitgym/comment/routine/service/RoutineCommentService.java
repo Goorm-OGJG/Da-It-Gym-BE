@@ -137,7 +137,7 @@ public class RoutineCommentService {
         boolean authority = checkAuthority(user, routine);
         int commentCount = routineCommentRepository.countByRoutineIdAndParentIdIsNull(routineId);
 
-        Page<RoutineComment> routineComments = routineCommentRepository.findByRoutineIdAndParentIdIsNull(routineId, pageable);
+        Page<RoutineComment> routineComments = routineCommentRepository.findByRoutineIdAndParentIdIsNullOrderByCreatedAtDesc(routineId, pageable);
         return new RoutineCommentResponse(commentCount, authority, routineComments);
     }
 
@@ -155,7 +155,7 @@ public class RoutineCommentService {
         Routine routine = getRoutine(routineId);
         boolean authority = checkAuthority(user, routine);
         int childCommentsCnt = routineCommentRepository.countByRoutineIdAndParentIdIsNotNull(routineId);
-        List<RoutineComment> routineComments = routineCommentRepository.findByRoutineIdAndParentId(routineId, commentId);
+        List<RoutineComment> routineComments = routineCommentRepository.findByRoutineIdAndParentIdOrderByCreatedAtDesc(routineId, commentId);
         return new RoutineChildCommentResponse(childCommentsCnt, authority, routineComments);
     }
 

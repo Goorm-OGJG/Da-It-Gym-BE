@@ -12,10 +12,6 @@ import java.util.Optional;
 
 public interface FeedExerciseJournalCommentRepository extends JpaRepository<FeedExerciseJournalComment, Long> {
 
-    Page<FeedExerciseJournalComment> findByFeedExerciseJournalIdAndParentIdIsNull(Long feedId, Pageable pageable);
-
-    List<FeedExerciseJournalComment> findByFeedExerciseJournalIdAndParentId(Long feedId, Long commentId);
-
     Optional<FeedExerciseJournalComment> findByFeedExerciseJournalIdAndId(Long feedJournalId, Long commentId);
 
     int countByFeedExerciseJournalIdAndParentIdIsNull(Long feedJournalId);
@@ -23,4 +19,8 @@ public interface FeedExerciseJournalCommentRepository extends JpaRepository<Feed
     int countByFeedExerciseJournalIdAndParentIdIsNotNull(Long feedJournalId);
 
     void deleteAllByFeedExerciseJournal(FeedExerciseJournal feedExerciseJournal);
+
+    Page<FeedExerciseJournalComment> findByFeedExerciseJournalIdAndParentIdIsNullOrderByCreatedAtDesc(Long feedJournalId, Pageable pageable);
+
+    List<FeedExerciseJournalComment> findByFeedExerciseJournalIdAndParentIdOrderByCreatedAtDesc(Long feedJournalId, Long commentId);
 }

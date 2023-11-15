@@ -10,13 +10,14 @@ import java.util.Optional;
 
 public interface RoutineCommentRepository extends JpaRepository<RoutineComment, Long> {
 
-    Page<RoutineComment> findByRoutineIdAndParentIdIsNull(Long routineId, Pageable pageable);
-
-    List<RoutineComment> findByRoutineIdAndParentId(Long routineId, Long parentId);
 
     Optional<RoutineComment> findByRoutineIdAndId(Long routineId, Long commentId);
 
     int countByRoutineIdAndParentIdIsNotNull(Long routineId);
 
     int countByRoutineIdAndParentIdIsNull(Long routineId);
+
+    Page<RoutineComment> findByRoutineIdAndParentIdIsNullOrderByCreatedAtDesc(Long routineId, Pageable pageable);
+
+    List<RoutineComment> findByRoutineIdAndParentIdOrderByCreatedAtDesc(Long routineId, Long commentId);
 }
