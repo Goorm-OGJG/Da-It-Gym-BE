@@ -25,4 +25,6 @@ public interface UserRoutineCollectionRepository extends JpaRepository<UserRouti
 
     @Query("SELECT urc.routine.id FROM UserRoutineCollection urc WHERE urc.user.nickname = :nickname")
     Set<Long> findScrapedRoutineIdByUserNickname(String nickname);
+
+    boolean existsByUserEmailAndRoutineId(String userEmail, Long routineId);
 }

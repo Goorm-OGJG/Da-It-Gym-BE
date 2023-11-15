@@ -17,11 +17,12 @@ public class RoutineDetailsResponseDto {
     private String description;
     private boolean liked;
     private long likeCounts;
+    private boolean scrapped;
     private long scrapCounts;
     private RoutineDto routine;
 
     @Builder
-    public RoutineDetailsResponseDto(String writer, String writerImg, LocalDateTime createdAt, String title, String description, boolean liked, long likeCounts, long scrapCounts, RoutineDto routine) {
+    public RoutineDetailsResponseDto(String writer, String writerImg, LocalDateTime createdAt, String title, String description, boolean liked, long likeCounts, boolean scrapped, long scrapCounts, RoutineDto routine) {
         this.writer = writer;
         this.writerImg = writerImg;
         this.createdAt = createdAt;
@@ -29,6 +30,7 @@ public class RoutineDetailsResponseDto {
         this.description = description;
         this.liked = liked;
         this.likeCounts = likeCounts;
+        this.scrapped = scrapped;
         this.scrapCounts = scrapCounts;
         this.routine = routine;
     }

@@ -151,6 +151,8 @@ public class RoutineService {
                 .liked(routineLikeRepository
                         .existsByUserEmailAndRoutineId(userEmail, routine.getId()))
                 .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
+                .scrapped(userRoutineCollectionRepository
+                        .existsByUserEmailAndRoutineId(userEmail, routine.getId()))
                 .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
                 .routine(RoutineDetailsResponseDto.RoutineDto.builder()
                         .id(routine.getId())
