@@ -26,18 +26,18 @@ public class ChatRoomController {
      * 채팅방 생성
      */
     @PostMapping("/rooms")
-    public ApiResponse<ChatRoomResponse> createRoom(@RequestParam String email,
+    public ApiResponse<ChatRoomResponse> createRoom(@RequestParam String nickname,
                                                     @RequestBody CreateChatRoomRequest createChatRoomRequest) {
 
-        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.createChatRoom(email, createChatRoomRequest));
+        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.createChatRoom(nickname, createChatRoomRequest));
     }
 
     /**
      * 사용자 관련 모든 채팅방 조회
      */
     @GetMapping("/rooms")
-    public ApiResponse<List<ChatMessageResponseDto>> findAllRoomByUser(@RequestParam String email) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.findAllRoomByUser(email));
+    public ApiResponse<List<ChatMessageResponseDto>> findAllRoomByUser(@RequestParam String nickname) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.findAllRoomByUser(nickname));
     }
 
     /**
@@ -45,8 +45,8 @@ public class ChatRoomController {
      */
     @GetMapping("/rooms/{roomId}")
     public ApiResponse<SelectedChatRoomResponse> findRoom(@PathVariable String roomId,
-                                                          @RequestParam String email) {
-        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.findRoom(roomId, email));
+                                                          @RequestParam String nickname) {
+        return new ApiResponse<>(ErrorCode.SUCCESS, chatService.findRoom(roomId, nickname));
 
     }
 

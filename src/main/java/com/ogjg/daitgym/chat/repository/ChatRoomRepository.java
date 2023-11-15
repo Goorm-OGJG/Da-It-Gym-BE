@@ -9,12 +9,12 @@ import java.util.List;
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
 
-    @Query("SELECT cr FROM ChatRoom cr WHERE (cr.sender = :nickName OR cr.receiver = :nickName)")
-    List<ChatRoom> findBySenderOrReceiver(String nickName);
+    @Query("SELECT cr FROM ChatRoom cr WHERE (cr.sender = :nickname OR cr.receiver = :nickname)")
+    List<ChatRoom> findBySenderOrReceiver(String nickname);
 
     ChatRoom findBySenderAndReceiver(String nickName, String receiver);
 
-    ChatRoom findByRedisRoomIdAndSenderOrRedisRoomIdAndReceiver(String roomId, String sender, String roomId1, String nickName);
+    ChatRoom findByRedisRoomIdAndSenderOrRedisRoomIdAndReceiver(String roomId, String sender, String roomId1, String nickname);
 
     ChatRoom findByRedisRoomId(String redisRoomId);
 }

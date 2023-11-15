@@ -56,8 +56,8 @@ public class ChatRoomService {
      * 만약 채팅방이 존재한다면 존재하고 있는 chatRoomd의 redisRoomId 값을 return한다.
      */
     @Transactional
-    public ChatRoomResponse createChatRoom(String email, CreateChatRoomRequest createChatRoomRequest) {
-        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUser::new);
+    public ChatRoomResponse createChatRoom(String nickname, CreateChatRoomRequest createChatRoomRequest) {
+        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
         User receiver = userRepository.findByNickname(createChatRoomRequest.getReceiver()).orElseThrow(NotFoundUser::new);
 
         ChatRoom chatRoom = chatRoomRepository.findBySenderAndReceiver(user.getNickname(), createChatRoomRequest.getReceiver());
@@ -86,8 +86,8 @@ public class ChatRoomService {
      * 2. 채팅방에서 user의 nockName과 receiver가 동일하다면, roomName은 sender로 설정한다. -> 123번째 줄
      * latestMessage : DB에 저장되어 있는 값 중에서 가장 최신의 값 추출
      */
-    public List<ChatMessageResponseDto> findAllRoomByUser(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUser::new);
+    public List<ChatMessageResponseDto> findAllRoomByUser(String nickname) {
+        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
         List<ChatRoom> chatRooms = chatRoomRepository.findBySenderOrReceiver(user.getNickname());
 
         List<ChatMessageResponseDto> chatRoomDtos = new ArrayList<>();
@@ -132,11 +132,11 @@ public class ChatRoomService {
      * loadMessage : 채팅 목록 가져오기
      */
 
-    public SelectedChatRoomResponse findRoom(String roomId, String email) {
+    public SelectedChatRoomResponse findRoom(String roomId, String nickname) {
 
-        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUser::new);
+        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
         ChatRoom chatRoom = chatRoomRepository.findByRedisRoomIdAndSenderOrRedisRoomIdAndReceiver(roomId, user.getNickname(), roomId, user.getNickname());
-        List<ChatMessageDto> chatMessageDtos = chatMessageService.loadMessage(roomId, email);
+        List<ChatMessageDto> chatMessageDtos = chatMessageService.loadMessage(roomId, nickname);
 
         if (chatRoom == null) {
             throw new NotFoundChattingRoom("채팅방이 존재하지 않습니다.");

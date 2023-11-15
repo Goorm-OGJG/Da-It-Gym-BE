@@ -78,8 +78,8 @@ public class ChatMessageService {
      * 4. Long size 란 채팅방에 접속해있는 인원을 의미한다.
      */
     @Transactional
-    public List<ChatMessageDto> loadMessage(String roomId, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUser::new);
+    public List<ChatMessageDto> loadMessage(String roomId, String nickname) {
+        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
 
         SetOperations<String, Object> setOperations = redisTemplate.opsForSet();
         Long size = setOperations.size(roomId + "set");
@@ -136,8 +136,8 @@ public class ChatMessageService {
 
     @Transactional
     public void updateReadCount(String redisRoomId, User user) {
-        String nickName = user.getNickname();
-        List<ChatMessage> chatMessages = chatMessageRepository.findAllByRedisRoomIdAndReadCountAndSenderNot(redisRoomId, 1, nickName);
+        String nickname = user.getNickname();
+        List<ChatMessage> chatMessages = chatMessageRepository.findAllByRedisRoomIdAndReadCountAndSenderNot(redisRoomId, 1, nickname);
 
         for (ChatMessage chatMessage : chatMessages) {
             chatMessage.setReadCount(0);
