@@ -15,6 +15,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Slf4j
 @RestController
@@ -85,21 +88,21 @@ public class RoutineController {
     }
 
     @PostMapping("/scrap/{routineId}")
-    public ApiResponse<Void> scrapRoutine(
+    public ApiResponse<Map<String, Long>> scrapRoutine(
             @PathVariable("routineId") Long routineId,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
-        routineService.scrapRoutine(routineId, oAuth2JwtUserDetails.getEmail());
+        Long scrappedCounts = routineService.scrapRoutine(routineId, oAuth2JwtUserDetails.getEmail());
 
-        return new ApiResponse<>(ErrorCode.SUCCESS);
+        return new ApiResponse<>(ErrorCode.SUCCESS, Map.of("scrapCnt", scrappedCounts));
     }
 
     @DeleteMapping("/scrap/{routineId}")
-    public ApiResponse<Void> unscrapRoutine(
+    public ApiResponse<Map<String, Long>> unscrapRoutine(
             @PathVariable("routineId") Long routineId,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
-        routineService.unscrapRoutine(routineId, oAuth2JwtUserDetails.getEmail());
+        Long scrappedCounts = routineService.unscrapRoutine(routineId, oAuth2JwtUserDetails.getEmail());
 
-        return new ApiResponse<>(ErrorCode.SUCCESS);
+        return new ApiResponse<>(ErrorCode.SUCCESS, Map.of("scrapCnt", scrappedCounts));
     }
 
     @GetMapping("/scraps")

@@ -77,7 +77,7 @@ public class RoutineService {
                         .liked(likedRoutineIds.contains(routine.getId()))
                         .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
                         .scrapped(scrappedRoutineIds.contains(routine.getId()))
-                        .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
+                        .scrapCounts(getScrapCounts(routine.getId()))
                         .createdAt(routine.getCreatedAt())
                         .build())
                 .toList();
@@ -155,7 +155,7 @@ public class RoutineService {
                 .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
                 .scrapped(userRoutineCollectionRepository
                         .existsByUserEmailAndRoutineId(userEmail, routine.getId()))
-                .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
+                .scrapCounts(getScrapCounts(routine.getId()))
                 .routine(RoutineDetailsResponseDto.RoutineDto.builder()
                         .id(routine.getId())
                         .days(dayDtos)
@@ -269,7 +269,7 @@ public class RoutineService {
     }
 
     @Transactional
-    public void scrapRoutine(Long routineId, String email) {
+    public Long scrapRoutine(Long routineId, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(NotFoundUser::new);
 
@@ -282,10 +282,15 @@ public class RoutineService {
         }
 
         userRoutineCollectionRepository.save(userRoutineCollection);
+        return getScrapCounts(routineId);
+    }
+
+    private long getScrapCounts(Long routineId) {
+        return userRoutineCollectionRepository.countByRoutineId(routineId);
     }
 
     @Transactional
-    public void unscrapRoutine(Long routineId, String email) {
+    public Long unscrapRoutine(Long routineId, String email) {
 
         routineRepository.findById(routineId)
                 .orElseThrow(NotFoundRoutine::new);
@@ -295,6 +300,7 @@ public class RoutineService {
                 .orElseThrow(NotFoundScrappedUserRoutine::new);
 
         userRoutineCollectionRepository.delete(userRoutineCollection);
+        return getScrapCounts(routineId);
     }
 
     @Transactional(readOnly = true)
