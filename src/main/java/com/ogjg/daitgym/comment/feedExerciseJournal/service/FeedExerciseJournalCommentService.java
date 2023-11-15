@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -67,6 +66,7 @@ public class FeedExerciseJournalCommentService {
                 .id(feedJournalComment.getId())
                 .comment(request.getComment())
                 .nickname(user.getNickname())
+                .imageUrl(user.getImageUrl())
                 .build();
     }
 
@@ -91,6 +91,7 @@ public class FeedExerciseJournalCommentService {
                 .id(commentId)
                 .comment(request.getComment())
                 .nickname(user.getNickname())
+                .imageUrl(user.getImageUrl())
                 .build();
     }
 

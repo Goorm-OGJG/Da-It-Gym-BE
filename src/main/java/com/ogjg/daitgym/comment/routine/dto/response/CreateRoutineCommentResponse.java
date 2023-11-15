@@ -13,12 +13,14 @@ public class CreateRoutineCommentResponse {
     private Long id;
     private String comment;
     private String nickname;
+    private String imageUrl;
 
     @Builder
-    public CreateRoutineCommentResponse(Long parentId, Long id, String comment, String nickname) {
+    public CreateRoutineCommentResponse(Long parentId, Long id, String comment, String nickname, String imageUrl) {
         this.parentId = parentId;
         this.id = id;
         this.comment = comment;
         this.nickname = nickname;
+        this.imageUrl = imageUrl;
     }
 }
