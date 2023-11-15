@@ -13,12 +13,14 @@ public class EditFeedJournalCommentResponse {
     private Long id;
     private String comment;
     private String nickname;
+    private String imageUrl;
 
     @Builder
-    public EditFeedJournalCommentResponse(Long parentId, Long id, String comment, String nickname) {
+    public EditFeedJournalCommentResponse(Long parentId, Long id, String comment, String nickname, String imageUrl) {
         this.parentId = parentId;
         this.id = id;
         this.comment = comment;
         this.nickname = nickname;
+        this.imageUrl = imageUrl;
     }
 }

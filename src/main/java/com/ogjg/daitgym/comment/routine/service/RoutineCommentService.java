@@ -11,8 +11,8 @@ import com.ogjg.daitgym.comment.routine.dto.response.RoutineCommentResponse;
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutineComment;
 import com.ogjg.daitgym.comment.routine.repository.RoutineCommentRepository;
-import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.routine.Routine;
 import com.ogjg.daitgym.domain.routine.RoutineComment;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
@@ -62,6 +62,7 @@ public class RoutineCommentService {
                 .id(routineComment.getId())
                 .comment(request.getComment())
                 .nickname(user.getNickname())
+                .imageUrl(user.getImageUrl())
                 .build();
     }
 
@@ -90,6 +91,7 @@ public class RoutineCommentService {
                 .id(routineComment.getId())
                 .comment(request.getComment())
                 .nickname(user.getNickname())
+                .imageUrl(user.getImageUrl())
                 .build();
 
     }
