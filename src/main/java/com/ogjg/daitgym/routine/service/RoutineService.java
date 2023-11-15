@@ -122,7 +122,7 @@ public class RoutineService {
     @Transactional(readOnly = true)
     public RoutineListResponseDto getFollowerRoutines(Pageable pageable, Integer division, String myEmail) {
 
-        List<String> followingEmails = followRepository.findAllByTargetEmail(myEmail)
+        List<String> followingEmails = followRepository.findAllByFollowerEmail(myEmail)
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(follow -> follow.getTarget().getEmail())

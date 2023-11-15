@@ -12,7 +12,7 @@ public interface FollowRepository extends JpaRepository<Follow, Follow.PK>, Foll
 
     int countByFollowPKFollowerEmail(String followerEmail);
 
-    Optional<List<Follow>> findAllByTargetEmail(String followingEmail);
+    Optional<List<Follow>> findAllByFollowerEmail(String followingEmail);
 
     Optional<Follow> findByFollowPK(Follow.PK followPK);
 }
