@@ -87,7 +87,7 @@ public class RoutineController {
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
 
-    @PostMapping("/scrap/{routineId}")
+    @PostMapping("/{routineId}/scrap")
     public ApiResponse<Map<String, Long>> scrapRoutine(
             @PathVariable("routineId") Long routineId,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
@@ -96,7 +96,7 @@ public class RoutineController {
         return new ApiResponse<>(ErrorCode.SUCCESS, Map.of("scrapCnt", scrappedCounts));
     }
 
-    @DeleteMapping("/scrap/{routineId}")
+    @DeleteMapping("/{routineId}/scrap")
     public ApiResponse<Map<String, Long>> unscrapRoutine(
             @PathVariable("routineId") Long routineId,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
