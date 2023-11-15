@@ -103,12 +103,12 @@ public class RoutineController {
     }
 
     @GetMapping("/scraps")
-    public ApiResponse<RoutineListResponseDto> getScrapedRoutines(
+    public ApiResponse<RoutineListResponseDto> getScrappedRoutines(
             Pageable pageable,
             @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails
     ) {
-        RoutineListResponseDto scrapedRoutines = routineService.getScrapedRoutines(oAuth2JwtUserDetails.getEmail(), pageable);
+        RoutineListResponseDto scrappedRoutines = routineService.getScrappedRoutines(oAuth2JwtUserDetails.getEmail(), pageable);
 
-        return new ApiResponse<>(ErrorCode.SUCCESS, scrapedRoutines);
+        return new ApiResponse<>(ErrorCode.SUCCESS, scrappedRoutines);
     }
 }

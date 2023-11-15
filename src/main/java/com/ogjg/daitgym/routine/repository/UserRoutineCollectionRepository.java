@@ -21,10 +21,10 @@ public interface UserRoutineCollectionRepository extends JpaRepository<UserRouti
     long countByRoutineId(@Param("routineId") Long routineId);
 
     @Query("SELECT urc.routine.id FROM UserRoutineCollection urc WHERE urc.user.email = :email")
-    Set<Long> findScrapedRoutineIdByUserEmail(String email);
+    Set<Long> findScrappedRoutineIdByUserEmail(String email);
 
     @Query("SELECT urc.routine.id FROM UserRoutineCollection urc WHERE urc.user.nickname = :nickname")
-    Set<Long> findScrapedRoutineIdByUserNickname(String nickname);
+    Set<Long> findScrappedRoutineIdByUserNickname(String nickname);
 
     boolean existsByUserEmailAndRoutineId(String userEmail, Long routineId);
 }
