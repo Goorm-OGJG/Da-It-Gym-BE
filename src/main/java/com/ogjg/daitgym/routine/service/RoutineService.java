@@ -15,9 +15,9 @@ import com.ogjg.daitgym.routine.dto.RoutineDetailsResponseDto;
 import com.ogjg.daitgym.routine.dto.RoutineDto;
 import com.ogjg.daitgym.routine.dto.RoutineListResponseDto;
 import com.ogjg.daitgym.routine.dto.RoutineRequestDto;
-import com.ogjg.daitgym.routine.exception.AlreadyScrapedRoutine;
+import com.ogjg.daitgym.routine.exception.AlreadyScrappedRoutine;
 import com.ogjg.daitgym.routine.exception.NoExerciseInRoutine;
-import com.ogjg.daitgym.routine.exception.NotFoundScrapedUserRoutine;
+import com.ogjg.daitgym.routine.exception.NotFoundScrappedUserRoutine;
 import com.ogjg.daitgym.routine.repository.DayRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.routine.repository.UserRoutineCollectionRepository;
@@ -64,7 +64,7 @@ public class RoutineService {
     private RoutineListResponseDto getRoutineListResponseDto(Slice<Routine> routines, String identifier) {
 
         Set<Long> likedRoutineIds = getLikedRoutineIds(identifier);
-        Set<Long> scrapedRoutineIds = getScrapedRoutineIds(identifier);
+        Set<Long> scrappedRoutineIds = getScrappedRoutineIds(identifier);
 
         List<RoutineDto> routineDtos = routines.stream()
                 .map(routine -> RoutineDto.builder()
@@ -75,7 +75,7 @@ public class RoutineService {
                         .description(routine.getContent())
                         .liked(likedRoutineIds.contains(routine.getId()))
                         .likeCounts(routineLikeRepository.countByRoutineId(routine.getId()))
-                        .scraped(scrapedRoutineIds.contains(routine.getId()))
+                        .scrapped(scrappedRoutineIds.contains(routine.getId()))
                         .scrapCounts(userRoutineCollectionRepository.countByRoutineId(routine.getId()))
                         .createdAt(routine.getCreatedAt())
                         .build())
@@ -97,11 +97,11 @@ public class RoutineService {
         }
     }
 
-    private Set<Long> getScrapedRoutineIds(String identifier) {
+    private Set<Long> getScrappedRoutineIds(String identifier) {
         if (isEmail(identifier)) {
-            return userRoutineCollectionRepository.findScrapedRoutineIdByUserEmail(identifier);
+            return userRoutineCollectionRepository.findScrappedRoutineIdByUserEmail(identifier);
         } else {
-            return userRoutineCollectionRepository.findScrapedRoutineIdByUserNickname(identifier);
+            return userRoutineCollectionRepository.findScrappedRoutineIdByUserNickname(identifier);
         }
     }
 
@@ -276,7 +276,7 @@ public class RoutineService {
 
         UserRoutineCollection userRoutineCollection = new UserRoutineCollection(user, routine);
         if (userRoutineCollectionRepository.findById(userRoutineCollection.getPk()).isPresent()) {
-            throw new AlreadyScrapedRoutine();
+            throw new AlreadyScrappedRoutine();
         }
 
         userRoutineCollectionRepository.save(userRoutineCollection);
@@ -290,13 +290,13 @@ public class RoutineService {
 
         UserRoutineCollection.PK pk = new UserRoutineCollection.PK(email, routineId);
         UserRoutineCollection userRoutineCollection = userRoutineCollectionRepository.findById(pk)
-                .orElseThrow(NotFoundScrapedUserRoutine::new);
+                .orElseThrow(NotFoundScrappedUserRoutine::new);
 
         userRoutineCollectionRepository.delete(userRoutineCollection);
     }
 
     @Transactional(readOnly = true)
-    public RoutineListResponseDto getScrapedRoutines(String email, Pageable pageable) {
+    public RoutineListResponseDto getScrappedRoutines(String email, Pageable pageable) {
         Slice<Routine> routinesByUserEmail = userRoutineCollectionRepository.findRoutinesByUserEmail(email, pageable);
 
         return getRoutineListResponseDto(routinesByUserEmail, email);
