@@ -90,6 +90,9 @@ class StompHandler implements ChannelInterceptor {
 
         hashOperations.put(session, "RedisRoomId", stringRedisRoomID);
         hashOperations.put(session, "email", email);
+
+        SetOperations<String, Object> setOperations = redisTemplate.opsForSet();
+        setOperations.add(stringRedisRoomID + "set", email);
     }
 
     /**

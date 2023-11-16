@@ -57,6 +57,7 @@ public class ChatMessageService {
                 .chatRoom(chatroom)
                 .message(chatMessageDto.getMessage())
                 .redisRoomId(chatMessageDto.getRedisRoomId())
+                .readCount(chatMessageDto.getReadCount())
                 .imageUrl(user.getImageUrl())
                 .build();
 
