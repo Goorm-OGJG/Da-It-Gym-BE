@@ -100,12 +100,12 @@ public class ExerciseJournalService {
      * 운동목록에 운동 기록 생성하기
      */
     @Transactional
-    public void createExerciseHistory(String email, ExerciseHistoryRequest exerciseHistoryRequest) {
+    public ExerciseHistory createExerciseHistory(String email, ExerciseHistoryRequest exerciseHistoryRequest) {
 
         ExerciseList exerciseList = findExerciseList(exerciseHistoryRequest.getId());
         isAuthorizedForJournal(email, exerciseList.getExerciseJournal().getId());
 
-        exerciseHistoryRepository.save(
+        return exerciseHistoryRepository.save(
                 ExerciseHistory.createExerciseHistory(exerciseList, exerciseHistoryRequest)
         );
     }
