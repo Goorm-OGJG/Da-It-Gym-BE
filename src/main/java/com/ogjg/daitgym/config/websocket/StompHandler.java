@@ -55,10 +55,10 @@ class StompHandler implements ChannelInterceptor {
         switch (stompCommand) {
 
             case CONNECT:
-                verifyAccessToken(headerAccessor);
-                connectToChatRoom(headerAccessor, session);
                 break;
             case SUBSCRIBE:
+                verifyAccessToken(headerAccessor);
+                connectToChatRoom(headerAccessor, session);
                 break;
             case DISCONNECT:
                 disConnectToChatRoom(session);
@@ -90,8 +90,6 @@ class StompHandler implements ChannelInterceptor {
 
         hashOperations.put(session, "RedisRoomId", stringRedisRoomID);
         hashOperations.put(session, "email", email);
-
-
     }
 
     /**
