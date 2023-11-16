@@ -3,6 +3,7 @@ package com.ogjg.daitgym.journal.controller;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.domain.journal.ExerciseHistory;
 import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -58,15 +60,18 @@ public class ExerciseJournalController {
      * 운동 목록에 운동기록 추가하기
      */
     @PostMapping("/exercise-history")
-    public ApiResponse<Void> addExerciseHistoryToExerciseList(
+    public ApiResponse<Map<String, Long>> addExerciseHistoryToExerciseList(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody ExerciseHistoryRequest exerciseHistoryRequest
     ) {
-        exerciseJournalService.createExerciseHistory(
+        ExerciseHistory exerciseHistory = exerciseJournalService.createExerciseHistory(
                 userDetails.getEmail(), exerciseHistoryRequest
         );
 
-        return new ApiResponse<>(ErrorCode.SUCCESS);
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                Map.of("id", exerciseHistory.getId())
+        );
     }
 
     /**
