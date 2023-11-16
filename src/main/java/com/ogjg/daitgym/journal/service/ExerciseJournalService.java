@@ -10,7 +10,9 @@ import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseJournalReplicationHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseList;
 import com.ogjg.daitgym.exercise.service.ExerciseService;
+import com.ogjg.daitgym.feed.exception.AlreadyExistFeedJournal;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
+import com.ogjg.daitgym.feed.service.FeedJournalHelperService;
 import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
@@ -18,10 +20,7 @@ import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseHistoryDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseListDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalListDto;
-import com.ogjg.daitgym.journal.exception.NotFoundExerciseHistory;
-import com.ogjg.daitgym.journal.exception.NotFoundExerciseList;
-import com.ogjg.daitgym.journal.exception.NotFoundJournal;
-import com.ogjg.daitgym.journal.exception.UserNotAuthorizedForJournal;
+import com.ogjg.daitgym.journal.exception.*;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalReplicationHistoryRepository;
@@ -49,12 +48,18 @@ public class ExerciseJournalService {
     private final ExerciseService exerciseService;
     private final FeedExerciseJournalService feedExerciseJournalService;
     private final ExerciseJournalReplicationHistoryRepository exerciseJournalReplicationHistoryRepository;
+    private final FeedJournalHelperService feedJournalHelperService;
 
     /**
      * 빈 운동일지 생성하기
+     * 해당 날짜에 생성된 일지가 있으면 예외 발생
      */
     @Transactional
     public ExerciseJournal createJournal(String email, LocalDate journalDate) {
+        if (checkForExistJournal(findUserByEmail(email), journalDate)) {
+            throw new AlreadyExistExerciseJournal();
+        }
+
         return exerciseJournalRepository.save(
                 ExerciseJournal.createJournal(findUserByEmail(email), journalDate)
         );
@@ -159,8 +164,9 @@ public class ExerciseJournalService {
     }
 
     /**
-     * 운동일지 공개 여부
-     * 공개시 피드에 추가
+     * 운동일지 공유하기
+     * 운동일지 공개 여부 확인
+     * 피드가 이미 존재한다면 공유된 일지라는 예외발생
      */
     @Transactional
     public void exerciseJournalShare(
@@ -169,6 +175,11 @@ public class ExerciseJournalService {
             List<MultipartFile> imgFiles
     ) {
         ExerciseJournal exerciseJournal = isAuthorizedForJournal(email, journalId);
+
+        if (feedJournalHelperService.checkExistFeedExerciseJournalByExerciseJournal(exerciseJournal)) {
+            throw new AlreadyExistFeedJournal();
+        }
+
         exerciseJournal.journalShareToFeed(exerciseJournalShareRequest);
 
         if (exerciseJournal.isVisible()) {
@@ -203,13 +214,16 @@ public class ExerciseJournalService {
      * 운동일지 삭제시
      * 피드 운동일지, 피드 좋아요, 피드 댓글 삭제
      * 운동기록, 운동목록, 운동일지 삭제하기
+     * 일지가 공유된 상태가 아니라면 피드에 대한 삭제가 발생하지 않음
      */
     @Transactional
     public void deleteJournal(String email, Long journalId) {
         ExerciseJournal journal = isAuthorizedForJournal(email, journalId);
 
-        FeedExerciseJournal feedJournal = feedExerciseJournalService.findFeedJournalByJournal(journal);
-        feedExerciseJournalService.deleteFeedJournal(email, feedJournal.getId());
+        if (journal.isVisible()) {
+            FeedExerciseJournal feedJournal = feedExerciseJournalService.findFeedJournalByJournal(journal);
+            feedExerciseJournalService.deleteFeedJournal(email, feedJournal.getId());
+        }
 
         List<ExerciseList> exerciseLists = findExerciseListByJournal(journal);
         exerciseLists.forEach(exerciseHistoryRepository::deleteAllByExerciseList);
@@ -392,6 +406,16 @@ public class ExerciseJournalService {
     ) {
         return exerciseJournalRepository.findByJournalDateAndUser(journalDate, user)
                 .orElseThrow(NotFoundExerciseJournal::new);
+    }
+
+    /**
+     * 같은 날짜에 일지가 존재하는지 확인
+     */
+    private boolean checkForExistJournal(
+            User user, LocalDate journalDate
+    ) {
+        return exerciseJournalRepository.findByJournalDateAndUser(journalDate, user)
+                .isPresent();
     }
 
     /**
