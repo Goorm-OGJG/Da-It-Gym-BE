@@ -22,6 +22,7 @@ public class FeedExerciseJournalImage {
     @JoinColumn(name = "feed_journal_id")
     private FeedExerciseJournal feedExerciseJournal;
 
+    @Lob
     private String imageUrl;
 
     public FeedExerciseJournalImage(FeedExerciseJournal feedExerciseJournal, String imageUrl) {
