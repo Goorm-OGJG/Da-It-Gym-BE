@@ -37,7 +37,7 @@ public class CertificationImage extends BaseEntity {
                 .build();
     }
 
-    public CertificationImage addAward(Certification savedCertification) {
+    public CertificationImage addCertification(Certification savedCertification) {
         this.certification = savedCertification;
         return this;
     }
