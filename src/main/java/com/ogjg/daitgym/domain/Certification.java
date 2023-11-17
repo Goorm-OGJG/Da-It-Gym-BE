@@ -49,7 +49,10 @@ public class Certification extends BaseEntity {
         this.acquisitionAt = acquisitionAt;
     }
 
-    public void addImage(CertificationImage certificationImage) {
-        this.certificationImages.add(certificationImage);
+    public List<CertificationImage> saveImages(List<String> certificationImgUrls) {
+        return this.certificationImages = certificationImgUrls.stream()
+                .map(CertificationImage::of)
+                .map((certificationImage -> certificationImage.addCertification(this)))
+                .toList();
     }
 }
