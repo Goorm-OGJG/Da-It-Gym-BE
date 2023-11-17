@@ -6,7 +6,7 @@ import com.ogjg.daitgym.chat.repository.ChatRoomRepository;
 import com.ogjg.daitgym.domain.ChatMessage;
 import com.ogjg.daitgym.domain.ChatRoom;
 import com.ogjg.daitgym.domain.User;
-import com.ogjg.daitgym.user.exception.NotFoundUser;
+import com.ogjg.daitgym.common.exception.user.NotFoundUser;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

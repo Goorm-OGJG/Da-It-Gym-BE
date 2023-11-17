@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.domain;
 
-import com.ogjg.daitgym.user.exception.NotFoundSplitTitle;
+import com.ogjg.daitgym.common.exception.user.NotFoundSplitTitle;
 import lombok.Getter;
 
 import java.util.Arrays;
