@@ -3,6 +3,7 @@ package com.ogjg.daitgym.user.dto;
 import com.ogjg.daitgym.domain.ExerciseSplit;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
+import jakarta.annotation.PostConstruct;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 public class LoginResponseDto {
 
     public static final String DEFAULT_HEALTHCLUB_NAME = "";
+
     @Value("${cloud.aws.default.profile-img}")
+    private String awsDefaultUrlTemp;
     private static String AWS_DEFAULT_PROFILE_IMG_URL;
     public static final String DEFAULT_INTRODUCTION = DEFAULT_HEALTHCLUB_NAME;
     public static final String DEFAULT_PREFERRED_SPLIT = ExerciseSplit.ONE_DAY.getTitle();
@@ -38,6 +41,10 @@ public class LoginResponseDto {
 
     private String role;
 
+    @PostConstruct
+    public void setUrl() {
+        AWS_DEFAULT_PROFILE_IMG_URL = awsDefaultUrlTemp;
+    }
 
     @Builder
     public LoginResponseDto(String nickname, String userProfileImgUrl, String preferredSplit, String introduction, String healthClubName, boolean isAlreadyJoined, String role, boolean isDeleted) {
