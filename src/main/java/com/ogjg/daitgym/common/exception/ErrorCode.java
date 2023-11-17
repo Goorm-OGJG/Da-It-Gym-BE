@@ -19,6 +19,7 @@ public enum ErrorCode implements ErrorType {
     NOT_FOUND_EXERCISE_PART(HttpStatus.NOT_FOUND, "404", "운동부위를 찾을 수 없습니다"),
     NOT_FOUND_EXERCISE_LIST(HttpStatus.NOT_FOUND, "404", "운동 목록을 찾을 수 없습니다"),
     NOT_FOUND_EXERCISE_HISTORY(HttpStatus.NOT_FOUND, "404", "운동 기록을 찾을 수 없습니다"),
+    NOT_FOUND_APPROVAL(HttpStatus.NOT_FOUND, "404", "승인 요청 내역을 찾을 수 없습니다"),
     NOT_FOUND_EXERCISE_COLLECTION(HttpStatus.NOT_FOUND,"404","피드 운동일지 스크랩 기록을 찾을 수 없습니다"),
     NOT_FOUND_JOURNAL(HttpStatus.NOT_FOUND, "404", "운동일지를 찾을 수 없습니다"),
     USER_NOT_AUTHORIZED_JOURNAL(HttpStatus.FORBIDDEN, "403", "운동일지에 접근 권한이 없습니다"),
