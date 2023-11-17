@@ -45,4 +45,10 @@ public class Approval extends BaseEntity {
         this.content = content;
         this.approvalManager = approvalManager;
     }
+
+    public void edit(String approveStatus, String reason, String loginEmail) {
+        this.approveStatus = ApproveStatus.from(approveStatus);
+        this.content = reason;
+        // todo : mangerId 등록
+    }
 }
