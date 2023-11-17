@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.follow.exception;
+package com.ogjg.daitgym.common.exception.follow;
 
 import com.ogjg.daitgym.common.exception.CustomException;
 import com.ogjg.daitgym.common.exception.ErrorCode;
