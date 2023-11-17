@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.routine.exception;
+package com.ogjg.daitgym.common.exception.routine;
 
 import com.ogjg.daitgym.common.exception.CustomException;
 import com.ogjg.daitgym.common.exception.ErrorCode;

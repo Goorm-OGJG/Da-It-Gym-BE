@@ -6,7 +6,7 @@ import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
-import com.ogjg.daitgym.user.exception.NotFoundUser;
+import com.ogjg.daitgym.common.exception.user.NotFoundUser;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -8,7 +8,7 @@ import com.ogjg.daitgym.chat.repository.UsersChattingRoomRepository;
 import com.ogjg.daitgym.domain.ChatRoom;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.UsersChattingRoom;
-import com.ogjg.daitgym.user.exception.NotFoundUser;
+import com.ogjg.daitgym.common.exception.user.NotFoundUser;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
