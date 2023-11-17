@@ -33,6 +33,7 @@ public class OAuth2JwtUserDetails extends DefaultOAuth2User implements UserDetai
                 "name");
         this.oAuthAttributes = OAuthAttributes.builder()
                 .email(userClaimsDto.getEmail())
+                .nickname(userClaimsDto.getNickname())
                 .build();
     }
 
@@ -57,7 +58,7 @@ public class OAuth2JwtUserDetails extends DefaultOAuth2User implements UserDetai
     }
 
     public String getNickname() {
-        return "";
+        return oAuthAttributes.getNickname();
     }
 
     public String getEmail() {

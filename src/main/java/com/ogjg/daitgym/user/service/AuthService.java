@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
-import com.ogjg.daitgym.domain.ExerciseSplit;
 import com.ogjg.daitgym.domain.HealthClub;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
@@ -52,9 +51,6 @@ public class AuthService {
     @Value("${kakao.user-info-uri}")
     private String KAKAO_USER_INFO_URI;
 
-    @Value("${cloud.aws.default.profile-img}")
-    private String AWS_DEFAULT_PROFILE_IMG_URL;
-
     // 토큰으로 사용자 정보 가져오기 -> 처음 로그인인지 체크하고 로그인 응답 생성
     @Transactional
     public LoginResponseDto kakaoLogin(String kakaoAccessToken, HttpServletResponse servletResponse) {
@@ -64,6 +60,58 @@ public class AuthService {
     // 어세스 토큰으로 사용자 정보 가져오기 -> 첫 로그인이라면 가입처리
     @Transactional
     public LoginResponseDto getKakaoInfo(String kakaoAccessToken, HttpServletResponse servletResponse) {
+        KakaoAccountDto kakaoAccountDto = getKakaoInfo(kakaoAccessToken);
+
+        // 회원가입 처리 -> 존재하면 정보 가져오기, 존재하지 않으면 새로 저장
+        String kakaoEmail = kakaoAccountDto.getKakao_account().getEmail();
+        User existUser = userRepository.findByEmailIncludingDeleted(kakaoEmail)
+                .orElse(null);
+
+        HealthClub defaultHealthClub = findDefaultHealthClub();
+
+        // 첫 가입
+        if (existUser == null) {
+            // 가입 처리
+            String tempNickname = generateTempNickname();
+            join(kakaoEmail, tempNickname, defaultHealthClub);
+
+            JwtUserClaimsDto claimsDto = JwtUserClaimsDto.defaultClaimsOf(kakaoEmail, tempNickname);
+            addTokensInHeader(servletResponse, claimsDto);
+
+            return LoginResponseDto.newUserResponse(tempNickname);
+
+        // 이전에 가입 후 탈퇴한 회원
+        } else if (existUser.isDeleted()){
+
+            // todo : 가입했다 탈퇴한 회원 처리 -> 탈퇴해서 아이디가 남아있는 회원의 처리가 추가되어야 한다.
+
+            return LoginResponseDto.deletedUserResponse(existUser);
+
+        // 이전에 이미 가입한 회원 -> 유저정보를 불러온다.
+        } else {
+            JwtUserClaimsDto claimsDto = JwtUserClaimsDto.from(existUser);
+            addTokensInHeader(servletResponse, claimsDto);
+
+            return LoginResponseDto.existUserResponse(existUser);
+        }
+    }
+
+    private static String generateTempNickname() {
+        return UUID.randomUUID().toString();
+    }
+
+    private void join(String kakaoEmail, String tempNickname, HealthClub defaultHealthClub) {
+        User user = User.builder()
+                .email(kakaoEmail)
+                .nickname(tempNickname)
+                .role(Role.USER)
+                .healthClub(defaultHealthClub)
+                .build();
+
+        userRepository.save(user);
+    }
+
+    private KakaoAccountDto getKakaoInfo(String kakaoAccessToken) {
         RestTemplate rt = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -91,102 +139,21 @@ public class AuthService {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
-        // todo 탈퇴해서 아이디가 남아있는 회원의 처리가 추가되어야 한다.
-        // 회원가입 처리 -> 존재하면 정보 가져오기, 존재하지 않으면 새로 저장
-        String kakaoEmail = kakaoAccountDto.getKakao_account().getEmail();
-        User existUser = userRepository.findByEmailIncludingDeleted(kakaoEmail)
-                .orElse(null);
-
-        boolean isAlreadyJoined = false;
-        boolean isDeleted = false;
-        String tempNickname = UUID.randomUUID().toString();
-
-        HealthClub defaultHealthClub = findDefaultHealthClub();
-
-        // 첫 가입
-        if (existUser == null) {
-            isAlreadyJoined = false;
-            isDeleted = false;
-
-            // 가입 처리
-            User user = User.builder()
-                    .email(kakaoAccountDto.getKakao_account().getEmail())
-                    .nickname(tempNickname)
-                    .role(Role.USER)
-                    .healthClub(defaultHealthClub)
-                    .build();
-
-            userRepository.save(user);
-
-            JwtUserClaimsDto jwtUserClaimsDto = JwtUserClaimsDto.builder()
-                    .email(kakaoEmail)
-                    .role(Role.USER)
-                    .build();
-            addTokensInHeader(servletResponse, jwtUserClaimsDto);
-
-            return LoginResponseDto.builder()
-                    .nickname(tempNickname)
-                    .userProfileImgUrl(AWS_DEFAULT_PROFILE_IMG_URL)
-                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
-                    .introduction("")
-                    .healthClubName(defaultHealthClub.getName())
-                    .isAlreadyJoined(isAlreadyJoined)
-                    .isDeleted(isDeleted)
-                    .role(Role.USER.getTitle())
-                    .build();
-
-        // todo : 가입했다 탈퇴한 회원 처리
-        } else if (existUser.isDeleted() == true){
-            isAlreadyJoined = true;
-            isDeleted = true;
-
-            return LoginResponseDto.builder()
-                    .nickname(tempNickname)
-                    .userProfileImgUrl(AWS_DEFAULT_PROFILE_IMG_URL)
-                    .preferredSplit(ExerciseSplit.ONE_DAY.getTitle())
-                    .introduction("")
-                    .healthClubName(defaultHealthClub.getName())
-                    .isAlreadyJoined(isAlreadyJoined)
-                    .isDeleted(isDeleted)
-                    .role(Role.USER.getTitle())
-                    .build();
-
-        // 가입한 회원 -> 유저정보를 불러온다.
-        } else {
-            isAlreadyJoined = true;
-            isDeleted = false;
-
-            JwtUserClaimsDto jwtUserClaimsDto = JwtUserClaimsDto.builder()
-                    .email(kakaoEmail)
-                    .role(Role.USER)
-                    .build();
-            addTokensInHeader(servletResponse, jwtUserClaimsDto);
-
-            return LoginResponseDto.builder()
-                    .nickname(existUser.getNickname())
-                    .userProfileImgUrl(existUser.getImageUrl())
-                    .preferredSplit(existUser.getPreferredSplit().getTitleOrDefault())
-                    .introduction(existUser.getIntroduction())
-                    .healthClubName(defaultHealthClub.getName())
-                    .isAlreadyJoined(isAlreadyJoined)
-                    .role(existUser.getRole().getTitleOrDefault())
-                    .isDeleted(isDeleted)
-                    .build();
-        }
+        return kakaoAccountDto;
     }
 
     private HealthClub findDefaultHealthClub() {
         List<HealthClub> clubs = healthClubRepository.findByName("");
         HealthClub defaultHealthClub;
+
         if (clubs.isEmpty()) {
             defaultHealthClub = HealthClub.builder()
                     .name("")
                     .build();
             return healthClubRepository.save(defaultHealthClub);
-        } else {
-            return defaultHealthClub = clubs.get(0);
         }
+
+        return clubs.get(0);
     }
 
     private void addTokensInHeader(HttpServletResponse response, JwtUserClaimsDto jwtUserClaimsDto) {
@@ -194,7 +161,6 @@ public class AuthService {
         String refreshToken = TokenGenerator.generateRefreshToken(jwtUserClaimsDto);
 
         response.addHeader(HEADER_AUTHORIZATION, TOKEN_PREFIX + accessToken);
-
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setHeader("Set-Cookie", createRefreshTokenCookie(refreshToken).toString());
         response.setCharacterEncoding("UTF-8");

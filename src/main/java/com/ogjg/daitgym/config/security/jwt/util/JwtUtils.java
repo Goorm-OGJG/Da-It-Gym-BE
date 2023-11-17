@@ -88,6 +88,7 @@ public class JwtUtils {
         private static Map<String, Object> createClaims(JwtUserClaimsDto jwtUserClaimsDto) {
             return new HashMap<>(Map.of(
                     ISSUER_KEY, ISSUER,
+                    "nickname", jwtUserClaimsDto.getNickname(),
                     "email", jwtUserClaimsDto.getEmail(),
                     "role", jwtUserClaimsDto.getRole().getKey()
             ));
