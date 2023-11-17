@@ -20,6 +20,7 @@ public enum ErrorCode implements ErrorType {
     NOT_FOUND_EXERCISE_LIST(HttpStatus.NOT_FOUND, "404", "운동 목록을 찾을 수 없습니다"),
     NOT_FOUND_EXERCISE_HISTORY(HttpStatus.NOT_FOUND, "404", "운동 기록을 찾을 수 없습니다"),
     NOT_FOUND_APPROVAL(HttpStatus.NOT_FOUND, "404", "승인 요청 내역을 찾을 수 없습니다"),
+    NOT_FOUND_APPROVAL_STATUS(HttpStatus.NOT_FOUND, "404", "해당 title을 가진 승인 상태가 존재하지 않습니다."),
     NOT_FOUND_EXERCISE_COLLECTION(HttpStatus.NOT_FOUND,"404","피드 운동일지 스크랩 기록을 찾을 수 없습니다"),
     NOT_FOUND_JOURNAL(HttpStatus.NOT_FOUND, "404", "운동일지를 찾을 수 없습니다"),
     USER_NOT_AUTHORIZED_JOURNAL(HttpStatus.FORBIDDEN, "403", "운동일지에 접근 권한이 없습니다"),
@@ -41,7 +42,8 @@ public enum ErrorCode implements ErrorType {
     UNAUTHORIZED_USER_ACCESS(HttpStatus.FORBIDDEN, "403", "접근 권한이 부족합니다."),
     NO_EXERCISE_IN_ROUTINE(HttpStatus.NOT_FOUND, "404", "루틴의 운동을 찾을 수 없습니다."),
     EMPTY_TRAINER_APPLY_APPROVAL(HttpStatus.BAD_REQUEST, "400", "잘못된 승인 신청입니다. 자격 혹은 수상내역 입력이 누락되었습니다."),
-    ALREADY_SCRAPPED_ROUTINE(HttpStatus.BAD_REQUEST, "400", "이미 스크랩한 루틴입니다.");
+    ALREADY_SCRAPPED_ROUTINE(HttpStatus.BAD_REQUEST, "400", "이미 스크랩한 루틴입니다."),
+    ;
 
     @JsonIgnore
     private final HttpStatus statusCode;

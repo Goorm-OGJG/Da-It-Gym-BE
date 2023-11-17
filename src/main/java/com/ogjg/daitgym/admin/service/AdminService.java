@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.admin.service;
 
+import com.ogjg.daitgym.admin.dto.request.EditApprovalRequest;
 import com.ogjg.daitgym.admin.dto.response.GetApprovalDetailResponse;
 import com.ogjg.daitgym.admin.dto.response.GetApprovalsResponse;
 import com.ogjg.daitgym.approval.repository.ApprovalRepository;
@@ -25,12 +26,18 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public GetApprovalDetailResponse getApproval(Long approvalId) {
-        Approval approval = findByApproval(approvalId);
+        Approval approval = findById(approvalId);
 
         return GetApprovalDetailResponse.from(approval);
     }
 
-    private Approval findByApproval(Long approvalId) {
+    @Transactional
+    public void updateApproval(Long approvalId, EditApprovalRequest request, String loginEmail) {
+        Approval approval = findById(approvalId);
+        approval.edit(request.getApprovalStatus(), request.getReason(), loginEmail);
+    }
+
+    private Approval findById(Long approvalId) {
         return approvalRepository.findById(approvalId)
                 .orElseThrow(NotFoundApproval::new);
     }
