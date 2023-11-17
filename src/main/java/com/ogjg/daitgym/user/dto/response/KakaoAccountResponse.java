@@ -1,9 +1,9 @@
-package com.ogjg.daitgym.user.dto;
+package com.ogjg.daitgym.user.dto.response;
 
 import lombok.Getter;
 
 @Getter
-public class KakaoAccountDto {
+public class KakaoAccountResponse {
 
     private Long id;
     private KakaoAccount kakao_account;
