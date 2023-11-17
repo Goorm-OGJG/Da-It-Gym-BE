@@ -73,10 +73,8 @@ public class ChatMessageService {
 
     /**
      * 전체 메세지 로드하기
-     * 1. 먼저 Redisd에 저장된 50개의 값을 가져온다.
-     * 2. 레디스에 저장되어있는 값이 10개밖에 없다면, 10개만 가져오는 현상이 발생하기에 레디스에 저장된 값이 50개보다 작으면 RDB 에서 가져옴
-     * 3. Connect 되어 두사람이 채팅방에 있을 때, readCount가 0이 되어야하기 때문에 redis에 저장된 readCount값이 1이라면 0으로 바꿔준다.
-     * 4. Long size 란 채팅방에 접속해있는 인원을 의미한다.
+     * Connect 되어 두사람이 채팅방에 있을 때, readCount가 0이 되어야하기 때문에 redis에 저장된 readCount값이 1이라면 0으로 바꿔준다.
+     * Long size 란 채팅방에 접속해있는 인원을 의미한다.
      */
     @Transactional
     public List<ChatMessageDto> loadMessage(String roomId, String nickname) {
@@ -87,11 +85,11 @@ public class ChatMessageService {
         updateReadCount(roomId, user);
 
         List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
+        List<ChatMessage> dbMessageList = chatMessageRepository.findAllByRedisRoomIdOrderByMessageCreatedAtAsc(roomId);
 
-        List<ChatMessageDto> redisMessageList = redisTemplateMessage.opsForList().range(roomId, 0, 99);
+        List<ChatMessageDto> redisMessageList = redisTemplateMessage.opsForList().range(roomId, 0, -1);
 
-        if (redisMessageList == null || redisMessageList.isEmpty() || redisMessageList.size() < 100) {
-            List<ChatMessage> dbMessageList = chatMessageRepository.findTop100ByRedisRoomIdOrderByMessageCreatedAtAsc(roomId);
+        if (redisMessageList == null || redisMessageList.isEmpty() || redisMessageList.size() < dbMessageList.size()) {
 
             for (int i = 0; i < redisMessageList.size(); i++) {
                 ChatMessageDto chatMessageDto = new ChatMessageDto(dbMessageList.get(i));
