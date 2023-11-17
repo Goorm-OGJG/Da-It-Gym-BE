@@ -84,7 +84,7 @@ public class UserService {
             throw new WrongApproach("본인의 프로필만 수정할 수 있습니다.");
         }
 
-        if (isNicknameAlreadyExist(request.getNickname())) {
+        if (isNicknameAlreadyExist(user.getNickname(), request.getNickname())) {
             throw new AlreadyExistNickname();
         }
 
@@ -221,9 +221,10 @@ public class UserService {
 
     @Transactional
     public EditInitialNicknameResponse editInitialNickname(String loginEmail, EditNicknameRequest request) {
+        User findUser = findUserByEmail(loginEmail);
         String newNickname = request.getNickname();
 
-        if (isNicknameAlreadyExist(newNickname)) {
+        if (isNicknameAlreadyExist(findUser.getNickname(), newNickname)) {
             throw new AlreadyExistNickname();
         }
 
@@ -232,22 +233,20 @@ public class UserService {
             throw new NotFoundUser("존재하지 않는 회원입니다.");
         }
 
-        User findUser = findUserByEmail(loginEmail);
-        String nickname = findUser.changeNickname(newNickname);
-
-        return EditInitialNicknameResponse.of(nickname);
+        String changedNickname = findUser.changeNickname(newNickname);
+        return EditInitialNicknameResponse.of(changedNickname);
     }
 
     @Transactional(readOnly = true)
-    public String checkNicknameDuplication(String nickname) {
-        if (isNicknameAlreadyExist(nickname)) {
+    public String checkNicknameDuplication(String nickname, String newNickname) {
+        if (isNicknameAlreadyExist(nickname, newNickname)) {
             return "중복";
         }
         return "사용가능";
     }
 
-    private boolean isNicknameAlreadyExist(String newNickname) {
-        return userRepository.findByNickname(newNickname).isPresent();
+    private boolean isNicknameAlreadyExist(String nickname, String newNickname) {
+        return !nickname.equals(newNickname) && userRepository.findByNickname(newNickname).isPresent();
     }
 
     @Transactional(readOnly = true)
