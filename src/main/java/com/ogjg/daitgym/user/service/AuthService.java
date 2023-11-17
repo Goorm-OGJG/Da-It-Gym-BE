@@ -9,12 +9,12 @@ import com.ogjg.daitgym.domain.ExerciseSplit;
 import com.ogjg.daitgym.domain.HealthClub;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
-import com.ogjg.daitgym.user.dto.KakaoAccountDto;
-import com.ogjg.daitgym.user.dto.LoginResponseDto;
+import com.ogjg.daitgym.user.dto.response.KakaoAccountResponse;
+import com.ogjg.daitgym.user.dto.response.KakaoTokenResponse;
+import com.ogjg.daitgym.user.dto.response.LoginResponse;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
-import static com.ogjg.daitgym.user.dto.LoginResponseDto.*;
+import static com.ogjg.daitgym.user.dto.response.LoginResponse.*;
 
 @Service
 @RequiredArgsConstructor
@@ -55,26 +55,28 @@ public class AuthService {
 
     // 토큰으로 사용자 정보 가져오기 -> 처음 로그인인지 체크하고 로그인 응답 생성
     @Transactional
-    public LoginResponseDto kakaoLogin(String kakaoAccessToken, HttpServletResponse servletResponse) {
+    public LoginResponse kakaoLogin(String kakaoAccessToken, HttpServletResponse servletResponse) {
         return getKakaoInfo(kakaoAccessToken, servletResponse);
     }
 
     // 어세스 토큰으로 사용자 정보 가져오기 -> 첫 로그인이라면 가입처리
     @Transactional
-    public LoginResponseDto getKakaoInfo(String kakaoAccessToken, HttpServletResponse servletResponse) {
-        KakaoAccountDto kakaoAccountDto = getKakaoInfo(kakaoAccessToken);
+    public LoginResponse getKakaoInfo(String kakaoAccessToken, HttpServletResponse servletResponse) {
+        KakaoAccountResponse kakaoAccountResponse = requestUserInfoToKakao(kakaoAccessToken);
+        return joinOrLoadUser(servletResponse, kakaoAccountResponse.getKakao_account().getEmail());
+    }
 
-        // 회원가입 처리 -> 존재하면 정보 가져오기, 존재하지 않으면 새로 저장
-        String kakaoEmail = kakaoAccountDto.getKakao_account().getEmail();
+    // 회원가입 처리 -> 존재하면 정보 가져오기, 존재하지 않으면 새로 저장
+    private LoginResponse joinOrLoadUser(HttpServletResponse servletResponse, String kakaoEmail) {
         User existUser = userRepository.findByEmailIncludingDeleted(kakaoEmail)
                 .orElse(null);
-
-        HealthClub defaultHealthClub = findDefaultHealthClub();
 
         // 첫 가입
         if (existUser == null) {
             // 가입 처리
+            HealthClub defaultHealthClub = findDefaultHealthClub();
             String tempNickname = generateTempNickname();
+
             join(kakaoEmail, tempNickname, defaultHealthClub);
 
             JwtUserClaimsDto claimsDto = JwtUserClaimsDto.defaultClaimsOf(kakaoEmail, tempNickname);
@@ -98,26 +100,7 @@ public class AuthService {
         }
     }
 
-    private static String generateTempNickname() {
-        return UUID.randomUUID().toString();
-    }
-
-    private void join(String kakaoEmail, String tempNickname, HealthClub defaultHealthClub) {
-        User user = User.builder()
-                .email(kakaoEmail)
-                .nickname(tempNickname)
-                .imageUrl(AWS_DEFAULT_PROFILE_IMG_URL)
-                .introduction(DEFAULT_INTRODUCTION)
-                .preferredSplit(ExerciseSplit.THREE_DAY)
-                .role(Role.USER)
-                .healthClub(defaultHealthClub)
-                .isDeleted(NOT_DELETED)
-                .build();
-
-        userRepository.save(user);
-    }
-
-    private KakaoAccountDto getKakaoInfo(String kakaoAccessToken) {
+    private KakaoAccountResponse requestUserInfoToKakao(String kakaoAccessToken) {
         RestTemplate rt = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -138,14 +121,14 @@ public class AuthService {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        KakaoAccountDto kakaoAccountDto = null;
+        KakaoAccountResponse kakaoAccountResponse = null;
 
         try {
-            kakaoAccountDto = objectMapper.readValue(accountInfoResponse.getBody(), KakaoAccountDto.class);
+            kakaoAccountResponse = objectMapper.readValue(accountInfoResponse.getBody(), KakaoAccountResponse.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return kakaoAccountDto;
+        return kakaoAccountResponse;
     }
 
     private HealthClub findDefaultHealthClub() {
@@ -160,6 +143,25 @@ public class AuthService {
         }
 
         return clubs.get(0);
+    }
+
+    private static String generateTempNickname() {
+        return UUID.randomUUID().toString();
+    }
+
+    private void join(String kakaoEmail, String tempNickname, HealthClub defaultHealthClub) {
+        User user = User.builder()
+                .email(kakaoEmail)
+                .nickname(tempNickname)
+                .imageUrl(AWS_DEFAULT_PROFILE_IMG_URL)
+                .introduction(DEFAULT_INTRODUCTION)
+                .preferredSplit(ExerciseSplit.THREE_DAY)
+                .role(Role.USER)
+                .healthClub(defaultHealthClub)
+                .isDeleted(NOT_DELETED)
+                .build();
+
+        userRepository.save(user);
     }
 
     private void addTokensInHeader(HttpServletResponse response, JwtUserClaimsDto jwtUserClaimsDto) {
@@ -182,15 +184,8 @@ public class AuthService {
                 .build();
     }
 
-    // 인가코드 보내서 토큰 받아오기, KakaoDto에 바인딩을 직접해줘서 반환한다.
-    private void addTokenInHeader(HttpServletResponse response, String accessToken) {
-        response.addHeader(HEADER_AUTHORIZATION, TOKEN_PREFIX + accessToken);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding(CHARSET_UTF_8);
-    }
-
     @Transactional
-    public KakaoTokenDto getKakaoAccessToken(String code) {
+    public KakaoTokenResponse getKakaoAccessToken(String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
@@ -218,26 +213,14 @@ public class AuthService {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        KakaoTokenDto kakaoTokenDto = null;
+        KakaoTokenResponse kakaoTokenResponse = null;
         try {
-            kakaoTokenDto = objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
+            kakaoTokenResponse = objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenResponse.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return kakaoTokenDto;
-    }
-
-    @Data
-    public static class KakaoTokenDto {
-
-        private String access_token;
-        private String token_type;
-        private String refresh_token;
-        private String id_token;
-        private int expires_in;
-        private int refresh_token_expires_in;
-        private String scope;
+        return kakaoTokenResponse;
     }
 }
 
