@@ -21,7 +21,9 @@ public class GetInbodiesResponse {
                 .map(GetInbodiesResponse.InbodyDto::new)
                 .toList();
 
-        this.avg = InbodyAvgCalculator.calculateAverages(records);
+        InbodyAvgCalculator inbodyAvgCalculator = new InbodyAvgCalculator();
+
+        this.avg = inbodyAvgCalculator.calculateAverages(records);
     }
 
     @Getter
@@ -46,21 +48,22 @@ public class GetInbodiesResponse {
 
     public static class InbodyAvgCalculator {
 
-        public static List<Double> calculateAverages(List<InbodyDto> records) {
+        public List<Double> calculateAverages(List<InbodyDto> records) {
             InbodyDetails inbodyDetails = new InbodyDetails();
 
             records.stream().forEach(inbodyDetails::record);
 
             double count = records.size();
-            return InbodyDetails.getAveragedList(count);
+
+            return inbodyDetails.getAveragedList(count);
         }
 
         private static class InbodyDetails {
-            static double inbodyScore = 0;
-            static double basalMetabolicRate = 0;
-            static double weight = 0;
-            static double bodyFatRatio = 0;
-            static double skeletalMuscleMass = 0;
+            private double inbodyScore = 0;
+            private double basalMetabolicRate = 0;
+            private double weight = 0;
+            private double bodyFatRatio = 0;
+            private double skeletalMuscleMass = 0;
 
             public void record(InbodyDto record) {
                 this.inbodyScore += record.getInbodyScore();
@@ -70,14 +73,14 @@ public class GetInbodiesResponse {
                 this.skeletalMuscleMass += record.getSkeletalMuscleMass();
             }
 
-            public static List<Double> getAveragedList(double count) {
+            public List<Double> getAveragedList(double count) {
                 return List.of(inbodyScore, basalMetabolicRate, weight, bodyFatRatio, skeletalMuscleMass)
                         .stream()
                         .map((detailTotal) -> getRoundedAverage(detailTotal, count))
                         .toList();
             }
 
-            private static double getRoundedAverage(double total, double count) {
+            private double getRoundedAverage(double total, double count) {
                 return Math.round(total / count * 100.0) / 100.0;
             }
         }
