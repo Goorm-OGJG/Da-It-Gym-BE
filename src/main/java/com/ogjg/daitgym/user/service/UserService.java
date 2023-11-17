@@ -68,12 +68,17 @@ public class UserService {
                 .userProfileImgUrl(targetUser.getImageUrl())
                 .introduction(targetUser.getIntroduction())
                 .healthClubName(targetUser.getHealthClub().getName())
-                .isFollower(followRepository.findByFollowPK(Follow.createFollowPK(targetUser.getEmail(), loginEmail)).isPresent())
+                .isFollower(isTargetUserFollowedByLoginUser(targetUser.getEmail(), loginEmail))
                 .role(targetUser.getRole())
                 .journalCount(exerciseJournalRepository.countByUserEmail(targetUser.getEmail()))
                 .followerCount(followRepository.countByFollowPKTargetEmail(targetUser.getEmail()))
                 .followingCount(followRepository.countByFollowPKFollowerEmail(targetUser.getEmail()))
                 .build();
+    }
+
+    private boolean isTargetUserFollowedByLoginUser(String targetEmail, String loginEmail) {
+        return followRepository.findByFollowPK(Follow.createFollowPK(targetEmail, loginEmail))
+                .isPresent();
     }
 
     @Transactional
