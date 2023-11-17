@@ -13,17 +13,17 @@ import org.springframework.beans.factory.annotation.Value;
 @NoArgsConstructor
 public class LoginResponseDto {
 
-    public static final String DEFAULT_HEALTHCLUB_NAME = "";
+    public static final String DEFAULT_HEALTH_CLUB_NAME = "";
 
     @Value("${cloud.aws.default.profile-img}")
-    private String awsDefaultUrlTemp;
-    private static String AWS_DEFAULT_PROFILE_IMG_URL;
-    public static final String DEFAULT_INTRODUCTION = DEFAULT_HEALTHCLUB_NAME;
+    public String awsDefaultUrlTemp;
+    public static String AWS_DEFAULT_PROFILE_IMG_URL;
+    public static final String DEFAULT_INTRODUCTION = DEFAULT_HEALTH_CLUB_NAME;
     public static final String DEFAULT_PREFERRED_SPLIT = ExerciseSplit.ONE_DAY.getTitle();
-    private static final boolean ALREADY_JOINED = true;
-    private static final boolean NOT_ALREADY_JOINED = true;
-    private static final boolean DELETED = true;
-    private static final boolean NOT_DELETED = false;
+    public static final boolean ALREADY_JOINED = true;
+    public static final boolean NOT_ALREADY_JOINED = true;
+    public static final boolean DELETED = true;
+    public static final boolean NOT_DELETED = false;
 
     private boolean isAlreadyJoined;
 
@@ -71,7 +71,7 @@ public class LoginResponseDto {
                 .userProfileImgUrl(AWS_DEFAULT_PROFILE_IMG_URL)
                 .preferredSplit(DEFAULT_PREFERRED_SPLIT)
                 .introduction(DEFAULT_INTRODUCTION)
-                .healthClubName(DEFAULT_HEALTHCLUB_NAME)
+                .healthClubName(DEFAULT_HEALTH_CLUB_NAME)
                 .role(Role.USER.getTitle());
     }
 

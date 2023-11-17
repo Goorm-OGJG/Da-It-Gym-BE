@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
+import com.ogjg.daitgym.domain.ExerciseSplit;
 import com.ogjg.daitgym.domain.HealthClub;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
+import static com.ogjg.daitgym.user.dto.LoginResponseDto.*;
 
 @Service
 @RequiredArgsConstructor
@@ -78,21 +80,21 @@ public class AuthService {
             JwtUserClaimsDto claimsDto = JwtUserClaimsDto.defaultClaimsOf(kakaoEmail, tempNickname);
             addTokensInHeader(servletResponse, claimsDto);
 
-            return LoginResponseDto.newUserResponse(tempNickname);
+            return newUserResponse(tempNickname);
 
         // 이전에 가입 후 탈퇴한 회원
         } else if (existUser.isDeleted()){
 
             // todo : 가입했다 탈퇴한 회원 처리 -> 탈퇴해서 아이디가 남아있는 회원의 처리가 추가되어야 한다.
 
-            return LoginResponseDto.deletedUserResponse(existUser);
+            return deletedUserResponse(existUser);
 
         // 이전에 이미 가입한 회원 -> 유저정보를 불러온다.
         } else {
             JwtUserClaimsDto claimsDto = JwtUserClaimsDto.from(existUser);
             addTokensInHeader(servletResponse, claimsDto);
 
-            return LoginResponseDto.existUserResponse(existUser);
+            return existUserResponse(existUser);
         }
     }
 
@@ -104,8 +106,12 @@ public class AuthService {
         User user = User.builder()
                 .email(kakaoEmail)
                 .nickname(tempNickname)
+                .imageUrl(AWS_DEFAULT_PROFILE_IMG_URL)
+                .introduction(DEFAULT_INTRODUCTION)
+                .preferredSplit(ExerciseSplit.THREE_DAY)
                 .role(Role.USER)
                 .healthClub(defaultHealthClub)
+                .isDeleted(NOT_DELETED)
                 .build();
 
         userRepository.save(user);
