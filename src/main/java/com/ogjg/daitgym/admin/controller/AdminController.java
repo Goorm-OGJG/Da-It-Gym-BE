@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.admin.controller;
 
+import com.ogjg.daitgym.admin.dto.response.GetApprovalDetailResponse;
 import com.ogjg.daitgym.admin.dto.response.GetApprovalsResponse;
 import com.ogjg.daitgym.admin.service.AdminService;
 import com.ogjg.daitgym.common.exception.ErrorCode;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +31,16 @@ public class AdminController {
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
                 adminService.getApprovals(nickname, pageable)
+        );
+    }
+
+    @GetMapping("/{approvalId}")
+    public ApiResponse<GetApprovalDetailResponse> getApproval(
+            @PathVariable("approvalId") Long approvalId) {
+
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                adminService.getApproval(approvalId)
         );
     }
 }
