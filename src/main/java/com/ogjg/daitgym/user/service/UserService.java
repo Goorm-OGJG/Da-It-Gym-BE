@@ -6,7 +6,7 @@ import com.ogjg.daitgym.domain.*;
 import com.ogjg.daitgym.domain.follow.Follow;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
-import com.ogjg.daitgym.s3.repository.S3Repository;
+import com.ogjg.daitgym.s3.service.S3UserService;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
@@ -22,17 +22,15 @@ import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import static com.ogjg.daitgym.domain.ApproveStatus.*;
+import static com.ogjg.daitgym.domain.ApproveStatus.WAITING;
 
 @Service
 @RequiredArgsConstructor
@@ -58,10 +56,7 @@ public class UserService {
 
     private final ExerciseJournalRepository exerciseJournalRepository;
 
-    private final S3Repository s3Repository;
-
-    @Value("${cloud.aws.default.profile-img}")
-    private String AWS_DEFAULT_PROFILE_IMG;
+    private final S3UserService s3UserService;
 
     @Transactional(readOnly = true)
     public GetUserProfileGetResponse getUserProfile(String loginEmail, String nickname) {
@@ -93,20 +88,8 @@ public class UserService {
             throw new AlreadyExistNickname();
         }
 
-        String newImgUrl;
-        String findImgUrl = user.getImageUrl();
-
-        // default 이미지 url 사용 시 삭제 방지
-        if (!AWS_DEFAULT_PROFILE_IMG.equals(findImgUrl)) {
-            s3Repository.deleteImageFromS3(findImgUrl);
-        }
-
-        if (isEmptyFile(multipartFile)) {
-            newImgUrl = findImgUrl;
-        } else {
-            // s3에 uuid로 랜덤 이름 생성해서 저장
-            newImgUrl = s3Repository.uploadImageToS3(multipartFile);
-        }
+        String originImgUrl = user.getImageUrl();
+        String newImgUrl = s3UserService.saveProfileImage(multipartFile, originImgUrl);
 
         //todo 헬스장 조회 수정, 수정 시 헬스장 식별자를 추가로 받아와야한다.
         HealthClub healthClub = findOrUpdateHealthClub(request.getGymName());
@@ -124,9 +107,6 @@ public class UserService {
         return EditUserProfileResponse.of(user);
     }
 
-    private static boolean isEmptyFile(MultipartFile multipartFile) {
-        return multipartFile == null || multipartFile.isEmpty();
-    }
 
     private HealthClub findOrUpdateHealthClub(String name) {
         HealthClub healthClub = healthClubRepository.findByName(name)
@@ -144,14 +124,14 @@ public class UserService {
      * 트레이너 심사 요청 기능
      */
     @Transactional
-    public void applyForApproval(String loginEmail, ApplyForApprovalRequest request, List<MultipartFile> awardImgs, List<MultipartFile> certificationImgs) {
+    public void applyForApproval(String loginEmail, ApplyForApprovalRequest request, List<MultipartFile> awardImageFiles, List<MultipartFile> certificationImageFiles) {
         User user = findUserByEmail(loginEmail);
 
-        validateOmittedCases(request, awardImgs, certificationImgs);
+        validateOmission(request, awardImageFiles, certificationImageFiles);
 
         // s3에 이미지들 저장
-        List<String> awardImgUrls = saveInS3IfExistBoth(request.getAwards(), awardImgs);
-        List<String> certificationImgUrls = saveInS3IfExistBoth(request.getCertifications(), certificationImgs);
+        List<String> awardImageUrls = s3UserService.saveCareerImages(request.getAwards(), awardImageFiles);
+        List<String> certificationImageUrls = s3UserService.saveCareerImages(request.getCertifications(), certificationImageFiles);
 
         // db에 저장
         Approval savedApproval = approvalRepository.save(Approval.builder().approveStatus(WAITING).build());
@@ -166,23 +146,16 @@ public class UserService {
         List<Award> savedAwards = awardRepository.saveAll(awards);
         List<Certification> savedCertifications = certificationRepository.saveAll(certifications);
 
-        List<AwardImage> awardImages = awardImgUrls.stream()
-                .map(AwardImage::of)
-                .map((awardImage -> awardImage.addAward(savedAwards.get(0))))
-                .toList();
-
-        List<CertificationImage> certificationImages = certificationImgUrls.stream()
-                .map(CertificationImage::of)
-                .map((certificationImage -> certificationImage.addAward(savedCertifications.get(0))))
-                .toList();
+        List<AwardImage> awardImages = savedAwards.get(0).saveImages(awardImageUrls);
+        List<CertificationImage> certificationImages = savedCertifications.get(0).saveImages(certificationImageUrls);
 
         awardImageRepository.saveAll(awardImages);
         certificationImageRepository.saveAll(certificationImages);
     }
 
-    private void validateOmittedCases(ApplyForApprovalRequest request, List<MultipartFile> awardImgs, List<MultipartFile> certificationImgs) {
+    private void validateOmission(ApplyForApprovalRequest request, List<MultipartFile> awardImages, List<MultipartFile> certificationImages) {
         validateAllOmitted(request);
-        validateOnlyHasImagesCases(request, awardImgs, certificationImgs);
+        validateOnlyHasImages(request, awardImages, certificationImages);
     }
 
     private void validateAllOmitted(ApplyForApprovalRequest request) {
@@ -191,30 +164,16 @@ public class UserService {
         }
     }
 
-    private void validateOnlyHasImagesCases(ApplyForApprovalRequest request, List<MultipartFile> awardImgs, List<MultipartFile> certificationImgs) {
-        if (isEmptyCollection(request.getAwards()) && !isFilesListNull(awardImgs)) {
+    private void validateOnlyHasImages(ApplyForApprovalRequest request, List<MultipartFile> awardImages, List<MultipartFile> certificationImages) {
+        if (isEmptyCollection(request.getAwards()) && !isFilesListNull(awardImages)) {
             throw new EmptyTrainerApplyException();
         }
 
-        if (isEmptyCollection(request.getCertifications()) && !isFilesListNull(certificationImgs)) {
+        if (isEmptyCollection(request.getCertifications()) && !isFilesListNull(certificationImages)) {
             throw new EmptyTrainerApplyException();
         }
     }
-
-    /**
-     * 자격증과 이미지 혹은 수상과 이미지가 모두 값이 존재           -->  s3에 저장하고 url들을 반환
-     * 자격증과 이미지 혹은 수상과 이미지가 모두 null 혹은 비어있다면 -->  빈 리스트 반환
-     */
-    private List<String> saveInS3IfExistBoth(Collection<?> submitted, List<MultipartFile> imgFiles) {
-        if (!isEmptyCollection(submitted) && !isFilesListNull(imgFiles)) {
-            return imgFiles.stream()
-                    .map((imgFile) -> s3Repository.uploadImageToS3(imgFile))
-                    .toList();
-        }
-
-        return Collections.emptyList();
-    }
-
+    
     private boolean isEmptyCollection(Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }

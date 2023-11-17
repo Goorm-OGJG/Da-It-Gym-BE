@@ -55,4 +55,11 @@ public class Award extends BaseEntity {
         this.awardName = awardName;
         this.awardAt = awardAt;
     }
+
+    public List<AwardImage> saveImages(List<String> awardImgUrls) {
+        return this.awardImages = awardImgUrls.stream()
+                .map(AwardImage::of)
+                .map((awardImage -> awardImage.addAward(this)))
+                .toList();
+    }
 }
