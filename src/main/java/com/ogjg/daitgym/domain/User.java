@@ -28,7 +28,8 @@ public class User extends BaseEntity {
     private String email;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "health_club_id")
+    @JoinColumn(name = "health_" +
+            "club_id")
     private HealthClub healthClub;
 
     @OneToOne(fetch = LAZY)
@@ -72,15 +73,14 @@ public class User extends BaseEntity {
 
     public void editProfile(String newImgUrl, String nickname, String introduction, HealthClub healthClub, String split) {
         this.imageUrl = newImgUrl;
-        this.nickname = nickname;
+        changeNickname(nickname);
         this.introduction = introduction;
         changeHealthClub(healthClub);
         this.preferredSplit = ExerciseSplit.titleFrom(split);
     }
 
     public String changeNickname(String newNickname) {
-        this.nickname = newNickname;
-        return this.nickname;
+        return this.nickname = newNickname;
     }
 
     public void withdraw() {
@@ -96,9 +96,5 @@ public class User extends BaseEntity {
             newHealthClub.getUsers().add(this);
         }
         this.healthClub = newHealthClub;
-    }
-
-    public boolean isAdmin() {
-        return this.role == Role.ADMIN;
     }
 }
