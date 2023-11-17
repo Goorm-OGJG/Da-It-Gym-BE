@@ -45,6 +45,7 @@ public class TokenController {
     ) {
         JwtUserClaimsDto claimsDto = JwtUserClaimsDto.builder()
                 .email(tokenTestRequest.email)
+                .nickname(tokenTestRequest.nickname)
                 .role(Role.fromKey(tokenTestRequest.role))
                 .build();
 

@@ -1,6 +1,5 @@
 package com.ogjg.daitgym.user.dto;
 
-import lombok.Data;
 import lombok.Getter;
 
 @Getter
@@ -8,13 +7,13 @@ public class KakaoAccountDto {
 
     private Long id;
     private KakaoAccount kakao_account;
-    @Data
+    @Getter
     public static class KakaoAccount {
 
         private String email;
         private Profile profile;
 
-        @Data
+        @Getter
         public static class Profile {
 
             private String nickname;
