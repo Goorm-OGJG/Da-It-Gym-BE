@@ -4,6 +4,7 @@ import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
+import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
@@ -30,15 +31,18 @@ public class ExerciseJournalController {
      * 빈 일지 생성하기
      */
     @PostMapping
-    public ApiResponse<Void> createJournal(
+    public ApiResponse<Map<String, Long>> createJournal(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody CreateJournalRequest createJournalRequest
     ) {
-        exerciseJournalService.createJournal(
+        ExerciseJournal journal = exerciseJournalService.createJournal(
                 userDetails.getEmail(), createJournalRequest.getJournalDate()
         );
 
-        return new ApiResponse<>(ErrorCode.SUCCESS);
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                Map.of("id", journal.getId())
+        );
     }
 
     /**
