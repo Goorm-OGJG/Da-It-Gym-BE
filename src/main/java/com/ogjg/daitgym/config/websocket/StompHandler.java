@@ -1,6 +1,5 @@
 package com.ogjg.daitgym.config.websocket;
 
-import com.ogjg.daitgym.chat.service.ChatMessageService;
 import com.ogjg.daitgym.config.security.jwt.util.JwtUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ class StompHandler implements ChannelInterceptor {
 
     private final JwtUtils jwtUtils;
     private Map<String, String> sessionId;
-    private final ChatMessageService chatMessageService;
     private HashOperations<String, String, String> hashOperations;
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -85,7 +83,7 @@ class StompHandler implements ChannelInterceptor {
         String stringRedisRoomID = redisRoomId.toString();
         String token = headerAccessor.getFirstNativeHeader("Authentication");
         String tokenStompHeader = jwtUtils.getTokenStompHeader(token);
-        String email = jwtUtils.getUid(tokenStompHeader);
+        String email = jwtUtils.getEmail(tokenStompHeader);
 
 
         hashOperations.put(session, "RedisRoomId", stringRedisRoomID);

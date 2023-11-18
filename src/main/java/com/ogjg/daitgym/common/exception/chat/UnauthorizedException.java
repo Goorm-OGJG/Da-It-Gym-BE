@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.chat.exception;
+package com.ogjg.daitgym.common.exception.chat;
 
 import lombok.Getter;
 

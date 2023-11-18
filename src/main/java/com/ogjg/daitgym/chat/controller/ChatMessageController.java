@@ -7,6 +7,7 @@ import com.ogjg.daitgym.chat.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,15 +29,17 @@ public class ChatMessageController {
      * convertAndSend : Websocket 에 발행된 메시지를 redis 로 발행(publish)
      */
     @MessageMapping("/message")
-    public void message(ChatMessageDto chatMessageDto) {
-        log.info("채팅 메시지");
+    public void message(ChatMessageDto chatMessageDto, @Header("Authentication") String token) {
+
         chatRoomService.enterChatRoom(chatMessageDto.getRedisRoomId());
+
         chatMessageDto.setMessageCreatedAt(LocalDateTime.now());
         ChatMessageDto savedChatMessageDto = chatMessageDto;
+        log.info("채팅 메시지");
 
         ChannelTopic topic = chatRoomService.getTopic(chatMessageDto.getRedisRoomId());
         if (!Objects.equals(chatMessageDto.getMessageType(), "ENTER")) {
-            savedChatMessageDto = messageService.save(chatMessageDto);
+            savedChatMessageDto = messageService.save(chatMessageDto, token);
         }
         redisPublisher.publish(topic, savedChatMessageDto);
     }

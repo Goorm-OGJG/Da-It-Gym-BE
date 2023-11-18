@@ -1,19 +1,18 @@
 package com.ogjg.daitgym.chat.service;
 
 import com.ogjg.daitgym.chat.dto.*;
-import com.ogjg.daitgym.chat.exception.NotFoundChattingRoom;
 import com.ogjg.daitgym.chat.pubsub.RedisSubscriber;
 import com.ogjg.daitgym.chat.repository.ChatRoomRepository;
 import com.ogjg.daitgym.chat.repository.UsersChattingRoomRepository;
+import com.ogjg.daitgym.common.exception.chat.NotFoundChattingRoom;
+import com.ogjg.daitgym.common.exception.user.NotFoundUser;
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.ChatRoom;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.UsersChattingRoom;
-import com.ogjg.daitgym.common.exception.user.NotFoundUser;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
@@ -35,94 +34,67 @@ public class ChatRoomService {
     private Map<String, ChannelTopic> topics;
     private final UserRepository userRepository;
     private final RedisSubscriber redisSubscriber;
-    private static final String CHAT_ROOMS = "CHAT_ROOM";
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageService chatMessageService;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final RedisMessageListenerContainer redisMessageListener;
-    private HashOperations<String, String, ChatRoomDto> opsHashChatRoom;
     private final UsersChattingRoomRepository usersChattingRoomRepository;
 
     @PostConstruct
     private void init() {
-        opsHashChatRoom = redisTemplate.opsForHash();
         topics = new HashMap<>();
     }
 
     /**
      * 채팅방 생성
      * chatRoom이 존재하지 않거나,
-     * chatRoom이 존재하지만, user의 nickname이 보내는 사람과 일치하지않고 받는 사람이 chatMessageRequestDto에서 받은 receiver과 일치하지 않을 때 생성한다.
      * 만약 채팅방이 존재한다면 존재하고 있는 chatRoomd의 redisRoomId 값을 return한다.
      */
     @Transactional
-    public ChatRoomResponse createChatRoom(String nickname, CreateChatRoomRequest createChatRoomRequest) {
-        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
-        User receiver = userRepository.findByNickname(createChatRoomRequest.getReceiver()).orElseThrow(NotFoundUser::new);
+    public ChatRoomResponse createChatRoom(CreateChatRoomRequest createChatRoomRequest, OAuth2JwtUserDetails oAuth2JwtUserDetails) {
 
-        ChatRoom chatRoom = chatRoomRepository.findBySenderAndReceiver(user.getNickname(), createChatRoomRequest.getReceiver());
+        String email = oAuth2JwtUserDetails.getEmail();
+        User sender = getUserByEmail(email);
+        User receiver = getUserNickname(createChatRoomRequest.getReceiver());
+        List<UsersChattingRoom> usersChattingRooms = usersChattingRoomRepository.findChatRoomByEmails(sender.getEmail(), receiver.getEmail());
 
-        if ((chatRoom == null) || (chatRoom != null && (!user.getNickname().equals(chatRoom.getSender()) && !createChatRoomRequest.getReceiver().equals(chatRoom.getReceiver())))) {
-            ChatRoomDto chatRoomDto = ChatRoomDto.create(createChatRoomRequest, user, receiver);
-            opsHashChatRoom.put(CHAT_ROOMS, chatRoomDto.getRedisRoomId(), chatRoomDto);
-
-            ChatRoom saveChatRoom = ChatRoom.builder()
-                    .chatRoomDto(chatRoomDto)
-                    .user(user)
-                    .build();
-
-            chatRoomRepository.save(saveChatRoom);
-            usersChattingRoomRepository.save(new UsersChattingRoom(user, saveChatRoom));
-            return new ChatRoomResponse(saveChatRoom);
-
+        if (usersChattingRooms.size() == 2) {
+            return new ChatRoomResponse(usersChattingRooms.get(0).getChatRoom().getRedisRoomId());
         } else {
-            return new ChatRoomResponse(chatRoom.getRedisRoomId());
+
+            ChatRoom saveChatRoom = new ChatRoom();
+            chatRoomRepository.save(saveChatRoom);
+
+            usersChattingRoomRepository.save(new UsersChattingRoom(sender, saveChatRoom));
+            usersChattingRoomRepository.save(new UsersChattingRoom(receiver, saveChatRoom));
+
+            return new ChatRoomResponse(saveChatRoom, sender, receiver);
         }
     }
 
     /**
      * 사용자의 모든 채팅방 가져오기
-     * 1. 채팅방에서 user의 nickName 과 sender가 동일하다면, roomName은 receiver로 설정한다. -> 113번째 줄
-     * 2. 채팅방에서 user의 nockName과 receiver가 동일하다면, roomName은 sender로 설정한다. -> 123번째 줄
      * latestMessage : DB에 저장되어 있는 값 중에서 가장 최신의 값 추출
      */
-    public List<ChatMessageResponseDto> findAllRoomByUser(String nickname) {
-        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
-        List<ChatRoom> chatRooms = chatRoomRepository.findBySenderOrReceiver(user.getNickname());
+    public List<ChatRoomsResponse> findAllRoomsByUser(OAuth2JwtUserDetails oAuth2JwtUserDetails) {
 
-        List<ChatMessageResponseDto> chatRoomDtos = new ArrayList<>();
-        for (ChatRoom chatRoom : chatRooms) {
+        String email = oAuth2JwtUserDetails.getEmail();
+        User user = getUserByEmail(email);
+
+        List<UsersChattingRoom> usersChattingRooms = usersChattingRoomRepository.findAllByUser(user);
+        List<ChatRoomsResponse> chatRoomDtos = new ArrayList<>();
+
+        for (UsersChattingRoom usersChattingRoom : usersChattingRooms) {
+            ChatRoom chatRoom = usersChattingRoom.getChatRoom();
+            UsersChattingRoom ucr = usersChattingRoomRepository.findByChatRoomAndUserNot(chatRoom, user);
+            User receiver = ucr.getUser();
+
             ChatMessageDto latestMsg = chatMessageService.latestMessage(chatRoom.getRedisRoomId());
             String msg = (latestMsg != null) ? latestMsg.getMessage() : "";
-            LocalDateTime messageCreatedAt = (latestMsg!=null)? latestMsg.getMessageCreatedAt() : null;
+            LocalDateTime messageCreatedAt = (latestMsg != null) ? latestMsg.getMessageCreatedAt() : null;
 
-            if (user.getNickname().equals(chatRoom.getSender())) {
-                ChatMessageResponseDto chatMessageResponseDto = new ChatMessageResponseDto(
-                        chatRoom.getId(),
-                        chatRoom.getReceiver(),
-                        chatRoom.getRedisRoomId(),
-                        chatRoom.getSender(),
-                        chatRoom.getReceiver(),
-                        msg,
-                        chatRoom.getImageUrl(),
-                        messageCreatedAt
-                );
-                chatRoomDtos.add(chatMessageResponseDto);
+            ChatRoomsResponse chatRoomsResponse = ChatRoomsResponse.builder().chatRoom(chatRoom).sender(user).receiver(receiver).message(msg).messageCreatedAt(messageCreatedAt).build();
 
-            } else if (user.getNickname().equals(chatRoom.getReceiver())) {
-                ChatMessageResponseDto chatMessageResponseDto = new ChatMessageResponseDto(
-                        chatRoom.getId(),
-                        chatRoom.getSender(),
-                        chatRoom.getRedisRoomId(),
-                        chatRoom.getSender(),
-                        chatRoom.getReceiver(),
-                        msg,
-                        chatRoom.getImageUrl(),
-                        messageCreatedAt
-                );
-
-                chatRoomDtos.add(chatMessageResponseDto);
-            }
+            chatRoomDtos.add(chatRoomsResponse);
         }
         return chatRoomDtos;
     }
@@ -132,16 +104,27 @@ public class ChatRoomService {
      * loadMessage : 채팅 목록 가져오기
      */
 
-    public SelectedChatRoomResponse findRoom(String roomId, String nickname) {
+    public SelectedChatRoomResponse findRoom(String redisRoomId,
+                                             OAuth2JwtUserDetails oAuth2JwtUserDetails) {
 
-        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
-        ChatRoom chatRoom = chatRoomRepository.findByRedisRoomIdAndSenderOrRedisRoomIdAndReceiver(roomId, user.getNickname(), roomId, user.getNickname());
-        List<ChatMessageDto> chatMessageDtos = chatMessageService.loadMessage(roomId, nickname);
-
+        String email = oAuth2JwtUserDetails.getEmail();
+        User sender = getUserByEmail(email);
+        ChatRoom chatRoom = chatRoomRepository.findByRedisRoomId(redisRoomId);
         if (chatRoom == null) {
             throw new NotFoundChattingRoom("채팅방이 존재하지 않습니다.");
         }
-        return new SelectedChatRoomResponse(chatRoom, chatMessageDtos);
+        UsersChattingRoom ucr = usersChattingRoomRepository.findByChatRoomAndUserNot(chatRoom, sender);
+
+
+        User receiver = ucr.getUser();
+        List<ChatMessageDto> chatMessageDtos = chatMessageService.loadMessage(redisRoomId, sender);
+
+        return SelectedChatRoomResponse.builder()
+                .chatRoom(chatRoom)
+                .sender(sender)
+                .receiver(receiver)
+                .messages(chatMessageDtos)
+                .build();
     }
 
 
@@ -150,8 +133,7 @@ public class ChatRoomService {
      */
     public void enterChatRoom(String roomId) {
         ChannelTopic topic = topics.get(roomId);
-        if (topic == null)
-            topic = new ChannelTopic(roomId);
+        if (topic == null) topic = new ChannelTopic(roomId);
         redisMessageListener.addMessageListener(redisSubscriber, topic);
         topics.put(roomId, topic);
     }
@@ -162,4 +144,13 @@ public class ChatRoomService {
     public ChannelTopic getTopic(String roomId) {
         return topics.get(roomId);
     }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(NotFoundUser::new);
+    }
+
+    private User getUserNickname(String nickname) {
+        return userRepository.findByNickname(nickname).orElseThrow(NotFoundUser::new);
+    }
+
 }
