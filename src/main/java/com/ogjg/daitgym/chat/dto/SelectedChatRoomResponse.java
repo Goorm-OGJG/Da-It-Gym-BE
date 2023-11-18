@@ -1,17 +1,17 @@
 package com.ogjg.daitgym.chat.dto;
 
 import com.ogjg.daitgym.domain.ChatRoom;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.ogjg.daitgym.domain.User;
+import lombok.*;
 
 import java.util.List;
+
+import static lombok.AccessLevel.PROTECTED;
 
 
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = PROTECTED)
 public class SelectedChatRoomResponse {
 
     private Long id;
@@ -22,12 +22,12 @@ public class SelectedChatRoomResponse {
     private List<ChatMessageDto> messages;
 
     @Builder
-    public SelectedChatRoomResponse(ChatRoom chatRoom, List<ChatMessageDto> messages) {
+    public SelectedChatRoomResponse(ChatRoom chatRoom, User sender, User receiver, List<ChatMessageDto> messages) {
         this.id = chatRoom.getId();
-        this.roomName = chatRoom.getRoomName();
+        this.roomName = receiver.getNickname();
         this.redisRoomId = chatRoom.getRedisRoomId();
-        this.sender = chatRoom.getSender();
-        this.receiver = chatRoom.getReceiver();
+        this.sender = sender.getNickname();
+        this.receiver = receiver.getNickname();
         this.messages = messages;
     }
 }

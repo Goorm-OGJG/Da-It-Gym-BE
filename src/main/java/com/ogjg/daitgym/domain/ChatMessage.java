@@ -24,12 +24,9 @@ public class ChatMessage {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
-    private String sender;
-    private String message;
     private String redisRoomId;
-    private String imageUrl;
+    private String message;
     private int readCount;
-
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -44,14 +41,13 @@ public class ChatMessage {
     private ChatRoom chatRoom;
 
     @Builder
-    public ChatMessage(String sender, ChatRoom chatRoom, String message, String redisRoomId, int readCount,String imageUrl) {
+    public ChatMessage(ChatRoom chatRoom, String message, String redisRoomId, int readCount, User user) {
         super();
-        this.sender = sender;
+        this.user = user;
         this.chatRoom = chatRoom;
-        this.message = message;
         this.redisRoomId = redisRoomId;
+        this.message = message;
         this.readCount = readCount;
-        this.imageUrl = imageUrl;
         this.messageCreatedAt = LocalDateTime.now();
     }
 }
