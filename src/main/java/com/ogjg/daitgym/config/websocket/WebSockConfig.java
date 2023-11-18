@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.config.websocket;
 
-import com.ogjg.daitgym.chat.exception.StompExceptionHandler;
+import com.ogjg.daitgym.common.exception.chat.StompExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.config.security.jwt.util;
 
-import com.ogjg.daitgym.chat.exception.UnauthorizedException;
+import com.ogjg.daitgym.common.exception.chat.UnauthorizedException;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SecurityException;
@@ -176,8 +176,7 @@ public class JwtUtils {
         return null;
     }
 
-    public String getUid(String token) {
-
+    public String getEmail(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(SIGNATURE_KEY).build().parseClaimsJws(token).getBody();
         return claims.get("email", String.class);
     }
