@@ -93,10 +93,10 @@ public class ChatMessageService {
         List<ChatMessage> dbMessageList = chatMessageRepository.findAllByRedisRoomIdOrderByMessageCreatedAtAsc(redisRoomId);
 
         for (ChatMessage chatMessage : dbMessageList) {
-            chatMessageDtos.add(new ChatMessageDto(chatMessage, user));
+            User sender = chatMessage.getUser();
+            chatMessageDtos.add(new ChatMessageDto(chatMessage, sender));
         }
         return chatMessageDtos;
-
 
 //        List<ChatMessageDto> redisMessageList = redisTemplateMessage.opsForList().range(redisRoomId, 0, -1);
 //
