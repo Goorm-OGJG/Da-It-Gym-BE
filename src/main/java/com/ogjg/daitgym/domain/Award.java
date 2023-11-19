@@ -63,4 +63,16 @@ public class Award extends BaseEntity {
                 .map((awardImage -> awardImage.addAward(this)))
                 .toList();
     }
+
+    public void addApproval(Approval approval) {
+        this.approval = approval;
+    }
+
+    public void addImageUrls(List<String> awardImageUrls) {
+        this.awardImages = awardImageUrls.stream()
+                .map(AwardImage::of)
+                .toList();
+
+        awardImages.stream().forEach(awardImage -> awardImage.addAward(this));
+    }
 }

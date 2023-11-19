@@ -56,4 +56,16 @@ public class Certification extends BaseEntity {
                 .map((certificationImage -> certificationImage.addCertification(this)))
                 .toList();
     }
+
+    public void addApproval(Approval approval) {
+        this.approval = approval;
+    }
+
+    public void addCertificationImageUrls(List<String> certificationImageUrls) {
+        this.certificationImages = certificationImageUrls.stream()
+                .map(CertificationImage::of)
+                .toList();
+
+        certificationImages.stream().forEach(awardImage -> awardImage.addCertification(this));
+    }
 }
