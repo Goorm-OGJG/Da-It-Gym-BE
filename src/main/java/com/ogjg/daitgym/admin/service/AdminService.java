@@ -19,9 +19,17 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public GetApprovalsResponse getApprovals(String nickname, Pageable pageable) {
-        return GetApprovalsResponse.from(
-                approvalRepository.findByUserNickname(nickname + "%", pageable.getPageSize(), pageable.getPageNumber())
+        return GetApprovalsResponse.of(
+                calculateTotalPages(nickname, pageable),
+                approvalRepository.findByUserNickname(nickname, pageable.getPageSize(), pageable.getPageNumber())
         );
+    }
+
+    private long calculateTotalPages(String nickname, Pageable pageable) {
+        long totalCount = approvalRepository.countTotalPageByUserNickname(nickname);
+        long pageCount = totalCount / pageable.getPageSize();
+        if (totalCount % pageable.getPageSize() != 0) pageCount++;
+        return pageCount;
     }
 
     @Transactional(readOnly = true)
