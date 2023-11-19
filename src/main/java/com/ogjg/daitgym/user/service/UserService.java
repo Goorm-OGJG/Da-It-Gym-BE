@@ -21,6 +21,7 @@ import com.ogjg.daitgym.common.exception.user.NotFoundUser;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,7 @@ public class UserService {
 
     private final CertificationImageRepository certificationImageRepository;
 
+    private final EntityManager em;
     private final FollowRepository followRepository;
 
     private final ApprovalRepository approvalRepository;
@@ -139,23 +141,11 @@ public class UserService {
         List<String> certificationImageUrls = s3UserService.saveCareerImages(request.getCertifications(), certificationImageFiles);
 
         // db에 저장
-        Approval savedApproval = approvalRepository.save(Approval.builder().approveStatus(WAITING).build());
+        Approval approval = Approval.builder().approveStatus(WAITING).build();
+        approval.addAwards(request.toAwards(user), awardImageUrls);
+        approval.addCertifications(request.toCertifications(user), certificationImageUrls);
 
-        List<Award> awards = request.getAwards().stream()
-                .map((dto) -> dto.toAward(user, savedApproval))
-                .toList();
-        List<Certification> certifications = request.getCertifications().stream()
-                .map((dto) -> dto.toCertification(user, savedApproval))
-                .toList();
-
-        List<Award> savedAwards = awardRepository.saveAll(awards);
-        List<Certification> savedCertifications = certificationRepository.saveAll(certifications);
-
-        List<AwardImage> awardImages = savedAwards.get(0).saveImages(awardImageUrls);
-        List<CertificationImage> certificationImages = savedCertifications.get(0).saveImages(certificationImageUrls);
-
-        awardImageRepository.saveAll(awardImages);
-        certificationImageRepository.saveAll(certificationImages);
+        approvalRepository.save(approval);
     }
 
     private void validateOmission(ApplyForApprovalRequest request, List<MultipartFile> awardImages, List<MultipartFile> certificationImages) {

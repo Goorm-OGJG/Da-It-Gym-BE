@@ -22,6 +22,18 @@ public class ApplyForApprovalRequest {
         this.awards = awards;
     }
 
+    public List<Award> toAwards(User user) {
+        return awards.stream()
+                .map((dto) -> dto.toAward(user))
+                .toList();
+    }
+
+    public List<Certification> toCertifications(User user) {
+        return certifications.stream()
+                .map((dto) -> dto.toCertification(user))
+                .toList();
+    }
+
     @Getter
     @NoArgsConstructor(access = PROTECTED)
     public static class CertificationDto {
@@ -33,23 +45,13 @@ public class ApplyForApprovalRequest {
             this.acquisitionAt = acquisitionAt;
         }
 
-        public Certification toCertification(User user, Approval approval) {
+        public Certification toCertification(User user) {
             return Certification.builder()
                     .user(user)
-                    .approval(approval)
                     .name(this.name)
                     .acquisitionAt(this.acquisitionAt)
                     .certificationImages(new ArrayList<>())
                     .build();
-        }
-
-        private List<CertificationImage> toCertificationImgs(List<String> imgUrls) {
-            return imgUrls.stream()
-                    .map((imgUrl) ->
-                            CertificationImage.builder()
-                                    .url(imgUrl)
-                                    .build())
-                    .toList();
         }
     }
 
@@ -60,25 +62,14 @@ public class ApplyForApprovalRequest {
         private LocalDate awardAt;
         private String org;
 
-        public Award toAward(User user, Approval approval) {
+        public Award toAward(User user) {
             return Award.builder()
                     .user(user)
-                    .approval(approval)
                     .awardName(this.name)
                     .awardAt(this.awardAt)
                     .hostOrganization(this.org)
                     .awardImages(new ArrayList<>())
                     .build();
         }
-
-        private static List<AwardImage> toAwardImages(List<String> imgUrls) {
-            return imgUrls.stream()
-                    .map((imgUrl) ->
-                            AwardImage.builder()
-                                    .url(imgUrl)
-                                    .build()
-                    ).toList();
-        }
-
     }
 }

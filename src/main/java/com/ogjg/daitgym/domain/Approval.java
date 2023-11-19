@@ -50,4 +50,18 @@ public class Approval extends BaseEntity {
         this.content = reason;
         // todo : mangerId 등록
     }
+
+    public void addAwards(List<Award> awards, List<String> awardImageUrls) {
+        this.awards = awards;
+        awards.stream().forEach((award -> award.addApproval(this)));
+
+        awards.get(FIRST_ELEMENT).addImageUrls(awardImageUrls);
+    }
+
+    public void addCertifications(List<Certification> certifications, List<String> certificationImageUrls) {
+        this.certifications = certifications;
+        certifications.stream().forEach((certification -> certification.addApproval(this)));
+
+        certifications.get(FIRST_ELEMENT).addCertificationImageUrls(certificationImageUrls);
+    }
 }
