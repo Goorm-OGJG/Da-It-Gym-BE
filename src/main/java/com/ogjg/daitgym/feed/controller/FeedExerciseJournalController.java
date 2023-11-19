@@ -106,9 +106,9 @@ public class FeedExerciseJournalController {
     /**
      * 피드 운동일지 상세보기
      */
-    @GetMapping("{journalId}/journal-detail")
+    @GetMapping("{feedJournalId}/journal-detail")
     public ApiResponse<UserJournalDetailResponse> feedExerciseJournalDetail(
-            @PathVariable("journalId") Long journalId
+            @PathVariable("feedJournalId") Long journalId
     ) {
         return new ApiResponse<>(
                 ErrorCode.SUCCESS, feedExerciseJournalService.JournalDetail(journalId)

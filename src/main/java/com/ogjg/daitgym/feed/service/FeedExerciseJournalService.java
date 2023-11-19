@@ -157,9 +157,11 @@ public class FeedExerciseJournalService {
      * 공개여부 확인후 운동일지 반환
      */
     @Transactional(readOnly = true)
-    public UserJournalDetailResponse JournalDetail(Long journalId) {
-        exerciseJournalHelper.checkExerciseJournalDisclosure(journalId);
-        ExerciseJournal exerciseJournal = exerciseJournalHelper.findExerciseJournalById(journalId);
+    public UserJournalDetailResponse JournalDetail(Long feedJournalId) {
+        FeedExerciseJournal feedJournal = feedJournalHelper.findFeedJournalById(feedJournalId);
+        Long exerciseJournalId = feedJournal.getExerciseJournal().getId();
+        exerciseJournalHelper.checkExerciseJournalDisclosure(exerciseJournalId);
+        ExerciseJournal exerciseJournal = exerciseJournalHelper.findExerciseJournalById(exerciseJournalId);
 
         List<ExerciseList> journalList = exerciseJournalHelper.findExerciseListsByJournal(exerciseJournal);
         List<UserJournalDetailExerciseListDto> exerciseListsDto = exerciseJournalHelper.exerciseListsChangeUserJournalDetailsDto(journalList);
