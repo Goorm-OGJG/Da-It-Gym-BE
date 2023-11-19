@@ -11,17 +11,21 @@ import java.util.List;
 @Getter
 public class GetApprovalsResponse {
 
+    private final long totalPage;
     private final List<GetApprovalResponse> approvals;
 
-    public GetApprovalsResponse(List<GetApprovalResponse> approvals) {
+
+    public GetApprovalsResponse(long totalCount, List<GetApprovalResponse> approvals) {
+        this.totalPage = totalCount;
         this.approvals = approvals;
     }
 
-    public static GetApprovalsResponse from(List<Approval> approvalPages) {
+    public static GetApprovalsResponse of(long totalCount, List<Approval> approvalPages) {
         List<GetApprovalResponse> approvals = approvalPages.stream()
                 .map(GetApprovalResponse::from)
                 .toList();
-        return new GetApprovalsResponse(approvals);
+
+        return new GetApprovalsResponse(totalCount, approvals);
     }
 
     @Getter
