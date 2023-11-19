@@ -22,6 +22,7 @@ public class CertificationImage extends BaseEntity {
     @JoinColumn(name = "certification_id")
     private Certification certification;
 
+    @Column(length = 500)
     private String url;
 
     @Builder

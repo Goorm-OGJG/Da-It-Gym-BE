@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -25,7 +26,7 @@ public class Certification extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    @OneToMany(mappedBy = "certification")
+    @OneToMany(mappedBy = "certification", cascade = ALL, orphanRemoval = true)
     private List<CertificationImage> certificationImages = new ArrayList<>();
 
     @ManyToOne(fetch = LAZY)
