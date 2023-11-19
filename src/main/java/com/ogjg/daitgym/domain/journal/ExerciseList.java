@@ -40,7 +40,7 @@ public class ExerciseList extends BaseEntity {
     @Embedded
     private TimeTemplate restTime;
 
-    public static ExerciseList createExercise(
+    public static ExerciseList createExerciseList(
             ExerciseJournal exerciseJournal,
             Exercise exercise,
             ExerciseListRequest exerciseListRequest

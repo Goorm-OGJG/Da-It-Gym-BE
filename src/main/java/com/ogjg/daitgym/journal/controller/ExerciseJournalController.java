@@ -144,7 +144,7 @@ public class ExerciseJournalController {
     ) {
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
-                exerciseJournalService.userJournalList(userDetails.getEmail())
+                exerciseJournalService.userJournalLists(userDetails.getEmail())
         );
     }
 
@@ -220,7 +220,7 @@ public class ExerciseJournalController {
             @RequestBody ReplicationExerciseJournalRequest replicationExerciseJournalRequest,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        exerciseJournalService.replicationExerciseJournal(
+        exerciseJournalService.replicateExerciseJournal(
                 userDetails.getEmail(), journalId, replicationExerciseJournalRequest
         );
 

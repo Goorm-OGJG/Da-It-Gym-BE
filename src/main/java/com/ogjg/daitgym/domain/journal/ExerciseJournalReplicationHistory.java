@@ -26,12 +26,21 @@ public class ExerciseJournalReplicationHistory extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "journal_id")
-    private ExerciseJournal exerciseJournal;
+    @JoinColumn(name = "original_journal_id")
+    private ExerciseJournal originalExerciseJournal;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "replicated_journal_id")
+    private ExerciseJournal replicatedExerciseJournal;
+
 
     @Builder
-    public ExerciseJournalReplicationHistory(User user, ExerciseJournal exerciseJournal) {
+    public ExerciseJournalReplicationHistory(
+            User user, ExerciseJournal originalExerciseJournal,
+            ExerciseJournal replicatedExerciseJournal
+    ) {
         this.user = user;
-        this.exerciseJournal = exerciseJournal;
+        this.originalExerciseJournal = originalExerciseJournal;
+        this.replicatedExerciseJournal = replicatedExerciseJournal;
     }
 }

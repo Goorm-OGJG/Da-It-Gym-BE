@@ -9,7 +9,6 @@ import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
-import com.ogjg.daitgym.journal.service.ExerciseJournalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 public class FeedExerciseJournalController {
 
     private final FeedExerciseJournalService feedExerciseJournalService;
-    private final ExerciseJournalService exerciseJournalService;
 
     /**
      * 운동일지 피드 삭제
@@ -113,7 +111,7 @@ public class FeedExerciseJournalController {
             @PathVariable("journalId") Long journalId
     ) {
         return new ApiResponse<>(
-                ErrorCode.SUCCESS, exerciseJournalService.JournalDetail(journalId)
+                ErrorCode.SUCCESS, feedExerciseJournalService.JournalDetail(journalId)
         );
     }
 

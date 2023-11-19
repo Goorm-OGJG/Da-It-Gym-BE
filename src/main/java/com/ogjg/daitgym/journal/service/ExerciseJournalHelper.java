@@ -1,0 +1,245 @@
+package com.ogjg.daitgym.journal.service;
+
+import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundExerciseJournal;
+import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundUser;
+import com.ogjg.daitgym.common.exception.journal.NotFoundExerciseHistory;
+import com.ogjg.daitgym.common.exception.journal.NotFoundExerciseList;
+import com.ogjg.daitgym.common.exception.journal.NotFoundJournal;
+import com.ogjg.daitgym.common.exception.journal.UserNotAuthorizedForJournal;
+import com.ogjg.daitgym.domain.User;
+import com.ogjg.daitgym.domain.exercise.Exercise;
+import com.ogjg.daitgym.domain.journal.ExerciseHistory;
+import com.ogjg.daitgym.domain.journal.ExerciseJournal;
+import com.ogjg.daitgym.domain.journal.ExerciseJournalReplicationHistory;
+import com.ogjg.daitgym.domain.journal.ExerciseList;
+import com.ogjg.daitgym.exercise.service.ExerciseService;
+import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
+import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseHistoryDto;
+import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseListDto;
+import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
+import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
+import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalReplicationHistoryRepository;
+import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
+import com.ogjg.daitgym.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+public class ExerciseJournalHelper {
+
+    private final ExerciseJournalReplicationHistoryRepository exerciseJournalReplicationHistoryRepository;
+    private final ExerciseJournalRepository exerciseJournalRepository;
+    private final ExerciseListRepository exerciseListRepository;
+    private final ExerciseHistoryRepository exerciseHistoryRepository;
+    private final ExerciseService exerciseService;
+    private final UserRepository userRepository;
+
+    /**
+     * 일지 검색
+     * 일지 Id로 일지 존재하는지 확인하기
+     */
+    public ExerciseJournal findExerciseJournalById(Long journalId) {
+        return exerciseJournalRepository.findById(journalId)
+                .orElseThrow(NotFoundJournal::new);
+    }
+
+    /**
+     * 유저와 일지날자로
+     * 일지조회
+     */
+    public ExerciseJournal findExerciseJournalByUserAndJournalDate(
+            User user, LocalDate journalDate
+    ) {
+        return exerciseJournalRepository.findByJournalDateAndUser(journalDate, user)
+                .orElseThrow(NotFoundExerciseJournal::new);
+    }
+
+    /**
+     * 일지 작성자인지 확인
+     * 일지에 접근 권한이 있는지 확인
+     */
+    public ExerciseJournal isAuthorizedForJournal(String email, Long JournalId) {
+        ExerciseJournal exerciseJournal = findExerciseJournalById(JournalId);
+
+        if (!email.equals(exerciseJournal.getUser().getEmail())) {
+            throw new UserNotAuthorizedForJournal();
+        }
+
+        return exerciseJournal;
+    }
+
+    /**
+     * 일지 목록 검색
+     * 일지 목록 ID로 일지목록 검색
+     */
+    public ExerciseList findExerciseListById(Long exerciseListId) {
+        return exerciseListRepository.findById(exerciseListId)
+                .orElseThrow(NotFoundExerciseList::new);
+    }
+
+    /**
+     * 운동기록 Id로 운동기록 검색
+     */
+    public ExerciseHistory findExerciseHistoryById(Long exerciseHistoryId) {
+        return exerciseHistoryRepository.findById(exerciseHistoryId)
+                .orElseThrow(NotFoundExerciseHistory::new);
+    }
+
+    /**
+     * 운동일지로 운동 목록들 찾기
+     */
+    public List<ExerciseList> findExerciseListsByJournal(ExerciseJournal exerciseJournal) {
+        return exerciseListRepository.findByExerciseJournal(exerciseJournal);
+    }
+
+    /**
+     * 운동목록으로 운동기록들 찾기
+     */
+    public List<ExerciseHistory> findExerciseHistoriesByExerciseList(ExerciseList exerciseList) {
+        return exerciseHistoryRepository.findAllByExerciseList(exerciseList);
+    }
+
+    /**
+     * 같은 날짜에 일지가 존재하는지 확인
+     */
+    public boolean checkForExistJournalSameDate(
+            User user, LocalDate journalDate
+    ) {
+        return exerciseJournalRepository.findByJournalDateAndUser(journalDate, user)
+                .isPresent();
+    }
+
+    /**
+     * todo
+     * 이메일로 유저 검색
+     */
+    public User findUserByEmail(String email) {
+        return userRepository.findById(email)
+                .orElseThrow(NotFoundUser::new);
+    }
+
+    /**
+     * 운동일지 공개여부 확인
+     */
+    public void checkExerciseJournalDisclosure(Long journalId) {
+        if (!findExerciseJournalById(journalId).isVisible())
+            throw new UserNotAuthorizedForJournal("공개된 운동일지가 아닙니다");
+    }
+
+    /**
+     * 운동 목록들을 DTO로 변환
+     */
+    public List<UserJournalDetailExerciseListDto> exerciseListsChangeUserJournalDetailsDto(
+            List<ExerciseList> journalList
+    ) {
+        return journalList.stream()
+                .map(exerciseList -> new UserJournalDetailExerciseListDto(
+                        exerciseList,
+                        exerciseService.findExercisePartByExercise(exerciseList.getExercise()),
+                        exerciseHistoriesChangeUserJournalDetailsDto(exerciseList)
+                )).toList();
+    }
+
+    /**
+     * 운동 기록을 DTO로 변환
+     */
+    public List<UserJournalDetailExerciseHistoryDto> exerciseHistoriesChangeUserJournalDetailsDto(
+            ExerciseList exerciseList
+    ) {
+        return findExerciseHistoriesByExerciseList(exerciseList).stream()
+                .map(UserJournalDetailExerciseHistoryDto::new)
+                .toList();
+    }
+
+    /**
+     * 다른 사람의 운동목록과 하위 운동기록들
+     * 내 일지로 복사해서 가져오기
+     *
+     * @param replicatedUserJournal 복사된 유저의 운동일지
+     * @param originalExerciseLists 복사할 원본 운동일지
+     */
+    public void replicateExerciseListAndHistory(
+            ExerciseJournal replicatedUserJournal,
+            List<ExerciseList> originalExerciseLists
+    ) {
+        List<ExerciseHistory> replicatedExerciseHistories = new ArrayList<>();
+
+        originalExerciseLists.forEach(originalExerciseList -> {
+            ExerciseList replicatedExerciseList = replicateExerciseList(replicatedUserJournal, originalExerciseList);
+            replicateExerciseHistories(originalExerciseList, replicatedExerciseHistories, replicatedExerciseList);
+        });
+
+        exerciseHistoryRepository.saveAll(replicatedExerciseHistories);
+    }
+
+    /**
+     * 다른 사람 운동목록의 운동기록들 복사해서 저장할 객체에 담기
+     *
+     * @param originalExerciseList        복사할 운동 기록들을 가지고 있는 원본 운동목록
+     * @param replicatedExerciseHistories 복사된 운동기록들을 담을 객체
+     * @param replicatedExerciseList      복사된 운동기록들을 담을 복사된 운동목록
+     */
+    private void replicateExerciseHistories(
+            ExerciseList originalExerciseList,
+            List<ExerciseHistory> replicatedExerciseHistories,
+            ExerciseList replicatedExerciseList
+    ) {
+        findExerciseHistoriesByExerciseList(originalExerciseList).forEach(exerciseHistory ->
+                replicatedExerciseHistories.add(
+                        ExerciseHistory.replicateExerciseHistory(replicatedExerciseList, exerciseHistory)
+                )
+        );
+    }
+
+    /**
+     * 다른 사람 운동일지의 운동목록
+     * 내 일지에 복사해서 가져오기
+     *
+     * @param replicatedUserJournal 복사하는 사람의 새로 생성된 운동일지
+     * @param originalJournalList   복사하는 운동일지의 운동목록 원본 데이터
+     * @return 복사된 운동목록
+     */
+    private ExerciseList replicateExerciseList(
+            ExerciseJournal replicatedUserJournal,
+            ExerciseList originalJournalList
+    ) {
+        return exerciseListRepository.save(
+                ExerciseList.replicateExerciseList(replicatedUserJournal, originalJournalList)
+        );
+    }
+
+    /**
+     * 운동목록 생성하기
+     */
+    public ExerciseList saveExerciseList(
+            ExerciseJournal userJournal,
+            Exercise exercise,
+            ExerciseListRequest exerciseListRequest
+    ) {
+        return exerciseListRepository.save(
+                ExerciseList.createExerciseList(userJournal, exercise, exerciseListRequest)
+        );
+    }
+
+    /**
+     * 일지 가져오기시 가져온 기록 저장
+     */
+    public void saveReplicationHistory(
+            String userEmail, ExerciseJournal originalJournal, ExerciseJournal replicatedUserJournal
+    ) {
+        exerciseJournalReplicationHistoryRepository.save(
+                new ExerciseJournalReplicationHistory(
+                        findUserByEmail(userEmail),
+                        originalJournal,
+                        replicatedUserJournal
+                )
+        );
+    }
+}
