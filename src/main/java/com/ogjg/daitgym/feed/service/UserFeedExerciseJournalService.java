@@ -18,7 +18,7 @@ import java.util.List;
 public class UserFeedExerciseJournalService {
 
     private final FeedExerciseJournalRepository feedExerciseJournalRepository;
-    private final FeedExerciseJournalService feedExerciseJournalService;
+    private final FeedJournalHelper feedJournalHelper;
 
     /**
      * 유저 페이지 피드 운동일지 목록 가져오기
@@ -26,23 +26,14 @@ public class UserFeedExerciseJournalService {
     public FeedExerciseJournalListResponse userFeedExerciseJournalLists(
             String nickname, Pageable pageable
     ) {
-        Page<FeedExerciseJournal> userFeedExerciseJournals = feedExerciseJournalRepository.userFeedExerciseJournalLists(nickname, pageable);
+        Page<FeedExerciseJournal> userFeedExerciseJournals =
+                feedExerciseJournalRepository.userFeedExerciseJournalLists(nickname, pageable);
 
-        List<FeedExerciseJournalListDto> content = userFeedExerciseJournals.getContent()
-                .stream().map(
-                        feedExerciseJournal -> new FeedExerciseJournalListDto(
-                                feedExerciseJournal.getId(),
-                                feedExerciseJournalService.feedExerciseJournalLikes(feedExerciseJournal.getId()),
-                                feedExerciseJournalService.feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
-                                feedExerciseJournalService.findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
-                        )
-                ).toList();
+        List<FeedExerciseJournalListDto> content =
+                feedJournalHelper.feedExerciseJournalsChangeFeedExerciseJournalsDto(userFeedExerciseJournals);
 
         int totalpage = userFeedExerciseJournals.getTotalPages();
-
-        if (!content.isEmpty()) {
-            totalpage -= 1;
-        }
+        if (!content.isEmpty()) totalpage -= 1;
 
         return new FeedExerciseJournalListResponse(totalpage, content);
     }
@@ -53,25 +44,14 @@ public class UserFeedExerciseJournalService {
     public FeedExerciseJournalListResponse userFeedExerciseJournalCollectionLists(
             String nickname, Pageable pageable
     ) {
-        Page<FeedExerciseJournal> userFeedJournalCollections = feedExerciseJournalRepository.userFeedExerciseJournalCollectionLists(nickname, pageable);
+        Page<FeedExerciseJournal> userFeedJournalCollections =
+                feedExerciseJournalRepository.userFeedExerciseJournalCollectionLists(nickname, pageable);
 
-        List<FeedExerciseJournalListDto> content = userFeedJournalCollections.getContent()
-                .stream()
-                .map(
-                        feedExerciseJournal -> new FeedExerciseJournalListDto(
-                                feedExerciseJournal.getId(),
-                                feedExerciseJournalService.feedExerciseJournalLikes(feedExerciseJournal.getId()),
-                                feedExerciseJournalService.feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
-                                feedExerciseJournalService.findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal).get(0).getImageUrl()
-                        )
-                ).toList();
-
+        List<FeedExerciseJournalListDto> content =
+                feedJournalHelper.feedExerciseJournalsChangeFeedExerciseJournalsDto(userFeedJournalCollections);
 
         int totalpage = userFeedJournalCollections.getTotalPages();
-        if (!content.isEmpty()) {
-            totalpage -= 1;
-
-        }
+        if (!content.isEmpty()) totalpage -= 1;
 
         return new FeedExerciseJournalListResponse(totalpage, content);
     }

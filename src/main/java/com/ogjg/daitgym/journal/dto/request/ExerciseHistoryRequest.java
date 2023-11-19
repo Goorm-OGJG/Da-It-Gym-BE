@@ -13,15 +13,4 @@ public class ExerciseHistoryRequest {
     private int setNum;
     private int weights;
     private int counts;
-
-    /**
-     * 운동목록을 처음 생성할 때
-     * 생성되는 default 운동기록들을
-     * 어떤 운동목록에 생성되는 운동기록인지 넣어주기 위해 사용
-     */
-    public ExerciseHistoryRequest putExerciseListId(Long exerciseListId) {
-        this.id = exerciseListId;
-        return this;
-    }
-
 }
