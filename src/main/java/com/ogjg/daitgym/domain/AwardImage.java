@@ -22,6 +22,7 @@ public class AwardImage extends BaseEntity {
     @JoinColumn(name = "award_id")
     private Award award;
 
+    @Column(length = 500)
     private String url;
 
     @Builder

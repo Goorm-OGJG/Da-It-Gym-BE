@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -26,7 +27,7 @@ public class Award extends BaseEntity {
     @JoinColumn(name = "email")
     private User user;
 
-    @OneToMany(mappedBy = "award")
+    @OneToMany(mappedBy = "award", cascade = ALL, orphanRemoval = true)
     private List<AwardImage> awardImages = new ArrayList<>();
 
     @ManyToOne(fetch = LAZY)
