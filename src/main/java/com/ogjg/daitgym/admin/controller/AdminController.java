@@ -23,7 +23,7 @@ public class AdminController {
 
     @GetMapping("")
     public ApiResponse<GetApprovalsResponse> getApprovals(
-            @RequestParam("nickname") String nickname,
+            @RequestParam(value = "nickname", required = false, defaultValue = "") String nickname,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.ASC)
             Pageable pageable
     ) {
