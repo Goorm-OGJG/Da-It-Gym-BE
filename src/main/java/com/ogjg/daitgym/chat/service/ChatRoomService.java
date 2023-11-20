@@ -57,7 +57,7 @@ public class ChatRoomService {
         User receiver = getUserNickname(createChatRoomRequest.getReceiver());
         List<UsersChattingRoom> usersChattingRooms = usersChattingRoomRepository.findChatRoomByEmails(sender.getEmail(), receiver.getEmail());
 
-        if (usersChattingRooms.size() == 2) {
+        if (!usersChattingRooms.isEmpty()) {
             return new ChatRoomResponse(usersChattingRooms.get(0).getChatRoom().getRedisRoomId());
         } else {
 
