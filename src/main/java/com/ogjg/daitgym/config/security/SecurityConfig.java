@@ -79,9 +79,9 @@ public class SecurityConfig {
                         authorize -> authorize
                                 .requestMatchers(CorsUtils::isPreFlightRequest)
                                 .permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/api/admins/**")).hasRole(Role.ADMIN.name())
                                 .requestMatchers(new AntPathRequestMatcher("/api/trainers/**")).hasRole(Role.TRAINER.name())
-                                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
                                 .anyRequest().authenticated()
                 ).exceptionHandling((exceptionHandle) -> exceptionHandle
                         .accessDeniedHandler(accessDeniedHandler)
