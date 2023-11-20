@@ -13,13 +13,13 @@ public interface ApprovalRepository extends JpaRepository<Approval, Long> {
     SELECT * FROM
     (
     SELECT a.content, a.approval_manager, a.created_at , a.modified_at, a.id as id, a.approve_status as approve_status 
-        FROM Approval a
+        FROM approval a
         INNER JOIN certification c ON a.id = c.approval_id
         INNER JOIN users u ON c.email = u.email
         WHERE u.nickname LIKE :nickname%
     UNION
     SELECT a.content, a.approval_manager, a.created_at , a.modified_at, a.id as id, a.approve_status as approve_status 
-        FROM Approval a
+        FROM approval a
         INNER JOIN award aw ON a.id = aw.approval_id
         INNER JOIN users u ON aw.email = u.email
         WHERE u.nickname LIKE :nickname%
@@ -33,13 +33,13 @@ public interface ApprovalRepository extends JpaRepository<Approval, Long> {
     SELECT COUNT(*) FROM
     (
     SELECT a.id 
-        FROM Approval a
+        FROM approval a
         INNER JOIN certification c ON a.id = c.approval_id
         INNER JOIN users u ON c.email = u.email
         WHERE u.nickname LIKE :nickname%
     UNION
     SELECT a.id 
-        FROM Approval a
+        FROM approval a
         INNER JOIN award aw ON a.id = aw.approval_id
         INNER JOIN users u ON aw.email = u.email
         WHERE u.nickname LIKE :nickname%
