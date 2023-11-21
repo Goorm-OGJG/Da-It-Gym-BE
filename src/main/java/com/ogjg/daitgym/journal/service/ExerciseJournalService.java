@@ -2,6 +2,7 @@ package com.ogjg.daitgym.journal.service;
 
 import com.ogjg.daitgym.common.exception.feed.AlreadyExistFeedJournal;
 import com.ogjg.daitgym.common.exception.journal.AlreadyExistExerciseJournal;
+import com.ogjg.daitgym.common.exception.journal.NotCompletedExerciseJournal;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
@@ -18,7 +19,6 @@ import com.ogjg.daitgym.journal.dto.response.dto.UserJournalListDto;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
-import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -83,6 +83,7 @@ public class ExerciseJournalService {
     ) {
         exerciseJournalHelper.isAuthorizedForJournal(email, journalId);
         ExerciseJournal exerciseJournal = exerciseJournalHelper.findExerciseJournalById(journalId);
+        exerciseJournalHelper.checkAllExerciseHistoriesCompleted(exerciseJournal);
         exerciseJournal.journalComplete(exerciseJournalCompleteRequest);
     }
 
@@ -99,9 +100,11 @@ public class ExerciseJournalService {
     ) {
         ExerciseJournal exerciseJournal = exerciseJournalHelper.isAuthorizedForJournal(email, journalId);
 
-        if (feedJournalHelper.checkExistFeedExerciseJournalByExerciseJournal(exerciseJournal)) {
+        if (!exerciseJournal.isCompleted())
+            throw new NotCompletedExerciseJournal();
+
+        if (feedJournalHelper.checkExistFeedExerciseJournalByExerciseJournal(exerciseJournal))
             throw new AlreadyExistFeedJournal();
-        }
 
         exerciseJournal.journalShareToFeed(exerciseJournalShareRequest);
 
@@ -211,10 +214,10 @@ public class ExerciseJournalService {
     ) {
         replicationRoutineRequest.getRoutines()
                 .forEach(replicationRoutineRequestDto -> {
-                    ExerciseJournal replicatedUserJournal = createJournal(email, replicationRoutineRequestDto.getJournalDate());
-                    exerciseJournalHelper.replicateExerciseListAndHistoryByRoutine(replicatedUserJournal, replicationRoutineRequestDto);
-                }
-        );
+                            ExerciseJournal replicatedUserJournal = createJournal(email, replicationRoutineRequestDto.getJournalDate());
+                            exerciseJournalHelper.replicateExerciseListAndHistoryByRoutine(replicatedUserJournal, replicationRoutineRequestDto);
+                        }
+                );
     }
 
     /**
