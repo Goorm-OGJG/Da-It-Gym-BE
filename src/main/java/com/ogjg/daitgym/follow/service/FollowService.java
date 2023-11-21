@@ -1,18 +1,23 @@
 package com.ogjg.daitgym.follow.service;
 
+import com.ogjg.daitgym.common.exception.follow.AlreadyFollowUser;
+import com.ogjg.daitgym.common.exception.follow.NotFoundFollow;
+import com.ogjg.daitgym.common.exception.user.NotFoundUser;
+import com.ogjg.daitgym.domain.Inbody;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.follow.Follow;
 import com.ogjg.daitgym.follow.dto.response.FollowCountResponse;
+import com.ogjg.daitgym.follow.dto.response.FollowListDto;
 import com.ogjg.daitgym.follow.dto.response.FollowListResponse;
-import com.ogjg.daitgym.common.exception.follow.AlreadyFollowUser;
-import com.ogjg.daitgym.common.exception.follow.NotFoundFollow;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
-import com.ogjg.daitgym.common.exception.user.NotFoundUser;
+import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -21,6 +26,7 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final InbodyRepository inbodyRepository;
 
     /**
      * 팔로우
@@ -82,11 +88,16 @@ public class FollowService {
      */
     @Transactional(readOnly = true)
     public FollowListResponse followingList(String nickname) {
-        findUserByNickName(nickname);
+        User user = findUserByNickName(nickname);
+        List<FollowListDto> followingList = followRepository.followingList(nickname);
 
-        return new FollowListResponse(
-                followRepository.followingList(nickname)
+        followingList.forEach(
+                following -> following.putLatestInbodyScore(
+                        userLatestInbodyScore(user.getEmail())
+                )
         );
+
+        return new FollowListResponse(followingList);
     }
 
     /**
@@ -94,11 +105,27 @@ public class FollowService {
      */
     @Transactional(readOnly = true)
     public FollowListResponse followerList(String nickname) {
-        findUserByNickName(nickname);
+        User user = findUserByNickName(nickname);
+        List<FollowListDto> followerList = followRepository.followerList(nickname);
 
-        return new FollowListResponse(
-                followRepository.followerList(nickname)
+        followerList.forEach(
+                follower -> follower.putLatestInbodyScore(
+                        userLatestInbodyScore(user.getEmail())
+                )
         );
+
+        return new FollowListResponse(followerList);
+    }
+
+    /**
+     * 가장 최근의 인바디
+     * @param email
+     * @return
+     */
+    private int userLatestInbodyScore(String email) {
+            return inbodyRepository.findFirstByUserEmailOrderByCreatedAtDesc(email)
+                    .map(Inbody::getScore)
+                    .orElse(0);
     }
 
     /**

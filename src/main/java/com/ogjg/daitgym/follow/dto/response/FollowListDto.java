@@ -15,11 +15,14 @@ public class FollowListDto {
     private String intro;
     private int score;
 
+    public void putLatestInbodyScore(int score){
+        this.score = score;
+    }
+
     @QueryProjection
-    public FollowListDto(String imageUrl, String nickname, String intro, int score) {
+    public FollowListDto(String imageUrl, String nickname, String intro) {
         this.imageUrl = imageUrl;
         this.nickname = nickname;
         this.intro = intro;
-        this.score = score;
     }
 }
