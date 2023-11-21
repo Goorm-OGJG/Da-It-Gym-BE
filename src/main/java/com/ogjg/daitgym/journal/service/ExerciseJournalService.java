@@ -7,7 +7,7 @@ import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseList;
-import com.ogjg.daitgym.exercise.service.ExerciseService;
+import com.ogjg.daitgym.exercise.service.ExerciseHelper;
 import com.ogjg.daitgym.feed.service.FeedJournalHelper;
 import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
@@ -18,6 +18,7 @@ import com.ogjg.daitgym.journal.dto.response.dto.UserJournalListDto;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
+import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class ExerciseJournalService {
     private final ExerciseJournalRepository exerciseJournalRepository;
     private final ExerciseListRepository exerciseListRepository;
     private final ExerciseHistoryRepository exerciseHistoryRepository;
-    private final ExerciseService exerciseService;
+    private final ExerciseHelper exerciseHelper;
     private final FeedJournalHelper feedJournalHelper;
     private final ExerciseJournalHelper exerciseJournalHelper;
 
@@ -145,7 +146,7 @@ public class ExerciseJournalService {
 
         ExerciseList exerciseList = exerciseJournalHelper.saveExerciseList(
                 userJournal,
-                exerciseService.findExercise(exerciseListRequest.getName()),
+                exerciseHelper.findExercise(exerciseListRequest.getName()),
                 exerciseListRequest
         );
 
@@ -197,8 +198,23 @@ public class ExerciseJournalService {
         ExerciseJournal originalJournal = exerciseJournalHelper.findExerciseJournalById(originalJournalId);
         List<ExerciseList> originalExerciseLists = exerciseJournalHelper.findExerciseListsByJournal(originalJournal);
         ExerciseJournal replicatedUserJournal = createJournal(email, replicationExerciseJournalRequest.getJournalDate());
-        exerciseJournalHelper.replicateExerciseListAndHistory(replicatedUserJournal, originalExerciseLists);
+        exerciseJournalHelper.replicateExerciseListAndHistoryByJournal(replicatedUserJournal, originalExerciseLists);
         exerciseJournalHelper.saveReplicationHistory(email, originalJournal, replicatedUserJournal);
+    }
+
+    /**
+     * 루틴에서 일지 가져오기
+     */
+    @Transactional
+    public void replicateExerciseJournalFromRoutine(
+            ReplicationRoutineRequest replicationRoutineRequest, String email
+    ) {
+        replicationRoutineRequest.getRoutines()
+                .forEach(replicationRoutineRequestDto -> {
+                    ExerciseJournal replicatedUserJournal = createJournal(email, replicationRoutineRequestDto.getJournalDate());
+                    exerciseJournalHelper.replicateExerciseListAndHistoryByRoutine(replicatedUserJournal, replicationRoutineRequestDto);
+                }
+        );
     }
 
     /**

@@ -4,6 +4,7 @@ import com.ogjg.daitgym.domain.BaseEntity;
 import com.ogjg.daitgym.domain.TimeTemplate;
 import com.ogjg.daitgym.domain.exercise.Exercise;
 import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
+import com.ogjg.daitgym.journal.dto.request.ReplicationRoutineDto;
 import com.ogjg.daitgym.journal.dto.request.UpdateRestTimeRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -53,7 +54,8 @@ public class ExerciseList extends BaseEntity {
                 .build();
     }
 
-    public static ExerciseList replicateExerciseList(
+    //todo 중복되는코드 dto로 받지않고 그냥 각각의 변수로 받으면 중복코드를 없앨수있을것같다
+    public static ExerciseList replicateExerciseListByJournal(
             ExerciseJournal replicatedExerciseJournal,
             ExerciseList originalExerciseList
     ) {
@@ -62,6 +64,19 @@ public class ExerciseList extends BaseEntity {
                 .exercise(originalExerciseList.exercise)
                 .exerciseNum(originalExerciseList.getExerciseNum())
                 .restTime(new TimeTemplate(originalExerciseList.restTime))
+                .build();
+    }
+
+    public static ExerciseList replicateExerciseListByRoutine(
+            ExerciseJournal replicatedExerciseJournal,
+            ReplicationRoutineDto replicationRoutine,
+            Exercise exercise
+    ) {
+        return builder()
+                .exerciseJournal(replicatedExerciseJournal)
+                .exercise(exercise)
+                .exerciseNum(replicationRoutine.getExerciseListNum())
+                .restTime(new TimeTemplate(replicationRoutine.getRestTime()))
                 .build();
     }
 

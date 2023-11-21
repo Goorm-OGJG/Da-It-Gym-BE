@@ -12,14 +12,17 @@ import com.ogjg.daitgym.domain.journal.ExerciseHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseJournalReplicationHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseList;
-import com.ogjg.daitgym.exercise.service.ExerciseService;
+import com.ogjg.daitgym.exercise.service.ExerciseHelper;
 import com.ogjg.daitgym.journal.dto.request.ExerciseListRequest;
+import com.ogjg.daitgym.journal.dto.request.ReplicationRoutineDto;
+import com.ogjg.daitgym.journal.dto.request.ReplicationRoutineRequestDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseHistoryDto;
 import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseListDto;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalReplicationHistoryRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
+import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,8 +41,9 @@ public class ExerciseJournalHelper {
     private final ExerciseJournalRepository exerciseJournalRepository;
     private final ExerciseListRepository exerciseListRepository;
     private final ExerciseHistoryRepository exerciseHistoryRepository;
-    private final ExerciseService exerciseService;
     private final UserRepository userRepository;
+    private final ExerciseHelper exerciseHelper;
+    private final RoutineRepository routineRepository;
 
     /**
      * 일지 검색
@@ -142,7 +146,7 @@ public class ExerciseJournalHelper {
         return journalList.stream()
                 .map(exerciseList -> new UserJournalDetailExerciseListDto(
                         exerciseList,
-                        exerciseService.findExercisePartByExercise(exerciseList.getExercise()),
+                        exerciseHelper.findExercisePartByExercise(exerciseList.getExercise()),
                         exerciseHistoriesChangeUserJournalDetailsDto(exerciseList)
                 )).toList();
     }
@@ -165,15 +169,15 @@ public class ExerciseJournalHelper {
      * @param replicatedUserJournal 복사된 유저의 운동일지
      * @param originalExerciseLists 복사할 원본 운동일지
      */
-    public void replicateExerciseListAndHistory(
+    public void replicateExerciseListAndHistoryByJournal(
             ExerciseJournal replicatedUserJournal,
             List<ExerciseList> originalExerciseLists
     ) {
         List<ExerciseHistory> replicatedExerciseHistories = new ArrayList<>();
 
         originalExerciseLists.forEach(originalExerciseList -> {
-            ExerciseList replicatedExerciseList = replicateExerciseList(replicatedUserJournal, originalExerciseList);
-            replicateExerciseHistories(originalExerciseList, replicatedExerciseHistories, replicatedExerciseList);
+            ExerciseList replicatedExerciseList = replicateExerciseListByJournal(replicatedUserJournal, originalExerciseList);
+            replicateExerciseHistoriesByJournal(originalExerciseList, replicatedExerciseHistories, replicatedExerciseList);
         });
 
         exerciseHistoryRepository.saveAll(replicatedExerciseHistories);
@@ -186,14 +190,14 @@ public class ExerciseJournalHelper {
      * @param replicatedExerciseHistories 복사된 운동기록들을 담을 객체
      * @param replicatedExerciseList      복사된 운동기록들을 담을 복사된 운동목록
      */
-    private void replicateExerciseHistories(
+    private void replicateExerciseHistoriesByJournal(
             ExerciseList originalExerciseList,
             List<ExerciseHistory> replicatedExerciseHistories,
             ExerciseList replicatedExerciseList
     ) {
         findExerciseHistoriesByExerciseList(originalExerciseList).forEach(exerciseHistory ->
                 replicatedExerciseHistories.add(
-                        ExerciseHistory.replicateExerciseHistory(replicatedExerciseList, exerciseHistory)
+                        ExerciseHistory.replicateExerciseHistoryByJournal(replicatedExerciseList, exerciseHistory)
                 )
         );
     }
@@ -206,13 +210,75 @@ public class ExerciseJournalHelper {
      * @param originalJournalList   복사하는 운동일지의 운동목록 원본 데이터
      * @return 복사된 운동목록
      */
-    private ExerciseList replicateExerciseList(
+    private ExerciseList replicateExerciseListByJournal(
             ExerciseJournal replicatedUserJournal,
             ExerciseList originalJournalList
     ) {
         return exerciseListRepository.save(
-                ExerciseList.replicateExerciseList(replicatedUserJournal, originalJournalList)
+                ExerciseList.replicateExerciseListByJournal(replicatedUserJournal, originalJournalList)
         );
+    }
+
+    /**
+     * 루틴의 운동목록과 하위 운동기록들
+     * 내 일지로 복사해서 가져오기
+     *
+     * @param replicatedUserJournal        복사된 유저의 운동일지
+     * @param replicationRoutineRequestDto 복사할 원본 운동일지
+     */
+    public void replicateExerciseListAndHistoryByRoutine(
+            ExerciseJournal replicatedUserJournal,
+            ReplicationRoutineRequestDto replicationRoutineRequestDto
+    ) {
+        List<ReplicationRoutineDto> originalExerciseLists = routineRepository.getOriginalRoutinesToReplicateExerciseLists(replicationRoutineRequestDto.getDayId());
+
+        originalExerciseLists.forEach(
+                replicationRoutineExerciseList -> {
+                    ExerciseList replicatedExerciseList = replicateExerciseListByRoutine(replicatedUserJournal, replicationRoutineExerciseList);
+                    replicateExerciseHistoriesByRoutine(replicationRoutineRequestDto.getDayId(), replicationRoutineExerciseList.getExerciseId(), replicatedExerciseList);
+                }
+        );
+    }
+
+    /**
+     * 루틴에서 운동일지로 운동목록 가져오기
+     *
+     * @param replicatedUserJournal 복사해서 가져온 운동일지
+     * @param replicationRoutine    원본 루틴 정보
+     */
+    private ExerciseList replicateExerciseListByRoutine(
+            ExerciseJournal replicatedUserJournal,
+            ReplicationRoutineDto replicationRoutine
+    ) {
+        return exerciseListRepository.save(
+                ExerciseList.replicateExerciseListByRoutine(
+                        replicatedUserJournal, replicationRoutine,
+                        exerciseHelper.findExercise(replicationRoutine.getExerciseId())
+                )
+        );
+    }
+
+    /**
+     * 루틴에서 운동기록들 운동일지로 가져오기
+     *
+     * @param originalDayId                    원본 루틴의 dayId
+     * @param replicatedExerciseListExerciseId 복사된 일지의 운동목록의 운동Id
+     * @param replicatedExerciseList           복사된 운동목록
+     */
+    private void replicateExerciseHistoriesByRoutine(
+            Long originalDayId, Long replicatedExerciseListExerciseId,
+            ExerciseList replicatedExerciseList
+    ) {
+        List<ReplicationRoutineDto> originalExerciseHistories =
+                routineRepository.getOriginalRoutinesToReplicateExerciseHistories(originalDayId, replicatedExerciseListExerciseId);
+
+        List<ExerciseHistory> replicatedExerciseHistories = originalExerciseHistories.stream()
+                .map(replicationRoutineHistory ->
+                        ExerciseHistory.replicateExerciseHistoryByRoutine(
+                                replicatedExerciseList, replicationRoutineHistory)
+                ).toList();
+
+        exerciseHistoryRepository.saveAll(replicatedExerciseHistories);
     }
 
     /**
