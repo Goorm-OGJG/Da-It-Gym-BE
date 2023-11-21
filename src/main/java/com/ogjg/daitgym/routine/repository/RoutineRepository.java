@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface RoutineRepository extends JpaRepository<Routine, Long> {
+public interface RoutineRepository extends JpaRepository<Routine, Long>, RoutineRepositoryCustom {
 
     @Query("SELECT r FROM Routine r WHERE (:division IS NULL OR r.division = :division)")
     Optional<Slice<Routine>> findAllByDivision(@Param("division") Integer division, Pageable pageable);

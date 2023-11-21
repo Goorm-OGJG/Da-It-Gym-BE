@@ -226,4 +226,19 @@ public class ExerciseJournalController {
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
+
+    /**
+     * 피드 운동일지에서 다른사람의 일지 가져오기
+     */
+    @PostMapping("/replication/routine")
+    public ApiResponse<Void> replicationExerciseJournalFromRoutine(
+            @RequestBody ReplicationRoutineRequest replicationRoutineRequest,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+        exerciseJournalService.replicateExerciseJournalFromRoutine(
+                replicationRoutineRequest, userDetails.getEmail()
+        );
+
+        return new ApiResponse<>(ErrorCode.SUCCESS);
+    }
 }
