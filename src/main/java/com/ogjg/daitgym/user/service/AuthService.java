@@ -5,14 +5,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
-import com.ogjg.daitgym.domain.ExerciseSplit;
-import com.ogjg.daitgym.domain.HealthClub;
-import com.ogjg.daitgym.domain.Role;
-import com.ogjg.daitgym.domain.User;
+import com.ogjg.daitgym.domain.*;
 import com.ogjg.daitgym.user.dto.response.KakaoAccountResponse;
 import com.ogjg.daitgym.user.dto.response.KakaoTokenResponse;
 import com.ogjg.daitgym.user.dto.response.LoginResponse;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
+import com.ogjg.daitgym.user.repository.UserAuthenticationRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +33,7 @@ import static com.ogjg.daitgym.user.dto.response.LoginResponse.*;
 public class AuthService {
 
     private final UserRepository userRepository;
-
+    private final UserAuthenticationRepository userAuthenticationRepository;
     private final HealthClubRepository healthClubRepository;
 
     @Value("${kakao.client-id}")
@@ -55,21 +53,26 @@ public class AuthService {
 
     // 토큰으로 사용자 정보 가져오기 -> 처음 로그인인지 체크하고 로그인 응답 생성
     @Transactional
-    public LoginResponse kakaoLogin(String kakaoAccessToken, HttpServletResponse servletResponse) {
-        return getKakaoInfo(kakaoAccessToken, servletResponse);
+    public LoginResponse kakaoLogin(KakaoTokenResponse kakaoTokenResponse, HttpServletResponse servletResponse) {
+        return getKakaoInfo(kakaoTokenResponse, servletResponse);
     }
 
     // 어세스 토큰으로 사용자 정보 가져오기 -> 첫 로그인이라면 가입처리
     @Transactional
-    public LoginResponse getKakaoInfo(String kakaoAccessToken, HttpServletResponse servletResponse) {
-        KakaoAccountResponse kakaoAccountResponse = requestUserInfoToKakao(kakaoAccessToken);
-        return joinOrLoadUser(servletResponse, kakaoAccountResponse.getKakao_account().getEmail());
+    public LoginResponse getKakaoInfo(KakaoTokenResponse kakaoTokenResponse, HttpServletResponse servletResponse) {
+        KakaoAccountResponse kakaoAccountResponse = requestUserInfoToKakao(kakaoTokenResponse.getAccess_token());
+        return joinOrLoadUser(servletResponse, kakaoTokenResponse, kakaoAccountResponse);
     }
 
     // 회원가입 처리 -> 존재하면 정보 가져오기, 존재하지 않으면 새로 저장
-    private LoginResponse joinOrLoadUser(HttpServletResponse servletResponse, String kakaoEmail) {
+    private LoginResponse joinOrLoadUser(HttpServletResponse servletResponse, KakaoTokenResponse kakaoTokenResponse, KakaoAccountResponse kakaoAccountResponse) {
+        String kakaoEmail = kakaoAccountResponse.getKakao_account().getEmail();
+
         User existUser = userRepository.findByEmailIncludingDeleted(kakaoEmail)
                 .orElse(null);
+
+        UserAuthentication userAuthentication = userAuthenticationRepository.findByUserEmail(kakaoEmail)
+                .orElse(UserAuthentication.of(kakaoTokenResponse, kakaoAccountResponse));
 
         // 첫 가입
         if (existUser == null) {
@@ -77,7 +80,10 @@ public class AuthService {
             HealthClub defaultHealthClub = findDefaultHealthClub();
             String tempNickname = generateTempNickname();
 
-            join(kakaoEmail, tempNickname, defaultHealthClub);
+            User joinedUser = join(kakaoEmail, tempNickname, defaultHealthClub);
+
+            userAuthentication.addUser(joinedUser);
+            userAuthenticationRepository.save(userAuthentication);
 
             JwtUserClaimsDto claimsDto = JwtUserClaimsDto.defaultClaimsOf(kakaoEmail, tempNickname);
             addTokensInHeader(servletResponse, claimsDto);
@@ -87,17 +93,62 @@ public class AuthService {
         // 이전에 가입 후 탈퇴한 회원
         } else if (existUser.isDeleted()){
 
-            // todo : 가입했다 탈퇴한 회원 처리 -> 탈퇴해서 아이디가 남아있는 회원의 처리가 추가되어야 한다.
+            // todo : 가입했다 탈퇴한 회원 처리 -> 탈퇴해서 아이디가 남아있는 회원의 처리가 추가되어야 한다. 복구로직 또는 실패로직
+            userAuthentication.updateTokens(kakaoTokenResponse.getAccess_token(), kakaoTokenResponse.getRefresh_token());
+            userAuthenticationRepository.save(userAuthentication);
 
             return deletedUserResponse(existUser);
 
         // 이전에 이미 가입한 회원 -> 유저정보를 불러온다.
         } else {
+
+            userAuthentication.updateTokens(kakaoTokenResponse.getAccess_token(), kakaoTokenResponse.getRefresh_token());
+            userAuthentication.addUser(existUser);
+            userAuthenticationRepository.save(userAuthentication);
+
             JwtUserClaimsDto claimsDto = JwtUserClaimsDto.from(existUser);
             addTokensInHeader(servletResponse, claimsDto);
 
             return existUserResponse(existUser);
         }
+    }
+
+    @Transactional
+    public KakaoTokenResponse getKakaoAccessToken(String code) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        // Http Response Body 객체 생성
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code"); //카카오 공식문서 기준 authorization_code 로 고정
+        params.add("client_id", KAKAO_CLIENT_ID); // 카카오 Dev 앱 REST API 키
+        params.add("redirect_uri", KAKAO_REDIRECT_URI); // 카카오 Dev redirect uri
+        params.add("code", code); // 프론트에서 인가 코드 요청시 받은 인가 코드값
+        params.add("client_secret", KAKAO_CLIENT_SECRET); // 카카오 Dev 카카오 로그인 Client Secret
+        // 헤더와 바디 합치기 위해 Http Entity 객체 생성
+        HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
+
+        // 카카오로부터 Access token 받아오기
+        RestTemplate rt = new RestTemplate();
+        ResponseEntity<String> accessTokenResponse = rt.exchange(
+                KAKAO_TOKEN_URI, // "https://kauth.kakao.com/oauth/token"
+                HttpMethod.POST,
+                kakaoTokenRequest,
+                String.class
+        );
+
+        // JSON Parsing (-> KakaoTokenDto)
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        KakaoTokenResponse kakaoTokenResponse = null;
+        try {
+            kakaoTokenResponse = objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenResponse.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return kakaoTokenResponse;
     }
 
     private KakaoAccountResponse requestUserInfoToKakao(String kakaoAccessToken) {
@@ -149,7 +200,7 @@ public class AuthService {
         return UUID.randomUUID().toString();
     }
 
-    private void join(String kakaoEmail, String tempNickname, HealthClub defaultHealthClub) {
+    private User join(String kakaoEmail, String tempNickname, HealthClub defaultHealthClub) {
         User user = User.builder()
                 .email(kakaoEmail)
                 .nickname(tempNickname)
@@ -161,7 +212,7 @@ public class AuthService {
                 .isDeleted(NOT_DELETED)
                 .build();
 
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     private void addTokensInHeader(HttpServletResponse response, JwtUserClaimsDto jwtUserClaimsDto) {
@@ -182,45 +233,6 @@ public class AuthService {
                 .secure(true)
                 .sameSite("None")
                 .build();
-    }
-
-    @Transactional
-    public KakaoTokenResponse getKakaoAccessToken(String code) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-        // Http Response Body 객체 생성
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code"); //카카오 공식문서 기준 authorization_code 로 고정
-        params.add("client_id", KAKAO_CLIENT_ID); // 카카오 Dev 앱 REST API 키
-        params.add("redirect_uri", KAKAO_REDIRECT_URI); // 카카오 Dev redirect uri
-        params.add("code", code); // 프론트에서 인가 코드 요청시 받은 인가 코드값
-        params.add("client_secret", KAKAO_CLIENT_SECRET); // 카카오 Dev 카카오 로그인 Client Secret
-
-        // 헤더와 바디 합치기 위해 Http Entity 객체 생성
-        HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
-
-        // 카카오로부터 Access token 받아오기
-        RestTemplate rt = new RestTemplate();
-        ResponseEntity<String> accessTokenResponse = rt.exchange(
-                KAKAO_TOKEN_URI, // "https://kauth.kakao.com/oauth/token"
-                HttpMethod.POST,
-                kakaoTokenRequest,
-                String.class
-        );
-
-        // JSON Parsing (-> KakaoTokenDto)
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        KakaoTokenResponse kakaoTokenResponse = null;
-        try {
-            kakaoTokenResponse = objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenResponse.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        return kakaoTokenResponse;
     }
 }
 
