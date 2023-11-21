@@ -1,5 +1,7 @@
 package com.ogjg.daitgym.follow.repository;
 
+import com.ogjg.daitgym.domain.QUser;
+import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.follow.dto.response.FollowListDto;
 import com.ogjg.daitgym.follow.dto.response.QFollowListDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -7,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import static com.ogjg.daitgym.domain.QInbody.inbody;
 import static com.ogjg.daitgym.domain.QUser.user;
 import static com.ogjg.daitgym.domain.follow.QFollow.follow;
 
@@ -23,12 +24,10 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                         new QFollowListDto(
                                 user.imageUrl,
                                 user.nickname,
-                                user.introduction,
-                                inbody.score
+                                user.introduction
                         ))
                 .from(follow)
                 .join(follow.target, user)
-                .leftJoin(inbody).on(inbody.user.email.eq(user.email))
                 .where(follow.follower.nickname.eq(nickname))
                 .fetch();
     }
@@ -40,12 +39,10 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                         new QFollowListDto(
                                 user.imageUrl,
                                 user.nickname,
-                                user.introduction,
-                                inbody.score
-                        )
-                ).from(follow)
+                                user.introduction
+                        ))
+                .from(follow)
                 .join(follow.follower, user)
-                .leftJoin(inbody).on(inbody.user.email.eq(user.email))
                 .where(follow.target.nickname.eq(nickname))
                 .fetch();
     }
