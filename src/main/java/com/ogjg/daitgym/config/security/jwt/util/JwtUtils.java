@@ -48,7 +48,7 @@ public class JwtUtils {
 
     private static final int DAY = HOUR * 24;
 
-    private static final int ACCESS_TOKEN_VALID_TIME = MINUTE * 5;
+    private static final int ACCESS_TOKEN_VALID_TIME = 30000;
 
     private static final long REFRESH_TOKEN_VALID_TIME = DAY * 30L;
 
