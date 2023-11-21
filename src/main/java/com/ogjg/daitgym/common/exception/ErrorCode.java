@@ -34,6 +34,8 @@ public enum ErrorCode implements ErrorType {
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "404", "유저를 찾을 수 없습니다"),
 
     //BAD_REQUEST
+    NOT_COMPLETED_EXERCISE_JOURNAL(HttpStatus.BAD_REQUEST,"400","운동일지가 완료되지 않았습니다"),
+    NOT_COMPLETED_EXERCISE_HISTORY(HttpStatus.BAD_REQUEST,"400","완료되지 않은 운동기록이 존재합니다"),
     ALREADY_FOLLOW_USER(HttpStatus.BAD_REQUEST, "400", "이미 팔로우한 유저입니다"),
     ALREADY_EXIST_FEED_COLLECTION(HttpStatus.BAD_REQUEST, "400", "이미 스크랩한 피드 운동일지 게시물입니다"),
     ALREADY_SHARED_JOURNAL(HttpStatus.BAD_REQUEST, "400", "이미 공유된 운동일지입니다"),

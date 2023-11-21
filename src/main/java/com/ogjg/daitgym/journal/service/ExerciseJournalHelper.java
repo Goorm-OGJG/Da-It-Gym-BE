@@ -2,10 +2,7 @@ package com.ogjg.daitgym.journal.service;
 
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundExerciseJournal;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundUser;
-import com.ogjg.daitgym.common.exception.journal.NotFoundExerciseHistory;
-import com.ogjg.daitgym.common.exception.journal.NotFoundExerciseList;
-import com.ogjg.daitgym.common.exception.journal.NotFoundJournal;
-import com.ogjg.daitgym.common.exception.journal.UserNotAuthorizedForJournal;
+import com.ogjg.daitgym.common.exception.journal.*;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.exercise.Exercise;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
@@ -118,6 +115,26 @@ public class ExerciseJournalHelper {
     ) {
         return exerciseJournalRepository.findByJournalDateAndUser(journalDate, user)
                 .isPresent();
+    }
+
+    /**
+     * 운동일지의 운동기록들이 모두 완료된 상태인지 확인
+     *
+     * @param exerciseJournal 확인할 운동일지
+     */
+    public void checkAllExerciseHistoriesCompleted(
+            ExerciseJournal exerciseJournal
+    ) {
+        List<ExerciseList> exerciseLists = findExerciseListsByJournal(exerciseJournal);
+        exerciseLists.forEach(
+                exerciseList -> {
+                    findExerciseHistoriesByExerciseList(exerciseList).forEach(
+                            exerciseHistory -> {
+                                if (!exerciseHistory.isCompleted()) throw new NotCompletedExerciseHistory();
+                            }
+                    );
+                }
+        );
     }
 
     /**
