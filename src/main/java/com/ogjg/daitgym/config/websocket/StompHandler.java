@@ -54,6 +54,9 @@ class StompHandler implements ChannelInterceptor {
 
             case CONNECT:
                 break;
+            case SEND:
+                verifyAccessToken(headerAccessor);
+                break;
             case SUBSCRIBE:
                 verifyAccessToken(headerAccessor);
                 connectToChatRoom(headerAccessor, session);
