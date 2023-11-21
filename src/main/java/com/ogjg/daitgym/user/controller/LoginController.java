@@ -2,6 +2,7 @@ package com.ogjg.daitgym.user.controller;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
+import com.ogjg.daitgym.user.dto.response.KakaoTokenResponse;
 import com.ogjg.daitgym.user.dto.response.LoginResponse;
 import com.ogjg.daitgym.user.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,11 +22,11 @@ public class LoginController {
             @RequestParam("code") String code,
             HttpServletResponse httpServletResponse
     ) {
-        String kakaoAccessToken = authService.getKakaoAccessToken(code).getAccess_token();
+        KakaoTokenResponse kakaoTokenResponse = authService.getKakaoAccessToken(code);
 
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
-                authService.kakaoLogin(kakaoAccessToken, httpServletResponse)
+                authService.kakaoLogin(kakaoTokenResponse, httpServletResponse)
         );
     }
 }
