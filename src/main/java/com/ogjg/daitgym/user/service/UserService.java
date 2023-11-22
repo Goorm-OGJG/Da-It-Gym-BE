@@ -1,6 +1,8 @@
 package com.ogjg.daitgym.user.service;
 
 import com.ogjg.daitgym.approval.repository.ApprovalRepository;
+import com.ogjg.daitgym.approval.repository.AwardRepository;
+import com.ogjg.daitgym.approval.repository.CertificationRepository;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
 import com.ogjg.daitgym.common.exception.user.AlreadyExistNickname;
 import com.ogjg.daitgym.common.exception.user.EmptyTrainerApplyException;
@@ -33,6 +35,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.ogjg.daitgym.domain.ApproveStatus.WAITING;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +44,17 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final UserHelper userHelper;
+
     private final HealthClubRepository healthClubRepository;
 
     private final FollowRepository followRepository;
 
     private final ApprovalRepository approvalRepository;
+
+    private final AwardRepository awardRepository;
+
+    private final CertificationRepository certificationRepository;
 
     private final InbodyRepository inbodyRepository;
 
@@ -54,7 +64,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public GetUserProfileGetResponse getUserProfile(String loginEmail, String nickname) {
-        User targetUser = findUserByNickname(nickname);
+        User targetUser = userHelper.findUserByNickname(nickname);
 
         return GetUserProfileGetResponse.builder()
                 .nickname(targetUser.getNickname())
@@ -63,10 +73,12 @@ public class UserService {
                 .introduction(targetUser.getIntroduction())
                 .healthClubName(targetUser.getHealthClub().getName())
                 .isFollower(isTargetUserFollowedByLoginUser(targetUser.getEmail(), loginEmail))
-                .role(targetUser.getRole())
+                .role(targetUser.getRole().getTitle())
                 .journalCount(exerciseJournalRepository.countByUserEmail(targetUser.getEmail()))
                 .followerCount(followRepository.countByFollowPKTargetEmail(targetUser.getEmail()))
                 .followingCount(followRepository.countByFollowPKFollowerEmail(targetUser.getEmail()))
+                .isMyProfile(targetUser.getEmail().equals(loginEmail))
+                .submitTrainerQualification(hasProceedingApproval(targetUser))
                 .build();
     }
 
@@ -75,15 +87,33 @@ public class UserService {
                 .isPresent();
     }
 
+    private boolean hasProceedingApproval(User user) {
+        List<Approval> awardApprovals = awardRepository.findByUserEmail(user.getEmail()).stream()
+                .map((award -> award.getApproval()))
+                .collect(toList());
+
+        List<Approval> certificationApprovals = certificationRepository.findByUserEmail(user.getEmail()).stream()
+                .map((certification -> certification.getApproval()))
+                .collect(toList());
+
+        awardApprovals.addAll(certificationApprovals);
+        Approval approval = awardApprovals.stream()
+                .sorted(comparing(Approval::getCreatedAt).reversed())
+                .findFirst()
+                .orElse(null);
+
+        return approval != null && approval.isProceeding();
+    }
+
     @Transactional
     public EditUserProfileResponse editUserProfile(String loginEmail, String nickname, EditUserProfileRequest request, MultipartFile multipartFile) {
-        User user = findUserByNickname(nickname);
+        User user = userHelper.findUserByNickname(nickname);
 
         if (!loginEmail.equals(user.getEmail())) {
             throw new WrongApproach("본인의 프로필만 수정할 수 있습니다.");
         }
 
-        if (isNicknameAlreadyExist(user.getNickname(), request.getNickname())) {
+        if (userHelper.isNicknameAlreadyExist(user.getNickname(), request.getNickname())) {
             throw new AlreadyExistNickname();
         }
 
@@ -124,7 +154,7 @@ public class UserService {
      */
     @Transactional
     public void applyForApproval(String loginEmail, ApplyForApprovalRequest request, List<MultipartFile> awardImageFiles, List<MultipartFile> certificationImageFiles) {
-        User user = findUserByEmail(loginEmail);
+        User user = userHelper.findUserByEmail(loginEmail);
 
         validateOmission(request, awardImageFiles, certificationImageFiles);
 
@@ -172,7 +202,7 @@ public class UserService {
 
     @Transactional
     public void registerInbody(String loginEmail, RegisterInbodyRequest request) {
-        User user = findUserByEmail(loginEmail);
+        User user = userHelper.findUserByEmail(loginEmail);
 
         Inbody inbody = Inbody.builder()
                 .user(user)
@@ -189,7 +219,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public GetInbodiesResponse getInbodies(String nickname) {
-        User user = findUserByNickname(nickname);
+        User user = userHelper.findUserByNickname(nickname);
 
         return new GetInbodiesResponse(
                 inbodyRepository.findByUserEmail(user.getEmail())
@@ -208,15 +238,15 @@ public class UserService {
 
     @Transactional
     public EditInitialNicknameResponse editInitialNickname(String loginEmail, EditNicknameRequest request) {
-        User findUser = findUserByEmail(loginEmail);
+        User findUser = userHelper.findUserByEmail(loginEmail);
         String newNickname = request.getNickname();
 
-        if (isNicknameAlreadyExist(findUser.getNickname(), newNickname)) {
+        if (userHelper.isNicknameAlreadyExist(findUser.getNickname(), newNickname)) {
             throw new AlreadyExistNickname();
         }
 
         // 해당 메시지를 사용해야하는데 기존 에러코드를 수정할 수는 없어서 임시 사용
-        if (isUserNotFoundByEmail(loginEmail)) {
+        if (userHelper.isUserNotFoundByEmail(loginEmail)) {
             throw new NotFoundUser("존재하지 않는 회원입니다.");
         }
 
@@ -226,29 +256,23 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public String checkNicknameDuplication(String nickname, String newNickname) {
-        if (isNicknameAlreadyExist(nickname, newNickname)) {
+        if (userHelper.isNicknameAlreadyExist(nickname, newNickname)) {
             return "중복";
         }
         return "사용가능";
     }
 
-    private boolean isNicknameAlreadyExist(String nickname, String newNickname) {
-        return !nickname.equals(newNickname) && userRepository.findByNickname(newNickname).isPresent();
-    }
-
     @Transactional(readOnly = true)
     public void updateUserDeleted(String loginEmail) {
-        if (isUserNotFoundByEmail(loginEmail)) {
+        if (userHelper.isUserNotFoundByEmail(loginEmail)) {
             throw new NotFoundUser("존재하지 않는 회원입니다.");
         }
 
-        User findUser = findUserByEmail(loginEmail);
+        User findUser = userHelper.findUserByEmail(loginEmail);
         findUser.withdraw();
     }
 
-    private boolean isUserNotFoundByEmail(String loginEmail) {
-        return !userRepository.findByEmail(loginEmail).isPresent();
-    }
+
 
     @Transactional(readOnly = true)
     public GetSearchUsersResponse getSearchedUsers(String nickname, Pageable pageable) {
@@ -282,15 +306,5 @@ public class UserService {
                 .orElse(0.0);
 
         return (int) (Math.round(sum / inbodies.size()));
-    }
-
-    private User findUserByNickname(String nickname) {
-        return userRepository.findByNickname(nickname)
-                .orElseThrow(NotFoundUser::new);
-    }
-
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(NotFoundUser::new);
     }
 }
