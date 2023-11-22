@@ -1,29 +1,18 @@
 package com.ogjg.daitgym.user.dto.response;
 
-import com.ogjg.daitgym.domain.ExerciseSplit;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
-import jakarta.annotation.PostConstruct;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import static com.ogjg.daitgym.user.constants.UserConstants.*;
 
 @Getter
 @NoArgsConstructor
+@Component
 public class LoginResponse {
-
-    public static final String DEFAULT_HEALTH_CLUB_NAME = "";
-
-    @Value("${cloud.aws.default.profile-img}")
-    public String awsDefaultUrlTemp;
-    public static String AWS_DEFAULT_PROFILE_IMG_URL;
-    public static final String DEFAULT_INTRODUCTION = DEFAULT_HEALTH_CLUB_NAME;
-    public static final String DEFAULT_PREFERRED_SPLIT = ExerciseSplit.ONE_DAY.getTitle();
-    public static final boolean ALREADY_JOINED = true;
-    public static final boolean NOT_ALREADY_JOINED = true;
-    public static final boolean DELETED = true;
-    public static final boolean NOT_DELETED = false;
 
     private boolean isAlreadyJoined;
 
@@ -40,11 +29,6 @@ public class LoginResponse {
     private String healthClubName;
 
     private String role;
-
-    @PostConstruct
-    public void setUrl() {
-        AWS_DEFAULT_PROFILE_IMG_URL = awsDefaultUrlTemp;
-    }
 
     @Builder
     public LoginResponse(String nickname, String userProfileImgUrl, String preferredSplit, String introduction, String healthClubName, boolean isAlreadyJoined, String role, boolean isDeleted) {
