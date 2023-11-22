@@ -51,7 +51,7 @@ public enum ErrorCode implements ErrorType {
     ALREADY_EXIST_NICKNAME(HttpStatus.BAD_REQUEST, "400", "중복되는 닉네임입니다."),
     EMPTY_TRAINER_APPLY_APPROVAL(HttpStatus.BAD_REQUEST, "400", "잘못된 승인 신청입니다. 자격 혹은 수상내역 입력이 누락되었습니다."),
     ALREADY_SCRAPPED_ROUTINE(HttpStatus.BAD_REQUEST, "400", "이미 스크랩한 루틴입니다."),
-    ;
+    ALREADY_PROCEEDING_APPROVAL(HttpStatus.BAD_REQUEST, "400", "이미 심사가 진행중입니다."),;
 
     @JsonIgnore
     private final HttpStatus statusCode;
