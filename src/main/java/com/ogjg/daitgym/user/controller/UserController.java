@@ -9,13 +9,12 @@ import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
-import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
-import com.ogjg.daitgym.user.dto.response.EditUserProfileResponse;
-import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
-import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
+import com.ogjg.daitgym.user.dto.response.*;
 import com.ogjg.daitgym.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -155,6 +154,21 @@ public class UserController {
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
                 userService.getInbodies(nickname)
+        );
+    }
+
+    /**
+     * 유저 검색
+     */
+    @GetMapping("/search")
+    public ApiResponse<GetSearchUsersResponse> getUsers(
+            @RequestParam("nickname") String nickname,
+            @PageableDefault(page = 0, size = 10) Pageable pageable
+    ) {
+
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                userService.getSearchedUsers(nickname, pageable)
         );
     }
 }
