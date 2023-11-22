@@ -64,4 +64,8 @@ public class Approval extends BaseEntity {
 
         certifications.get(FIRST_ELEMENT).addCertificationImageUrls(certificationImageUrls);
     }
+
+    public boolean isProceeding() {
+        return approveStatus == ApproveStatus.WAITING || approveStatus == ApproveStatus.SUSPENSION;
+    }
 }
