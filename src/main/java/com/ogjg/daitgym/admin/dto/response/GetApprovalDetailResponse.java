@@ -82,8 +82,10 @@ public class GetApprovalDetailResponse {
         private LocalDate joinAt;
         private String reason;
 
+        private String role;
+
         @Builder
-        public GetApprovalDetail(Long approvalId, String nickname, String email, String approvalStatus, boolean withdraw, LocalDate joinAt, String reason) {
+        public GetApprovalDetail(Long approvalId, String nickname, String email, String approvalStatus, boolean withdraw, LocalDate joinAt, String reason, String role) {
             this.approvalId = approvalId;
             this.nickname = nickname;
             this.email = email;
@@ -91,20 +93,22 @@ public class GetApprovalDetailResponse {
             this.withdraw = withdraw;
             this.joinAt = joinAt;
             this.reason = reason;
+            this.role = role;
         }
 
         public static GetApprovalDetail from(Approval approval) {
             User user = findUser(approval);
 
             return GetApprovalDetail.builder()
-                   .approvalId(approval.getId())
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .approvalStatus(approval.getApproveStatus().getTitle())
-                .withdraw(user.isDeleted())
-                .joinAt(user.getCreatedAt().toLocalDate())
-                .reason(approval.getContent())
-                .build();
+                    .approvalId(approval.getId())
+                    .nickname(user.getNickname())
+                    .email(user.getEmail())
+                    .approvalStatus(approval.getApproveStatus().getTitle())
+                    .withdraw(user.isDeleted())
+                    .joinAt(user.getCreatedAt().toLocalDate())
+                    .reason(approval.getContent())
+                    .role(user.getRole().getTitle())
+                    .build();
         }
     }
 
