@@ -1,6 +1,6 @@
 package com.ogjg.daitgym.user.service;
 
-import com.ogjg.daitgym.approval.repository.*;
+import com.ogjg.daitgym.approval.repository.ApprovalRepository;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
 import com.ogjg.daitgym.common.exception.user.AlreadyExistNickname;
 import com.ogjg.daitgym.common.exception.user.EmptyTrainerApplyException;
@@ -21,7 +21,6 @@ import com.ogjg.daitgym.user.dto.response.*;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,15 +42,6 @@ public class UserService {
 
     private final HealthClubRepository healthClubRepository;
 
-    private final CertificationRepository certificationRepository;
-
-    private final AwardRepository awardRepository;
-
-    private final AwardImageRepository awardImageRepository;
-
-    private final CertificationImageRepository certificationImageRepository;
-
-    private final EntityManager em;
     private final FollowRepository followRepository;
 
     private final ApprovalRepository approvalRepository;
