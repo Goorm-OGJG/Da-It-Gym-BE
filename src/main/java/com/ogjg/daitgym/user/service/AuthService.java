@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
+import static com.ogjg.daitgym.user.constants.UserConstants.*;
 import static com.ogjg.daitgym.user.dto.response.LoginResponse.*;
 
 @Service
