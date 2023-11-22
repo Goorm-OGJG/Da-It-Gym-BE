@@ -2,7 +2,13 @@ package com.ogjg.daitgym.user.service;
 
 import com.ogjg.daitgym.approval.repository.*;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
-import com.ogjg.daitgym.domain.*;
+import com.ogjg.daitgym.common.exception.user.AlreadyExistNickname;
+import com.ogjg.daitgym.common.exception.user.EmptyTrainerApplyException;
+import com.ogjg.daitgym.common.exception.user.NotFoundUser;
+import com.ogjg.daitgym.domain.Approval;
+import com.ogjg.daitgym.domain.HealthClub;
+import com.ogjg.daitgym.domain.Inbody;
+import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.follow.Follow;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
@@ -11,18 +17,14 @@ import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
 import com.ogjg.daitgym.user.dto.request.RegisterInbodyRequest;
-import com.ogjg.daitgym.user.dto.response.EditInitialNicknameResponse;
-import com.ogjg.daitgym.user.dto.response.EditUserProfileResponse;
-import com.ogjg.daitgym.user.dto.response.GetInbodiesResponse;
-import com.ogjg.daitgym.user.dto.response.GetUserProfileGetResponse;
-import com.ogjg.daitgym.common.exception.user.AlreadyExistNickname;
-import com.ogjg.daitgym.common.exception.user.EmptyTrainerApplyException;
-import com.ogjg.daitgym.common.exception.user.NotFoundUser;
+import com.ogjg.daitgym.user.dto.response.*;
 import com.ogjg.daitgym.user.repository.HealthClubRepository;
 import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -256,6 +258,40 @@ public class UserService {
 
     private boolean isUserNotFoundByEmail(String loginEmail) {
         return !userRepository.findByEmail(loginEmail).isPresent();
+    }
+
+    @Transactional(readOnly = true)
+    public GetSearchUsersResponse getSearchedUsers(String nickname, Pageable pageable) {
+        Page<User> searchedUsers = userRepository.findByNicknameStartingWith(nickname, pageable);
+
+        return GetSearchUsersResponse.from(
+                searchedUsers.stream()
+                        .map(this::toResponse)
+                        .toList(),
+                searchedUsers.hasNext()
+        );
+    }
+
+    private GetSearchUsersResponse.GetSearchUserResponse toResponse(User user) {
+        return GetSearchUsersResponse.GetSearchUserResponse.builder()
+                .userProfileImageUrl(user.getImageUrl())
+                .nickname(user.getNickname())
+                .introduction(user.getIntroduction())
+                .inbodyScore(getAverageOfInbodyScores(user.getEmail()))
+                .build();
+    }
+
+    // todo : fetch로 변경 고려
+    private int getAverageOfInbodyScores(String email) {
+        List<Inbody> inbodies = inbodyRepository.findByUserEmail(email);
+        if (inbodies.isEmpty()) return 0;
+
+        double sum = inbodies.stream()
+                .mapToDouble(inbody -> inbody.getScore())
+                .reduce(Double::sum)
+                .orElse(0.0);
+
+        return (int) (Math.round(sum / inbodies.size()));
     }
 
     private User findUserByNickname(String nickname) {
