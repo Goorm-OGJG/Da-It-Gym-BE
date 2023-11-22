@@ -4,6 +4,7 @@ import com.ogjg.daitgym.approval.repository.ApprovalRepository;
 import com.ogjg.daitgym.approval.repository.AwardRepository;
 import com.ogjg.daitgym.approval.repository.CertificationRepository;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
+import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
 import com.ogjg.daitgym.common.exception.user.AlreadyExistNickname;
 import com.ogjg.daitgym.common.exception.user.AlreadyProceedingApproval;
 import com.ogjg.daitgym.common.exception.user.EmptyTrainerApplyException;
@@ -13,8 +14,10 @@ import com.ogjg.daitgym.domain.HealthClub;
 import com.ogjg.daitgym.domain.Inbody;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.follow.Follow;
+import com.ogjg.daitgym.domain.routine.Routine;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
+import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.s3.service.S3UserService;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
@@ -58,6 +61,8 @@ public class UserService {
     private final CertificationRepository certificationRepository;
 
     private final InbodyRepository inbodyRepository;
+
+    private final RoutineRepository routineRepository;
 
     private final ExerciseJournalRepository exerciseJournalRepository;
 
@@ -207,6 +212,8 @@ public class UserService {
     @Transactional
     public void registerInbody(String loginEmail, RegisterInbodyRequest request) {
         User user = userHelper.findUserByEmail(loginEmail);
+        Routine routine = routineRepository.findById(request.getRoutineId())
+                .orElseThrow(NotFoundRoutine::new);
 
         Inbody inbody = Inbody.builder()
                 .user(user)
@@ -216,6 +223,7 @@ public class UserService {
                 .bodyFatRatio(request.getBodyFatRatio())
                 .weight(request.getWeight())
                 .basalMetabolicRate(request.getBasalMetabolicRate())
+                .routine(routine)
                 .build();
 
         inbodyRepository.save(inbody);

@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.domain;
 
+import com.ogjg.daitgym.domain.routine.Routine;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,8 +37,11 @@ public class Inbody extends BaseEntity {
 
     private LocalDate measureAt;
 
+    @ManyToOne(fetch = LAZY)
+    private Routine routine;
+
     @Builder
-    public Inbody(Long id, User user, int score, double skeletalMuscleMass, double bodyFatRatio, double weight, int basalMetabolicRate, LocalDate measureAt) {
+    public Inbody(Long id, User user, int score, double skeletalMuscleMass, double bodyFatRatio, double weight, int basalMetabolicRate, LocalDate measureAt, Routine routine) {
         this.id = id;
         this.user = user;
         this.score = score;
@@ -46,5 +50,6 @@ public class Inbody extends BaseEntity {
         this.weight = weight;
         this.basalMetabolicRate = basalMetabolicRate;
         this.measureAt = measureAt;
+        this.routine = routine;
     }
 }

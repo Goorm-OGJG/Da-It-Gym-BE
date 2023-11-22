@@ -17,4 +17,5 @@ public class RegisterInbodyRequest {
     private double bodyFatRatio ;
     private double weight;
     private int basalMetabolicRate;
+    private Long routineId;
 }
