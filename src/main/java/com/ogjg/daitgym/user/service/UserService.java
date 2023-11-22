@@ -5,6 +5,7 @@ import com.ogjg.daitgym.approval.repository.AwardRepository;
 import com.ogjg.daitgym.approval.repository.CertificationRepository;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
 import com.ogjg.daitgym.common.exception.user.AlreadyExistNickname;
+import com.ogjg.daitgym.common.exception.user.AlreadyProceedingApproval;
 import com.ogjg.daitgym.common.exception.user.EmptyTrainerApplyException;
 import com.ogjg.daitgym.common.exception.user.NotFoundUser;
 import com.ogjg.daitgym.domain.Approval;
@@ -156,6 +157,9 @@ public class UserService {
     public void applyForApproval(String loginEmail, ApplyForApprovalRequest request, List<MultipartFile> awardImageFiles, List<MultipartFile> certificationImageFiles) {
         User user = userHelper.findUserByEmail(loginEmail);
 
+        if (hasProceedingApproval(user)) {
+            throw new AlreadyProceedingApproval();
+        }
         validateOmission(request, awardImageFiles, certificationImageFiles);
 
         // s3에 이미지들 저장
