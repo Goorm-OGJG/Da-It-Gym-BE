@@ -3,6 +3,7 @@ package com.ogjg.daitgym.domain;
 import com.ogjg.daitgym.domain.routine.Routine;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +37,7 @@ public class User extends BaseEntity {
     @JoinColumn(name = "active_routine_id")
     private Routine activeRoutine;
 
+    @Pattern(regexp = "^[a-zA-Z0-9_]{3,36}$", message = "닉네임은 영문, 숫자, _ 만 사용 가능하며, 길이는 3자 이상 36자 이하여야 합니다.")
     @Column(unique = true)
     private String nickname;
 
