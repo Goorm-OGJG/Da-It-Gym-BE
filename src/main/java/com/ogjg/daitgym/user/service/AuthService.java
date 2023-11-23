@@ -198,7 +198,7 @@ public class AuthService {
     }
 
     private static String generateTempNickname() {
-        return UUID.randomUUID().toString();
+        return UUID.randomUUID().toString().replaceAll("-","_");
     }
 
     private User join(String kakaoEmail, String tempNickname, HealthClub defaultHealthClub) {
