@@ -4,7 +4,6 @@ import com.ogjg.daitgym.approval.repository.ApprovalRepository;
 import com.ogjg.daitgym.approval.repository.AwardRepository;
 import com.ogjg.daitgym.approval.repository.CertificationRepository;
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.WrongApproach;
-import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
 import com.ogjg.daitgym.common.exception.user.AlreadyExistNickname;
 import com.ogjg.daitgym.common.exception.user.AlreadyProceedingApproval;
 import com.ogjg.daitgym.common.exception.user.EmptyTrainerApplyException;
@@ -219,7 +218,7 @@ public class UserService {
     public void registerInbody(String loginEmail, RegisterInbodyRequest request) {
         User user = userHelper.findUserByEmail(loginEmail);
         Routine routine = routineRepository.findById(request.getRoutineId())
-                .orElseThrow(NotFoundRoutine::new);
+                .orElse(null);
 
         Inbody inbody = Inbody.builder()
                 .user(user)
@@ -229,9 +228,9 @@ public class UserService {
                 .bodyFatRatio(request.getBodyFatRatio())
                 .weight(request.getWeight())
                 .basalMetabolicRate(request.getBasalMetabolicRate())
-                .routine(routine)
                 .build();
 
+        if (routine != null) inbody.addRoutineId(routine);
         inbodyRepository.save(inbody);
     }
 

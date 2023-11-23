@@ -52,4 +52,8 @@ public class Inbody extends BaseEntity {
         this.measureAt = measureAt;
         this.routine = routine;
     }
+
+    public void addRoutineId(Routine routine) {
+        this.routine = routine;
+    }
 }
