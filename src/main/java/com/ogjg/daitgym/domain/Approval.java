@@ -31,23 +31,23 @@ public class Approval extends BaseEntity {
     private ApproveStatus approveStatus;
 
     private String content;
+    private String managerEmail;
 
-    // Todo 승인 관리자 연관관계에 대해 고민해보기
-    private Long approvalManager;
 
     @Builder
-    public Approval(Long id, List<Certification> certifications, List<Award> awards, ApproveStatus approveStatus, String content, Long approvalManager) {
+    public Approval(Long id, List<Certification> certifications, List<Award> awards, ApproveStatus approveStatus, String content, String managerEmail) {
         this.id = id;
         this.certifications = certifications;
         this.awards = awards;
         this.approveStatus = approveStatus;
         this.content = content;
-        this.approvalManager = approvalManager;
+        this.managerEmail = managerEmail;
     }
 
-    public void edit(String approveStatus, String reason, String loginEmail) {
-        this.approveStatus = ApproveStatus.from(approveStatus);
-        this.content = reason;
+    public void edit(ApproveStatus approveStatus, String reason, String loginEmail) {
+        this.approveStatus = approveStatus;
+        this.content = reason == null ? "" : reason;
+        this.managerEmail = loginEmail;
         // todo : mangerId 등록
     }
 
@@ -61,7 +61,6 @@ public class Approval extends BaseEntity {
     public void addCertifications(List<Certification> certifications, List<String> certificationImageUrls) {
         this.certifications = certifications;
         certifications.stream().forEach((certification -> certification.addApproval(this)));
-
         certifications.get(FIRST_ELEMENT).addCertificationImageUrls(certificationImageUrls);
     }
 

@@ -48,7 +48,8 @@ public class AdminController {
             @PathVariable("approvalId") Long approvalId,
             @RequestBody EditApprovalRequest request,
             @AuthenticationPrincipal OAuth2JwtUserDetails jwtUserDetails
-            ) {
+    ) {
+
         adminService.updateApproval(approvalId, request, jwtUserDetails.getEmail());
         return new ApiResponse<>(ErrorCode.SUCCESS);
     }
