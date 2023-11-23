@@ -10,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/user/kakao")
@@ -24,11 +23,12 @@ public class UserFriendController {
      * 친구 목록이 존재하지 않는다면 빈배열을 반환
      */
     @GetMapping("/friends")
-    public Mono<ApiResponse<KaKaoFriendsResponse>> getKaKaoFriendsList(
+    public ApiResponse<KaKaoFriendsResponse> getKaKaoFriendsList(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        return kakaoFriendService.requestKaKaoFriendsList(userDetails.getEmail())
-                .map(friends -> new ApiResponse<>(ErrorCode.SUCCESS, friends))
-                .defaultIfEmpty(new ApiResponse<>(ErrorCode.SUCCESS, new KaKaoFriendsResponse()));
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                kakaoFriendService.requestKaKaoFriendsList(userDetails.getEmail())
+        );
     }
 }

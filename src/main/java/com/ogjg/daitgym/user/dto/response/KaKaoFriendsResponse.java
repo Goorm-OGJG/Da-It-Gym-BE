@@ -1,6 +1,5 @@
 package com.ogjg.daitgym.user.dto.response;
 
-import com.ogjg.daitgym.user.dto.request.KaKaoFriendRequest;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,9 +10,10 @@ import java.util.List;
 @NoArgsConstructor
 public class KaKaoFriendsResponse {
 
-    private List<KaKaoFriendRequest> friends = new ArrayList<>();
+    private List<KaKaoFriendResponseDto> elements = new ArrayList<>();
+    private Integer total_count;
 
-    public KaKaoFriendsResponse(List<KaKaoFriendRequest> friends) {
-        this.friends = friends;
+    public KaKaoFriendsResponse(List<KaKaoFriendResponseDto> elements) {
+        this.elements = elements;
     }
 }

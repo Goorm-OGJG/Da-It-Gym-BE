@@ -24,7 +24,7 @@ public class UserAuthentication {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    private Long provider_id;
+    private Long providerId;
 
     private String provider_name;
 
@@ -38,9 +38,9 @@ public class UserAuthentication {
     private String refreshToken;
 
     @Builder
-    public UserAuthentication(Long id, Long provider_id, String provider_name, User user, Long uuid, String accessToken, String refreshToken) {
+    public UserAuthentication(Long id, Long providerId, String provider_name, User user, Long uuid, String accessToken, String refreshToken) {
         this.id = id;
-        this.provider_id = provider_id;
+        this.providerId = providerId;
         this.provider_name = provider_name;
         this.user = user;
         this.uuid = uuid;
@@ -53,7 +53,7 @@ public class UserAuthentication {
                 .accessToken(kakaoTokenResponse.getAccess_token())
                 .refreshToken(kakaoTokenResponse.getRefresh_token())
                 .uuid(kakaoAccountResponse.getId())
-                .provider_id(kakaoAccountResponse.getId())
+                .providerId(kakaoAccountResponse.getId())
                 .provider_name("kakao")
                 .build();
     }
