@@ -17,6 +17,7 @@ public enum ErrorCode implements ErrorType {
     WRONG_APPROACH(HttpStatus.FORBIDDEN, "403", "잘못된 접근입니다"),
 
     //NOT_FOUND
+    NOT_FOUNT_USER_AUTHENTICATION(HttpStatus.NOT_FOUND,"404","유저 인증정보를 찾을 수 없습니다"),
     NOT_FOUND_FOLLOW(HttpStatus.NOT_FOUND, "404", "팔로우를 먼저 해주세요"),
     NOT_FOUND_EXERCISE(HttpStatus.NOT_FOUND, "404", "운동을 찾을 수 없습니다"),
     NOT_FOUND_FEED_JOURNAL_IMAGE(HttpStatus.NOT_FOUND, "404", "운동일지 피드의 이미지를 찾을 수 없습니다"),
