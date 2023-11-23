@@ -99,4 +99,10 @@ public class User extends BaseEntity {
         }
         this.healthClub = newHealthClub;
     }
+
+    public void promoteToTrainer() {
+        if (this.role == Role.USER) {
+            this.role = Role.TRAINER;
+        }
+    }
 }
