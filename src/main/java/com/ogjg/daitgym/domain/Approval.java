@@ -51,7 +51,15 @@ public class Approval extends BaseEntity {
         // todo : mangerId 등록
     }
 
+    /**
+     *
+     * @param awards
+     * awards를 get할때, null이 될 가능성이 있다.
+     * awards가 비어있다면 애초에 awardImageUrls도 빈 값이 넘어오도록 설계되어 있다. addCertifications 메서드도 마찬가지이다.
+     */
     public void addAwards(List<Award> awards, List<String> awardImageUrls) {
+        if (awards.isEmpty()) return;
+
         this.awards = awards;
         awards.stream().forEach((award -> award.addApproval(this)));
 
@@ -59,6 +67,8 @@ public class Approval extends BaseEntity {
     }
 
     public void addCertifications(List<Certification> certifications, List<String> certificationImageUrls) {
+        if (certifications.isEmpty()) return;
+
         this.certifications = certifications;
         certifications.stream().forEach((certification -> certification.addApproval(this)));
 

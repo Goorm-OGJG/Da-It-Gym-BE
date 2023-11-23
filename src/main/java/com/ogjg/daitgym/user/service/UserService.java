@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -172,7 +173,12 @@ public class UserService {
         List<String> certificationImageUrls = s3UserService.saveCareerImages(request.getCertifications(), certificationImageFiles);
 
         // db에 저장
-        Approval approval = Approval.builder().approveStatus(WAITING).build();
+        Approval approval = Approval.builder()
+                .approveStatus(WAITING)
+                .awards(new ArrayList<>())
+                .certifications(new ArrayList<>())
+                .build();
+
         approval.addAwards(request.toAwards(user), awardImageUrls);
         approval.addCertifications(request.toCertifications(user), certificationImageUrls);
 

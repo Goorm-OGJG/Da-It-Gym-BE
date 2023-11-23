@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -23,12 +24,16 @@ public class ApplyForApprovalRequest {
     }
 
     public List<Award> toAwards(User user) {
+        if (awards == null) return Collections.emptyList();
+
         return awards.stream()
                 .map((dto) -> dto.toAward(user))
                 .toList();
     }
 
     public List<Certification> toCertifications(User user) {
+        if (certifications == null) return Collections.emptyList();
+
         return certifications.stream()
                 .map((dto) -> dto.toCertification(user))
                 .toList();
