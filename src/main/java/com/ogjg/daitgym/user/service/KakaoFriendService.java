@@ -3,8 +3,12 @@ package com.ogjg.daitgym.user.service;
 import com.ogjg.daitgym.common.exception.user.ForbiddenKaKaoSocial;
 import com.ogjg.daitgym.common.exception.user.NotFoundUser;
 import com.ogjg.daitgym.common.exception.user.NotFoundUserAuthentication;
+import com.ogjg.daitgym.domain.Inbody;
 import com.ogjg.daitgym.domain.UserAuthentication;
+import com.ogjg.daitgym.user.dto.request.KaKaoFriendsRequest;
+import com.ogjg.daitgym.user.dto.response.KaKaoFriendResponseDto;
 import com.ogjg.daitgym.user.dto.response.KaKaoFriendsResponse;
+import com.ogjg.daitgym.user.repository.InbodyRepository;
 import com.ogjg.daitgym.user.repository.UserAuthenticationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -13,16 +17,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @Service
 public class KakaoFriendService {
 
     private final RestTemplate restTemplate;
     private final UserAuthenticationRepository userAuthenticationRepository;
+    private final InbodyRepository inbodyRepository;
 
-    public KakaoFriendService(UserAuthenticationRepository userAuthenticationRepository) {
+    public KakaoFriendService(UserAuthenticationRepository userAuthenticationRepository, InbodyRepository inbodyRepository) {
         this.restTemplate = new RestTemplate();
         this.userAuthenticationRepository = userAuthenticationRepository;
+        this.inbodyRepository = inbodyRepository;
     }
 
 
@@ -40,27 +49,35 @@ public class KakaoFriendService {
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<KaKaoFriendsResponse> response = restTemplate.exchange(
+            ResponseEntity<KaKaoFriendsRequest> response = restTemplate.exchange(
                     "https://kapi.kakao.com/v1/api/talk/friends",
                     HttpMethod.GET,
                     entity,
-                    KaKaoFriendsResponse.class
+                    KaKaoFriendsRequest.class
             );
 
-            KaKaoFriendsResponse kaKaoFriendsResponse = response.getBody();
+            KaKaoFriendsRequest kaKaoFriendsRequest = response.getBody();
+            List<KaKaoFriendResponseDto> responseDtoList = new ArrayList<>();
 
-            kaKaoFriendsResponse.getElements().forEach(
-                    kaKaoFriendResponseDto -> {
-                        UserAuthentication userAuthentication = userAuthenticationRepository.findByProviderId(kaKaoFriendResponseDto.getId())
+            kaKaoFriendsRequest.getElements().forEach(
+                    kaKaoFriendsRequestDto -> {
+                        UserAuthentication userAuthentication = userAuthenticationRepository.findByProviderId(kaKaoFriendsRequestDto.getId())
                                 .orElseThrow(NotFoundUserAuthentication::new);
 
-                        kaKaoFriendResponseDto.putUserData(
-                                userAuthentication.getUser().getNickname(),
-                                userAuthentication.getUser().getImageUrl()
+                        responseDtoList.add(
+                                new KaKaoFriendResponseDto(
+                                        userAuthentication.getUser().getNickname(),
+                                        userAuthentication.getUser().getImageUrl(),
+                                        userAuthentication.getUser().getIntroduction(),
+                                        inbodyRepository.findFirstByUserEmailOrderByCreatedAtDesc(
+                                                        userAuthentication.getUser().getEmail())
+                                                .map(Inbody::getScore)
+                                                .orElse(0)
+                                )
                         );
                     });
 
-            return kaKaoFriendsResponse;
+            return new KaKaoFriendsResponse(responseDtoList);
         } catch (HttpClientErrorException.Forbidden e) {
             log.error(e.getMessage());
             throw new ForbiddenKaKaoSocial();
