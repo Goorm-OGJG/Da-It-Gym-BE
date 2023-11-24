@@ -20,6 +20,9 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"email","journalDate"})
+})
 public class ExerciseJournal extends BaseEntity {
 
     @Id
