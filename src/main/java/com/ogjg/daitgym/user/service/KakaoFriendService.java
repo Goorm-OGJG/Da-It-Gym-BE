@@ -62,6 +62,7 @@ public class KakaoFriendService {
 
             return kaKaoFriendsResponse;
         } catch (HttpClientErrorException.Forbidden e) {
+            log.error(e.getMessage());
             throw new ForbiddenKaKaoSocial();
         }
     }
