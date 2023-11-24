@@ -6,12 +6,13 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lombok.AccessLevel.PROTECTED;
+
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = PROTECTED)
 public class KaKaoFriendsResponse {
 
     private List<KaKaoFriendResponseDto> elements = new ArrayList<>();
-    private Integer total_count;
 
     public KaKaoFriendsResponse(List<KaKaoFriendResponseDto> elements) {
         this.elements = elements;

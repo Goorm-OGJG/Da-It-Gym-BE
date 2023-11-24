@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.user.dto.response;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,15 +10,16 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class KaKaoFriendResponseDto {
 
-    private Long id;
-    private String uuid;
     private String nickName;
-    private String profileImageURL;
+    private String imageUrl;
+    private String intro;
+    private int score;
 
-    public void putUserData(
-            String nickName, String profileImageURL
-    ){
+    @Builder
+    public KaKaoFriendResponseDto(String nickName, String imageUrl, String intro, int score) {
         this.nickName = nickName;
-        this.profileImageURL = profileImageURL;
+        this.imageUrl = imageUrl;
+        this.intro = intro;
+        this.score = score;
     }
 }
