@@ -210,3 +210,4 @@ application-prod.yml
 application-oauth.yml
 TestDatainit.java
 src/main/generated/
+daitgym-firebase-sdk.json
