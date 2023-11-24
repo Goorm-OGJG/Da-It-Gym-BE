@@ -14,6 +14,7 @@ import com.ogjg.daitgym.user.repository.UserAuthenticationRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
 import static com.ogjg.daitgym.user.constants.UserConstants.*;
 import static com.ogjg.daitgym.user.dto.response.LoginResponse.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -77,6 +79,7 @@ public class AuthService {
 
         // 첫 가입
         if (existUser == null) {
+            log.info("첫가입");
             // 가입 처리
             HealthClub defaultHealthClub = findDefaultHealthClub();
             String tempNickname = generateTempNickname();
@@ -93,6 +96,7 @@ public class AuthService {
 
         // 이전에 가입 후 탈퇴한 회원
         } else if (existUser.isDeleted()){
+            log.info("가입했다 탈퇴한 회원 처리 실행");
 
             // todo : 가입했다 탈퇴한 회원 처리 -> 탈퇴해서 아이디가 남아있는 회원의 처리가 추가되어야 한다. 복구로직 또는 실패로직
             userAuthentication.updateTokens(kakaoTokenResponse.getAccess_token(), kakaoTokenResponse.getRefresh_token());
@@ -102,10 +106,11 @@ public class AuthService {
 
         // 이전에 이미 가입한 회원 -> 유저정보를 불러온다.
         } else {
-
+            log.info("이전에 이미 가입한 회원 이전 accessToken={}",userAuthentication.getAccessToken());
             userAuthentication.updateTokens(kakaoTokenResponse.getAccess_token(), kakaoTokenResponse.getRefresh_token());
             userAuthentication.addUser(existUser);
-            userAuthenticationRepository.save(userAuthentication);
+            UserAuthentication afterSave = userAuthenticationRepository.save(userAuthentication);
+            log.info("이전에 이미 가입한 회원 이후 accessToken={}",afterSave.getAccessToken());
 
             JwtUserClaimsDto claimsDto = JwtUserClaimsDto.from(existUser);
             addTokensInHeader(servletResponse, claimsDto);
