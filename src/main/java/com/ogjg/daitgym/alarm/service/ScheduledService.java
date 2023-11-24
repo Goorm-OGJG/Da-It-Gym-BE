@@ -27,9 +27,9 @@ public class ScheduledService {
 
 
     /**
-     * 7시 30분에 알림 메세지 보내기
+     * 오전 8시에 알림 메세지 보내기
      */
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     public void scheduledSend() throws ExecutionException, InterruptedException {
 
         List<FcmToken> fcmTokens = fcmTokenRepository.findAll();
