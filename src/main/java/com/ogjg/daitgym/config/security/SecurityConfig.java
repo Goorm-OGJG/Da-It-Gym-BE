@@ -49,7 +49,6 @@ public class SecurityConfig {
 
     private final List<String> permitJwtUrlList = new ArrayList<>(
             List.of(
-
                     "/",
                     "/favicon.ico",
                     "/login/oauth2/callback/kakao.*",
@@ -105,7 +104,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:8080", "https://ogjg.site"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://daitgym.ogjg.site"));
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
 
