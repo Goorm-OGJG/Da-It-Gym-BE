@@ -18,7 +18,7 @@ public class FcmToken {
     @Column(name = "notification_id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "email")
     private User user;
 
@@ -28,6 +28,10 @@ public class FcmToken {
     public FcmToken(String token, User user) {
         this.token = token;
         this.user = user;
+    }
+
+    public void update(String token) {
+        this.token = token;
     }
 
 }

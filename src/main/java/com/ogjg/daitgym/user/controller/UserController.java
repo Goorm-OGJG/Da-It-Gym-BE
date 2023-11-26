@@ -3,7 +3,7 @@ package com.ogjg.daitgym.user.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ogjg.daitgym.alarm.dto.FcmTokenRequestDto;
-import com.ogjg.daitgym.alarm.service.FcmAlarmService;
+import com.ogjg.daitgym.alarm.service.FcmTokenService;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
@@ -29,7 +29,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final FcmAlarmService fcmAlarmService;
+    private final FcmTokenService fcmTokenService;
 
     private final ObjectMapper objectMapper;
 
@@ -38,10 +38,10 @@ public class UserController {
      */
     @PostMapping("/logout")
     public ApiResponse<?> logout(HttpServletResponse response,
-                                 @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails,
-                                 @RequestBody FcmTokenRequestDto fcmTokenRequestDto) {
+                                 @RequestBody FcmTokenRequestDto fcmTokenRequestDto,
+                                 @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
         response.setHeader("Set-Cookie", userService.getExpiredResponseCookie().toString());
-        fcmAlarmService.deleteFcmToken(oAuth2JwtUserDetails, fcmTokenRequestDto);
+        fcmTokenService.deleteFcmToken(fcmTokenRequestDto, oAuth2JwtUserDetails);
         return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage("로그아웃 성공"));
     }
 
