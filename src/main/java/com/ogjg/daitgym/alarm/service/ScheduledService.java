@@ -2,7 +2,6 @@ package com.ogjg.daitgym.alarm.service;
 
 import com.ogjg.daitgym.alarm.dto.NotificationRequestDto;
 import com.ogjg.daitgym.alarm.repository.FcmTokenRepository;
-import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundExerciseJournal;
 import com.ogjg.daitgym.domain.FcmToken;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -27,31 +27,43 @@ public class ScheduledService {
 
 
     /**
-     * 7시 30분에 알림 메세지 보내기
+     * 8시에 알림 메세지 보내기
      */
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     public void scheduledSend() throws ExecutionException, InterruptedException {
 
         List<FcmToken> fcmTokens = fcmTokenRepository.findAll();
 
         if (fcmTokens.isEmpty()) {
-            log.info("fcmToken이 없어, 작업을 하지 않습니다.");
+            log.info("FCM 토큰이 비어있어, 알림전송 실패");
             return;
         }
 
         for (FcmToken fcmToken : fcmTokens) {
             User user = fcmToken.getUser();
-            ExerciseJournal exerciseJournal = exerciseJournalRepository.findByUserAndJournalDate(user, LocalDate.now()).orElseThrow(NotFoundExerciseJournal::new);
+            Optional<ExerciseJournal> optionalExerciseJournal = exerciseJournalRepository.findByUserAndJournalDate(user, LocalDate.now());
 
-            String message = notificationService.alarmMessage(exerciseJournal);
+            if (optionalExerciseJournal.isPresent()) {
+                ExerciseJournal exerciseJournal = optionalExerciseJournal.get();
+                String message = notificationService.alarmMessage(exerciseJournal);
 
-            NotificationRequestDto notificationRequestDto = NotificationRequestDto.builder()
-                    .title("[DaItGym 운동 알림]")
-                    .message(message)
-                    .token(fcmToken.getToken())
-                    .build();
+                NotificationRequestDto notificationRequestDto = NotificationRequestDto.builder()
+                        .title("[DaItGym 운동 알림]")
+                        .message(message)
+                        .token(fcmToken.getToken())
+                        .build();
 
-            notificationService.sendNotification(notificationRequestDto);
+                notificationService.sendNotification(notificationRequestDto);
+
+            } else {
+                NotificationRequestDto notificationRequestDto = NotificationRequestDto.builder()
+                        .title("[DaItGym 운동 알림]")
+                        .message("오늘 운동일지가 비어있어요!")
+                        .token(fcmToken.getToken())
+                        .build();
+
+                notificationService.sendNotification(notificationRequestDto);
+            }
         }
         log.info("웹푸시 보냈어!");
     }
