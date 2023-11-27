@@ -141,15 +141,17 @@ public class FeedJournalHelper {
      * 피드 운동일지 상세보기를 Dto로 변환
      */
     public List<FeedExerciseJournalListDto> feedExerciseJournalsChangeFeedExerciseJournalsDto(
-            Page<FeedExerciseJournal> feedExerciseJournals
+            Page<Long> feedExerciseJournalsId
     ) {
-        return feedExerciseJournals.getContent()
+        return feedExerciseJournalsId.getContent()
                 .stream()
-                .map(feedExerciseJournal -> new FeedExerciseJournalListDto(
-                        feedExerciseJournal.getId(),
-                        feedExerciseJournalLikes(feedExerciseJournal.getId()),
-                        feedExerciseJournalScrapCounts(feedExerciseJournal.getId()),
-                        feedCoverImage(findFeedExerciseJournalImagesByFeedExerciseJournal(feedExerciseJournal))
+                .map(feedExerciseJournalId -> new FeedExerciseJournalListDto(
+                        feedExerciseJournalId,
+                        feedExerciseJournalLikes(feedExerciseJournalId),
+                        feedExerciseJournalScrapCounts(feedExerciseJournalId),
+                        feedCoverImage(findFeedExerciseJournalImagesByFeedExerciseJournal(
+                                feedExerciseJournalRepository.findById(feedExerciseJournalId).orElseThrow(NotFoundFeedJournal::new)
+                        ))
                 )).toList();
     }
 

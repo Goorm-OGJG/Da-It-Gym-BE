@@ -20,6 +20,7 @@ import com.ogjg.daitgym.journal.dto.response.dto.UserJournalDetailExerciseListDt
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.journal.service.ExerciseJournalHelper;
 import com.ogjg.daitgym.like.feedExerciseJournal.repository.FeedExerciseJournalLikeRepository;
+import com.ogjg.daitgym.user.service.UserHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +40,7 @@ public class FeedExerciseJournalService {
     private final FeedExerciseJournalLikeRepository feedExerciseJournalLikeRepository;
     private final FeedExerciseJournalCollectionRepository feedExerciseJournalCollectionRepository;
     private final FeedJournalHelper feedJournalHelper;
+    private final UserHelper userHelper;
     private final ExerciseJournalHelper exerciseJournalHelper;
 
     /**
@@ -50,7 +52,7 @@ public class FeedExerciseJournalService {
     public FeedExerciseJournalListResponse feedExerciseJournalLists(
             Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
-        Page<FeedExerciseJournal> feedExerciseJournals =
+        Page<Long> feedExerciseJournals =
                 feedExerciseJournalRepository.feedExerciseJournalLists(pageable, feedSearchConditionRequest);
 
         List<FeedExerciseJournalListDto> content =
@@ -70,7 +72,7 @@ public class FeedExerciseJournalService {
     public FeedExerciseJournalListResponse followFeedJournalLists(
             String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
-        Page<FeedExerciseJournal> feedExerciseJournals =
+        Page<Long> feedExerciseJournals =
                 feedExerciseJournalRepository.feedExerciseJournalListsByFollow(email, pageable, feedSearchConditionRequest);
 
         List<FeedExerciseJournalListDto> content =
@@ -93,7 +95,7 @@ public class FeedExerciseJournalService {
 
         feedExerciseJournalCollectionRepository.save(
                 new FeedExerciseJournalCollection(
-                        feedJournalHelper.findUserByEmail(email),
+                        userHelper.findUserByEmail(email),
                         feedJournalHelper.findFeedJournalById(feedExerciseJournalId)
                 )
         );
