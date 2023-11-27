@@ -42,10 +42,10 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
         List<Long> journalLists = jpaQueryFactory.select(
                         feedExerciseJournal.id
                 ).from(feedExerciseJournal)
-                .join(feedExerciseJournal.exerciseJournal, exerciseJournal).fetchJoin()
-                .leftJoin(exerciseList).on(exerciseJournal.id.eq(exerciseList.exerciseJournal.id)).fetchJoin()
-                .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id)).fetchJoin()
-                .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id)).fetchJoin()
+                .join(feedExerciseJournal.exerciseJournal, exerciseJournal)
+                .leftJoin(exerciseList).on(exerciseJournal.id.eq(exerciseList.exerciseJournal.id))
+                .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id))
+                .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id))
                 .where(
                         feedExerciseJournal.exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
@@ -82,11 +82,11 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
         List<Long> followerFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(follow)
                 .where(follow.follower.email.eq(email))
-                .join(feedExerciseJournal).on(feedExerciseJournal.exerciseJournal.user.email.eq(follow.target.email)).fetchJoin()
-                .leftJoin(feedExerciseJournal.exerciseJournal, exerciseJournal).fetchJoin()
-                .leftJoin(exerciseList).on(exerciseList.exerciseJournal.id.eq(exerciseJournal.id)).fetchJoin()
-                .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id)).fetchJoin()
-                .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id)).fetchJoin()
+                .join(feedExerciseJournal).on(feedExerciseJournal.exerciseJournal.user.email.eq(follow.target.email))
+                .leftJoin(feedExerciseJournal.exerciseJournal, exerciseJournal)
+                .leftJoin(exerciseList).on(exerciseList.exerciseJournal.id.eq(exerciseJournal.id))
+                .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id))
+                .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id))
                 .where(
                         exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
@@ -101,11 +101,11 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                         feedExerciseJournal.count()
                 ).from(follow)
                 .where(follow.follower.email.eq(email))
-                .join(feedExerciseJournal).on(feedExerciseJournal.exerciseJournal.user.email.eq(follow.target.email)).fetchJoin()
-                .leftJoin(feedExerciseJournal.exerciseJournal, exerciseJournal).fetchJoin()
-                .leftJoin(exerciseList).on(exerciseList.exerciseJournal.id.eq(exerciseJournal.id)).fetchJoin()
-                .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id)).fetchJoin()
-                .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id)).fetchJoin()
+                .join(feedExerciseJournal).on(feedExerciseJournal.exerciseJournal.user.email.eq(follow.target.email))
+                .leftJoin(feedExerciseJournal.exerciseJournal, exerciseJournal)
+                .leftJoin(exerciseList).on(exerciseList.exerciseJournal.id.eq(exerciseJournal.id))
+                .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id))
+                .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id))
                 .where(
                         exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
@@ -123,7 +123,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
         List<Long> userFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(user)
                 .where(user.nickname.eq(nickname))
-                .join(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email)).fetchJoin()
+                .join(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email))
                 .orderBy(feedExerciseJournal.createdAt.desc())
                 .distinct()
                 .offset(pageable.getOffset())
@@ -146,10 +146,10 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
     ) {
         List<Long> userFeedJournalCollections = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(feedExerciseJournalCollection)
-                .join(user).on(feedExerciseJournalCollection.user.email.eq(user.email)).fetchJoin()
+                .join(user).on(feedExerciseJournalCollection.user.email.eq(user.email))
                 .where(user.nickname.eq(nickname))
-                .join(feedExerciseJournal).on(feedExerciseJournalCollection.feedExerciseJournal.id.eq(feedExerciseJournal.id)).fetchJoin()
-                .join(exerciseJournal).on(feedExerciseJournal.exerciseJournal.id.eq(exerciseJournal.id)).fetchJoin()
+                .join(feedExerciseJournal).on(feedExerciseJournalCollection.feedExerciseJournal.id.eq(feedExerciseJournal.id))
+                .join(exerciseJournal).on(feedExerciseJournal.exerciseJournal.id.eq(exerciseJournal.id))
                 .orderBy(feedExerciseJournal.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -158,10 +158,10 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
 
         JPAQuery<Long> countQuery = jpaQueryFactory.select(feedExerciseJournal.count())
                 .from(feedExerciseJournalCollection)
-                .join(user).on(feedExerciseJournalCollection.user.email.eq(user.email)).fetchJoin()
+                .join(user).on(feedExerciseJournalCollection.user.email.eq(user.email))
                 .where(user.nickname.eq(nickname))
-                .join(feedExerciseJournal).on(feedExerciseJournalCollection.feedExerciseJournal.id.eq(feedExerciseJournal.id)).fetchJoin()
-                .join(exerciseJournal).on(feedExerciseJournal.exerciseJournal.id.eq(exerciseJournal.id)).fetchJoin();
+                .join(feedExerciseJournal).on(feedExerciseJournalCollection.feedExerciseJournal.id.eq(feedExerciseJournal.id))
+                .join(exerciseJournal).on(feedExerciseJournal.exerciseJournal.id.eq(exerciseJournal.id));
 
         return PageableExecutionUtils.getPage(userFeedJournalCollections, pageable, countQuery::fetchOne);
     }
