@@ -29,7 +29,7 @@ public class ScheduledService {
     /**
      * 8시에 알림 메세지 보내기
      */
-    @Scheduled(cron = "0 0 8 * * *")
+    @Scheduled(cron = "0 0 8 * * ?")
     public void scheduledSend() throws ExecutionException, InterruptedException {
 
         List<FcmToken> fcmTokens = fcmTokenRepository.findAll();
