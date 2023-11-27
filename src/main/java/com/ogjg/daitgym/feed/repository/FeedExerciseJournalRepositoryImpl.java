@@ -1,7 +1,6 @@
 package com.ogjg.daitgym.feed.repository;
 
 
-import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import com.ogjg.daitgym.feed.dto.response.QFeedDetailResponse;
@@ -37,11 +36,11 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
      * 피드의 운동일지 전체 목록 검색 query
      */
     @Override
-    public Page<FeedExerciseJournal> feedExerciseJournalLists(
+    public Page<Long> feedExerciseJournalLists(
             Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
-        List<FeedExerciseJournal> journalLists = jpaQueryFactory.select(
-                        feedExerciseJournal
+        List<Long> journalLists = jpaQueryFactory.select(
+                        feedExerciseJournal.id
                 ).from(feedExerciseJournal)
                 .join(feedExerciseJournal.exerciseJournal, exerciseJournal).fetchJoin()
                 .leftJoin(exerciseList).on(exerciseJournal.id.eq(exerciseList.exerciseJournal.id)).fetchJoin()
@@ -51,6 +50,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                         feedExerciseJournal.exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
                 ).orderBy(feedExerciseJournal.createdAt.desc())
+                .distinct()
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -75,11 +75,11 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
      * 내가 팔로우의 target 사람들의 list를 가져와서 피드와 join
      * */
     @Override
-    public Page<FeedExerciseJournal> feedExerciseJournalListsByFollow(
+    public Page<Long> feedExerciseJournalListsByFollow(
             String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
 
-        List<FeedExerciseJournal> followerFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal)
+        List<Long> followerFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(follow)
                 .where(follow.follower.email.eq(email))
                 .join(feedExerciseJournal).on(feedExerciseJournal.exerciseJournal.user.email.eq(follow.target.email)).fetchJoin()
@@ -92,6 +92,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
                 )
                 .orderBy(feedExerciseJournal.createdAt.desc())
+                .distinct()
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -116,14 +117,15 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
     /**
      * 유저 페이지 피드 운동일지 목록 가져오기
      */
-    public Page<FeedExerciseJournal> userFeedExerciseJournalLists(
+    public Page<Long> userFeedExerciseJournalLists(
             String nickname, Pageable pageable
     ) {
-        List<FeedExerciseJournal> userFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal)
+        List<Long> userFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(user)
                 .where(user.nickname.eq(nickname))
                 .join(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email)).fetchJoin()
                 .orderBy(feedExerciseJournal.createdAt.desc())
+                .distinct()
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -139,10 +141,10 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
     /**
      * 유저 페이지 피드 운동일지 컬렉션 가져오기
      */
-    public Page<FeedExerciseJournal> userFeedExerciseJournalCollectionLists(
+    public Page<Long> userFeedExerciseJournalCollectionLists(
             String nickname, Pageable pageable
     ) {
-        List<FeedExerciseJournal> userFeedJournalCollections = jpaQueryFactory.select(feedExerciseJournal)
+        List<Long> userFeedJournalCollections = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(feedExerciseJournalCollection)
                 .join(user).on(feedExerciseJournalCollection.user.email.eq(user.email)).fetchJoin()
                 .where(user.nickname.eq(nickname))
@@ -151,6 +153,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                 .orderBy(feedExerciseJournal.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .distinct()
                 .fetch();
 
         JPAQuery<Long> countQuery = jpaQueryFactory.select(feedExerciseJournal.count())

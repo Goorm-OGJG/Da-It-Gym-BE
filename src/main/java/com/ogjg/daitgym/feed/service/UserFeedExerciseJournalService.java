@@ -1,6 +1,5 @@
 package com.ogjg.daitgym.feed.service;
 
-import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListDto;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
@@ -26,7 +25,7 @@ public class UserFeedExerciseJournalService {
     public FeedExerciseJournalListResponse userFeedExerciseJournalLists(
             String nickname, Pageable pageable
     ) {
-        Page<FeedExerciseJournal> userFeedExerciseJournals =
+        Page<Long> userFeedExerciseJournals =
                 feedExerciseJournalRepository.userFeedExerciseJournalLists(nickname, pageable);
 
         List<FeedExerciseJournalListDto> content =
@@ -44,7 +43,7 @@ public class UserFeedExerciseJournalService {
     public FeedExerciseJournalListResponse userFeedExerciseJournalCollectionLists(
             String nickname, Pageable pageable
     ) {
-        Page<FeedExerciseJournal> userFeedJournalCollections =
+        Page<Long> userFeedJournalCollections =
                 feedExerciseJournalRepository.userFeedExerciseJournalCollectionLists(nickname, pageable);
 
         List<FeedExerciseJournalListDto> content =

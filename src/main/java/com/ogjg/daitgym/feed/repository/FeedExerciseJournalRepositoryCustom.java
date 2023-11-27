@@ -10,13 +10,13 @@ import java.util.Optional;
 
 public interface FeedExerciseJournalRepositoryCustom {
 
-    Page<FeedExerciseJournal> feedExerciseJournalLists(Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest);
+    Page<Long> feedExerciseJournalLists(Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest);
 
-    Page<FeedExerciseJournal> feedExerciseJournalListsByFollow(String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest);
+    Page<Long> feedExerciseJournalListsByFollow(String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest);
 
-    Page<FeedExerciseJournal> userFeedExerciseJournalLists(String nickname, Pageable pageable);
+    Page<Long> userFeedExerciseJournalLists(String nickname, Pageable pageable);
 
-    Page<FeedExerciseJournal> userFeedExerciseJournalCollectionLists(String nickname, Pageable pageable);
+    Page<Long> userFeedExerciseJournalCollectionLists(String nickname, Pageable pageable);
 
     Optional<FeedDetailResponse> feedDetail(Long feedJournalId);
 }
