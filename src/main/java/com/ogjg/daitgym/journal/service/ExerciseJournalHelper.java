@@ -1,7 +1,6 @@
 package com.ogjg.daitgym.journal.service;
 
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundExerciseJournal;
-import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundUser;
 import com.ogjg.daitgym.common.exception.journal.*;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.exercise.Exercise;
@@ -21,6 +20,7 @@ import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalReplicationHis
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
 import com.ogjg.daitgym.routine.repository.RoutineRepository;
 import com.ogjg.daitgym.user.repository.UserRepository;
+import com.ogjg.daitgym.user.service.UserHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +41,7 @@ public class ExerciseJournalHelper {
     private final UserRepository userRepository;
     private final ExerciseHelper exerciseHelper;
     private final RoutineRepository routineRepository;
+    private final UserHelper userHelper;
 
     /**
      * 일지 검색
@@ -60,6 +61,17 @@ public class ExerciseJournalHelper {
     ) {
         return exerciseJournalRepository.findByJournalDateAndUser(journalDate, user)
                 .orElseThrow(NotFoundExerciseJournal::new);
+    }
+
+    /**
+     * 유저와 일지날자로
+     * 일지조회존재 확인
+     */
+    public boolean existExerciseJournalByUserAndJournalDate(
+            User user, LocalDate journalDate
+    ) {
+        return exerciseJournalRepository.findByJournalDateAndUser(journalDate, user)
+                .isPresent();
     }
 
     /**
@@ -138,15 +150,6 @@ public class ExerciseJournalHelper {
     }
 
     /**
-     * todo
-     * 이메일로 유저 검색
-     */
-    public User findUserByEmail(String email) {
-        return userRepository.findById(email)
-                .orElseThrow(NotFoundUser::new);
-    }
-
-    /**
      * 운동일지 공개여부 확인
      */
     public void checkExerciseJournalDisclosure(Long journalId) {
@@ -177,6 +180,31 @@ public class ExerciseJournalHelper {
         return findExerciseHistoriesByExerciseList(exerciseList).stream()
                 .map(UserJournalDetailExerciseHistoryDto::new)
                 .toList();
+    }
+
+    public ExerciseJournal getReplicatedExerciseJournal(
+            LocalDate journalDate, String email
+    ) {
+        if (existExerciseJournalByUserAndJournalDate(userHelper.findUserByEmail(email), journalDate)) {
+            return findExerciseJournalByUserAndJournalDate(userHelper.findUserByEmail(email), journalDate);
+        }
+        return createJournal(email, journalDate);
+    }
+
+    /**
+     * 빈 운동일지 생성하기
+     * 해당 날짜에 생성된 일지가 있으면 예외 발생
+     */
+    public ExerciseJournal createJournal(String email, LocalDate journalDate) {
+        User user = userHelper.findUserByEmail(email);
+
+        if (checkForExistJournalSameDate(user, journalDate)) {
+            throw new AlreadyExistExerciseJournal();
+        }
+
+        return exerciseJournalRepository.save(
+                ExerciseJournal.createJournal(user, journalDate)
+        );
     }
 
     /**
@@ -319,7 +347,7 @@ public class ExerciseJournalHelper {
     ) {
         exerciseJournalReplicationHistoryRepository.save(
                 new ExerciseJournalReplicationHistory(
-                        findUserByEmail(userEmail),
+                        userHelper.findUserByEmail(userEmail),
                         originalJournal,
                         replicatedUserJournal
                 )

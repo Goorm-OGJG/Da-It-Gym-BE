@@ -57,6 +57,15 @@ public class FeedJournalHelper {
     }
 
     /**
+     * FeedId로 JournalId 검색
+     */
+    public ExerciseJournal findExerciseJournalByFeedJournalId(Long feedJournalId) {
+        return feedExerciseJournalRepository.findById(feedJournalId)
+                .orElseThrow(NotFoundFeedJournal::new)
+                .getExerciseJournal();
+    }
+
+    /**
      * 운동일지로 피드운동일지가 존재하는지 확인하기
      */
     public boolean checkExistFeedExerciseJournalByExerciseJournal(ExerciseJournal exerciseJournal) {

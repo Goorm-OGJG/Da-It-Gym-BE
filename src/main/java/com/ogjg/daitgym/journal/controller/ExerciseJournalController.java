@@ -214,14 +214,14 @@ public class ExerciseJournalController {
     /**
      * 피드 운동일지에서 다른사람의 일지 가져오기
      */
-    @PostMapping("/{journalId}/replication")
+    @PostMapping("/{feedJournalId}/replication")
     public ApiResponse<Void> replicationExerciseJournal(
-            @PathVariable("journalId") Long journalId,
+            @PathVariable("feedJournalId") Long feedJournalId,
             @RequestBody ReplicationExerciseJournalRequest replicationExerciseJournalRequest,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
         exerciseJournalService.replicateExerciseJournal(
-                userDetails.getEmail(), journalId, replicationExerciseJournalRequest
+                userDetails.getEmail(), feedJournalId, replicationExerciseJournalRequest
         );
 
         return new ApiResponse<>(ErrorCode.SUCCESS);
