@@ -1,7 +1,6 @@
 package com.ogjg.daitgym.journal.service;
 
 import com.ogjg.daitgym.common.exception.feed.AlreadyExistFeedJournal;
-import com.ogjg.daitgym.common.exception.journal.AlreadyExistExerciseJournal;
 import com.ogjg.daitgym.common.exception.journal.NotCompletedExerciseJournal;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
@@ -19,6 +18,7 @@ import com.ogjg.daitgym.journal.dto.response.dto.UserJournalListDto;
 import com.ogjg.daitgym.journal.repository.exercisehistory.ExerciseHistoryRepository;
 import com.ogjg.daitgym.journal.repository.exerciselist.ExerciseListRepository;
 import com.ogjg.daitgym.journal.repository.journal.ExerciseJournalRepository;
+import com.ogjg.daitgym.user.service.UserHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,6 +39,7 @@ public class ExerciseJournalService {
     private final ExerciseHelper exerciseHelper;
     private final FeedJournalHelper feedJournalHelper;
     private final ExerciseJournalHelper exerciseJournalHelper;
+    private final UserHelper userHelper;
 
     /**
      * 빈 운동일지 생성하기
@@ -46,15 +47,7 @@ public class ExerciseJournalService {
      */
     @Transactional
     public ExerciseJournal createJournal(String email, LocalDate journalDate) {
-        User user = exerciseJournalHelper.findUserByEmail(email);
-
-        if (exerciseJournalHelper.checkForExistJournalSameDate(user, journalDate)) {
-            throw new AlreadyExistExerciseJournal();
-        }
-
-        return exerciseJournalRepository.save(
-                ExerciseJournal.createJournal(user, journalDate)
-        );
+        return exerciseJournalHelper.createJournal(email, journalDate);
     }
 
     /**
@@ -64,7 +57,7 @@ public class ExerciseJournalService {
     public UserJournalListResponse userJournalLists(
             String email
     ) {
-        User user = exerciseJournalHelper.findUserByEmail(email);
+        User user = userHelper.findUserByEmail(email);
         List<UserJournalListDto> userJournalListDtoList = exerciseJournalRepository.findAllByUser(user)
                 .stream()
                 .map(UserJournalListDto::new)
@@ -192,15 +185,18 @@ public class ExerciseJournalService {
      */
     @Transactional
     public void replicateExerciseJournal(
-            String email, Long originalJournalId,
+            String email, Long originalFeedJournalId,
             ReplicationExerciseJournalRequest replicationExerciseJournalRequest
     ) {
-        //쿼리를 한방에 가져오기
-        exerciseJournalRepository.fetchCompleteExerciseJournalByJournalId(originalJournalId);
 
-        ExerciseJournal originalJournal = exerciseJournalHelper.findExerciseJournalById(originalJournalId);
+        ExerciseJournal originalJournal = feedJournalHelper.findExerciseJournalByFeedJournalId(originalFeedJournalId);
+        //쿼리를 한방에 가져오기
+        exerciseJournalRepository.fetchCompleteExerciseJournalByJournalId(originalJournal.getId());
         List<ExerciseList> originalExerciseLists = exerciseJournalHelper.findExerciseListsByJournal(originalJournal);
-        ExerciseJournal replicatedUserJournal = createJournal(email, replicationExerciseJournalRequest.getJournalDate());
+
+        ExerciseJournal replicatedUserJournal =
+                exerciseJournalHelper.getReplicatedExerciseJournal(replicationExerciseJournalRequest.getJournalDate(), email);
+
         exerciseJournalHelper.replicateExerciseListAndHistoryByJournal(replicatedUserJournal, originalExerciseLists);
         exerciseJournalHelper.saveReplicationHistory(email, originalJournal, replicatedUserJournal);
     }
@@ -214,7 +210,7 @@ public class ExerciseJournalService {
     ) {
         replicationRoutineRequest.getRoutines()
                 .forEach(replicationRoutineRequestDto -> {
-                            ExerciseJournal replicatedUserJournal = createJournal(email, replicationRoutineRequestDto.getJournalDate());
+                            ExerciseJournal replicatedUserJournal = exerciseJournalHelper.getReplicatedExerciseJournal(replicationRoutineRequestDto.getJournalDate(), email);
                             exerciseJournalHelper.replicateExerciseListAndHistoryByRoutine(replicatedUserJournal, replicationRoutineRequestDto);
                         }
                 );
@@ -274,7 +270,7 @@ public class ExerciseJournalService {
     public UserJournalDetailResponse userJournalDetail(
             LocalDate journalDate, String email
     ) {
-        User user = exerciseJournalHelper.findUserByEmail(email);
+        User user = userHelper.findUserByEmail(email);
         ExerciseJournal exerciseJournal = exerciseJournalHelper.findExerciseJournalByUserAndJournalDate(user, journalDate);
         exerciseJournalHelper.isAuthorizedForJournal(email, exerciseJournal.getId());
 
