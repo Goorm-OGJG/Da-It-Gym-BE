@@ -20,4 +20,6 @@ public interface RoutineCommentRepository extends JpaRepository<RoutineComment, 
     Page<RoutineComment> findByRoutineIdAndParentIdIsNullOrderByCreatedAtDesc(Long routineId, Pageable pageable);
 
     List<RoutineComment> findByRoutineIdAndParentIdOrderByCreatedAtDesc(Long routineId, Long commentId);
+
+    void deleteByRoutineId(Long routine);
 }

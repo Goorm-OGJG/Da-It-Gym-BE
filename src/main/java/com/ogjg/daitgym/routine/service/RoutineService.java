@@ -1,12 +1,10 @@
 package com.ogjg.daitgym.routine.service;
 
 import com.ogjg.daitgym.comment.routine.exception.NotFoundRoutine;
+import com.ogjg.daitgym.comment.routine.repository.RoutineCommentRepository;
 import com.ogjg.daitgym.domain.TimeTemplate;
 import com.ogjg.daitgym.domain.User;
-import com.ogjg.daitgym.domain.routine.Day;
-import com.ogjg.daitgym.domain.routine.ExerciseDetail;
-import com.ogjg.daitgym.domain.routine.Routine;
-import com.ogjg.daitgym.domain.routine.UserRoutineCollection;
+import com.ogjg.daitgym.domain.routine.*;
 import com.ogjg.daitgym.common.exception.exercise.NotFoundExercise;
 import com.ogjg.daitgym.exercise.repository.ExerciseRepository;
 import com.ogjg.daitgym.follow.repository.FollowRepository;
@@ -46,7 +44,7 @@ public class RoutineService {
     private final ExerciseRepository exerciseRepository;
     private final UserRepository userRepository;
     private final UserRoutineCollectionRepository userRoutineCollectionRepository;
-
+    private final RoutineCommentRepository routineCommentRepository;
     private final RoutineRepository routineRepository;
     private final FollowRepository followRepository;
     private final DayRepository dayRepository;
@@ -264,6 +262,9 @@ public class RoutineService {
         if (!routine.getUser().getEmail().equals(email)) {
             throw new UnauthorizedUser("사용자에게 루틴을 삭제할 권한이 없습니다.");
         }
+
+        routineLikeRepository.deleteAllByRoutineId(routineId);
+        routineCommentRepository.deleteByRoutineId(routine.getId());
 
         routineRepository.deleteById(routineId);
     }

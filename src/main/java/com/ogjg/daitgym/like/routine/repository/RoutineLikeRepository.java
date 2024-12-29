@@ -21,4 +21,5 @@ public interface RoutineLikeRepository extends JpaRepository<RoutineLike, Long> 
     @Query("SELECT COUNT(rl) FROM RoutineLike rl WHERE rl.routine.id = :routineId")
     long countByRoutineId(@Param("routineId") Long routineId);
 
+    void deleteAllByRoutineId(Long routineId);
 }
