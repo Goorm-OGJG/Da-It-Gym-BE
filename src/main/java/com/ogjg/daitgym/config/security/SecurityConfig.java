@@ -104,7 +104,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://daitgym.ogjg.site"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://geun3.store"));
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
 
