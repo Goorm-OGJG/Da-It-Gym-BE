@@ -1,0 +1,72 @@
+name: GUEN3 Deployment
+
+on:
+  push:
+    branches: [main, develop]
+
+env:
+  S3_BUCKET_NAME: guen3-server-deploy
+  CODE_DEPLOY_APPLICATION_NAME: guen3-code-deploy
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: guen3-server
+  AWS_REGION: ap-northeast-2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Create application.properties
+        run: |
+          echo "${{ secrets.APPLICATION }}" | base64 --decode > ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_DEV }}" | base64 --decode > ./src/main/resources/application-dev.yml
+          echo "${{ secrets.APPLICATION_OAUTH }}" | base64 --decode > ./src/main/resources/application-oauth.yml
+          echo "${{ secrets.FIREBASE_SDK }}" | base64 --decode > ./src/main/resources/daitgym-firebase-sdk.json
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        shell: bash
+
+      - name: Build without Test in Gradle
+        run: ./gradlew build -x test
+        shell: bash
+
+      - name: Make Directory
+        run: mkdir -p deploy/scripts
+
+      - name: Copy Files To "deploy" Directory
+        run: |
+          cp ./build/libs/*.jar ./deploy
+          cp ./Dockerfile ./deploy
+          cp ./docker-compose.yml ./deploy
+          cp ./appspec.yml ./deploy
+          cp ./scripts/*.sh ./deploy/scripts/
+
+      - name: Make "deploy" zip file
+        run: zip -r ./$GITHUB_SHA.zip ./deploy
+        shell: bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload to Zip To S3
+        run: aws s3 cp --region ${{ env.AWS_REGION }} ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip
+
+      - name: Request To Code Deploy
+        run: |
+          aws deploy create-deployment \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+          --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$GITHUB_SHA.zip
