@@ -133,7 +133,7 @@ public class ExerciseJournalService {
      * default 운동기록도 같이 생성됌
      */
     @Transactional
-    public void createExerciseList(
+    public ExerciseList createExerciseList(
             String email,
             ExerciseListRequest exerciseListRequest
     ) {
@@ -150,6 +150,8 @@ public class ExerciseJournalService {
                 .forEach(exerciseHistoryRequest -> exerciseHistoryRepository.save(
                         ExerciseHistory.createExerciseHistory(exerciseList, exerciseHistoryRequest)
                 ));
+
+        return exerciseList;
     }
 
     /**

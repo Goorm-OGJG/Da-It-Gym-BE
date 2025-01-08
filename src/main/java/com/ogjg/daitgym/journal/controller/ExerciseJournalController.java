@@ -5,6 +5,7 @@ import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.journal.ExerciseHistory;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
+import com.ogjg.daitgym.domain.journal.ExerciseList;
 import com.ogjg.daitgym.journal.dto.request.*;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import com.ogjg.daitgym.journal.dto.response.UserJournalListResponse;
@@ -49,15 +50,16 @@ public class ExerciseJournalController {
      * 일지에 운동 추가하기
      */
     @PostMapping("/exercise-list")
-    public ApiResponse<Void> addExerciseToJournal(
+    public ApiResponse<Map<String, Long>> addExerciseToJournal(
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails,
             @RequestBody ExerciseListRequest exerciseListRequest
     ) {
-        exerciseJournalService.createExerciseList(
+        ExerciseList exerciseList = exerciseJournalService.createExerciseList(
                 userDetails.getEmail(), exerciseListRequest
         );
 
-        return new ApiResponse<>(ErrorCode.SUCCESS);
+        return new ApiResponse<>(ErrorCode.SUCCESS,
+                Map.of("id", exerciseList.getId()));
     }
 
     /**
