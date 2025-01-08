@@ -19,24 +19,14 @@ public class S3UserService {
 
     private final S3Repository s3Repository;
 
-    public String saveProfileImage(MultipartFile multipartFile, String currentImageUrl) {
-        // default 이미지 url 사용 시 삭제 방지
-        if (!AWS_DEFAULT_PROFILE_IMG.equals(currentImageUrl)) {
-            s3Repository.deleteImageFromS3(currentImageUrl);
+    public String saveProfileImage(MultipartFile multipartFile, String currentProfileImageUrl) {
+
+        // 기존 이미지를 사용하던 유저가 새 이미지를 저장시 default 이미지를 삭제하는 것을 막는다.
+        if (!AWS_DEFAULT_PROFILE_IMG.equals(currentProfileImageUrl)) {
+            s3Repository.deleteImageFromS3(currentProfileImageUrl);
         }
 
-        String newImgUrl = currentImageUrl;
-
-        // s3에 uuid로 랜덤 이름 생성해서 저장
-        if (isNotEmptyFile(multipartFile)) {
-            newImgUrl = s3Repository.uploadImageToS3(multipartFile);
-        }
-
-        return newImgUrl;
-    }
-
-    private boolean isNotEmptyFile(MultipartFile multipartFile) {
-        return multipartFile != null && !multipartFile.isEmpty();
+        return s3Repository.uploadImageToS3(multipartFile);
     }
 
     /**

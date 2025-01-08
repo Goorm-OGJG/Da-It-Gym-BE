@@ -124,7 +124,11 @@ public class UserService {
         }
 
         String originImgUrl = user.getImageUrl();
-        String newImgUrl = s3UserService.saveProfileImage(multipartFile, originImgUrl);
+        String newImgUrl = originImgUrl;
+
+        if (!isEmptyFile(multipartFile)) {
+            newImgUrl = s3UserService.saveProfileImage(multipartFile, originImgUrl);
+        }
 
         //todo 헬스장 조회 수정, 수정 시 헬스장 식별자를 추가로 받아와야한다.
         HealthClub healthClub = findOrUpdateHealthClub(request.getGymName());
@@ -140,6 +144,10 @@ public class UserService {
         userRepository.save(user);
 
         return EditUserProfileResponse.of(user);
+    }
+
+    private boolean isEmptyFile(MultipartFile multipartFile) {
+        return multipartFile == null || multipartFile.isEmpty();
     }
 
 
