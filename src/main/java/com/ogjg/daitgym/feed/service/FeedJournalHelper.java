@@ -247,11 +247,10 @@ public class FeedJournalHelper {
 
         if (feedJournalImages != null && !feedJournalImages.isEmpty()) {
 
-            if (feedCoverImage(feedJournalImages).equals(s3defaultImage))
-                return;
-
-            feedJournalImages.forEach(feedExerciseJournalImage ->
-                    s3Repository.deleteImageFromS3(feedExerciseJournalImage.getImageUrl()));
+            feedJournalImages.stream()
+                    .filter(img -> !img.getImageUrl().equals(s3defaultImage))
+                    .forEach(feedExerciseJournalImage ->
+                            s3Repository.deleteImageFromS3(feedExerciseJournalImage.getImageUrl()));
 
             feedExerciseJournalImageRepository.deleteAllByFeedExerciseJournal(feedJournal);
         }
