@@ -1,4 +1,4 @@
-package com.ogjg.daitgym.config.security.oauth.dto;
+package com.ogjg.daitgym.config.security.details;
 
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;

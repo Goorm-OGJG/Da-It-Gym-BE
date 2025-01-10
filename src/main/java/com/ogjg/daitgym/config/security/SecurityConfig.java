@@ -4,7 +4,6 @@ import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationProv
 import com.ogjg.daitgym.config.security.jwt.filter.JwtAccessTokenAuthenticationFilter;
 import com.ogjg.daitgym.config.security.jwt.filter.JwtRefreshTokenAuthenticationFilter;
 import com.ogjg.daitgym.config.security.jwt.handler.JwtAuthenticationEntryPoint;
-import com.ogjg.daitgym.config.security.oauth.CustomOAuth2UserService;
 import com.ogjg.daitgym.domain.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +20,6 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -42,10 +40,6 @@ public class SecurityConfig {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final AccessDeniedHandler accessDeniedHandler;
-
-    private final CustomOAuth2UserService customOAuth2UserService;
-
-    private final AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
 
     private final List<String> permitJwtUrlList = new ArrayList<>(
             List.of(
@@ -84,16 +78,6 @@ public class SecurityConfig {
                                 .anyRequest().authenticated()
                 ).exceptionHandling((exceptionHandle) -> exceptionHandle
                         .accessDeniedHandler(accessDeniedHandler)
-                )
-                .logout(
-                        (logout) -> logout.logoutSuccessUrl("/")
-                )
-                .oauth2Login(
-                        (oauth2) -> oauth2
-                                .successHandler(oauth2AuthenticationSuccessHandler)
-                                .userInfoEndpoint((endPoint) -> endPoint
-                                        .userService(customOAuth2UserService)
-                                )
                 );
 
         return http.build();

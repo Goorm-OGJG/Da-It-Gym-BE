@@ -1,7 +1,6 @@
 package com.ogjg.daitgym.config.security.details;
 
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
-import com.ogjg.daitgym.config.security.oauth.dto.OAuthAttributes;
 import com.ogjg.daitgym.domain.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
