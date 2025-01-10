@@ -20,6 +20,7 @@ public class UserJournalDetailDto {
     private final boolean isSpread = false;
     private LocalDate dayDate;
     private boolean isCompleted;
+    private boolean isVisible;
     private TimeTemplate exerciseTime;
     private List<UserJournalDetailExerciseListDto> exercises = new ArrayList<>();
 
@@ -32,6 +33,6 @@ public class UserJournalDetailDto {
         this.isCompleted = exerciseJournal.isCompleted();
         this.exerciseTime = exerciseJournal.getExerciseTime();
         this.exercises = exercises;
-
+        this.isVisible = exerciseJournal.isVisible();
     }
 }

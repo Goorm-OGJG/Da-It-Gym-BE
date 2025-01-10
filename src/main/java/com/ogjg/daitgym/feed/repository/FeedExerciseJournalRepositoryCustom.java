@@ -1,6 +1,5 @@
 package com.ogjg.daitgym.feed.repository;
 
-import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import org.springframework.data.domain.Page;
@@ -14,7 +13,7 @@ public interface FeedExerciseJournalRepositoryCustom {
 
     Page<Long> feedExerciseJournalListsByFollow(String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest);
 
-    Page<Long> userFeedExerciseJournalLists(String nickname, Pageable pageable);
+    Page<Long> userFeedExerciseJournalListsOfUser(String nickname, Pageable pageable, boolean myFeedList);
 
     Page<Long> userFeedExerciseJournalCollectionLists(String nickname, Pageable pageable);
 

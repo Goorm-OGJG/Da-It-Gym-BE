@@ -4,6 +4,7 @@ package com.ogjg.daitgym.feed.repository;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import com.ogjg.daitgym.feed.dto.response.QFeedDetailResponse;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -47,6 +48,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                 .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id))
                 .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id))
                 .where(
+                        feedExerciseJournal.exerciseJournal.isVisible.eq(true),
                         feedExerciseJournal.exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
                 ).orderBy(feedExerciseJournal.createdAt.desc())
@@ -63,6 +65,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                 .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id))
                 .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id))
                 .where(
+                        feedExerciseJournal.exerciseJournal.isVisible.eq(true),
                         feedExerciseJournal.exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
                 );
@@ -117,12 +120,22 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
     /**
      * 유저 페이지 피드 운동일지 목록 가져오기
      */
-    public Page<Long> userFeedExerciseJournalLists(
-            String nickname, Pageable pageable
+    public Page<Long> userFeedExerciseJournalListsOfUser(
+            String nickname, Pageable pageable,
+            boolean isMyFeedList
     ) {
+        // 타인의 피드일 경우 공개 피드만 볼 수 있다.
+        BooleanBuilder visibilityCondition = new BooleanBuilder();
+        if (!isMyFeedList) {
+            visibilityCondition.and(feedExerciseJournal.exerciseJournal.isVisible.eq(true));
+        }
+
         List<Long> userFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(user)
-                .where(user.nickname.eq(nickname))
+                .where(
+                        user.nickname.eq(nickname),
+                        visibilityCondition
+                )
                 .join(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email))
                 .orderBy(feedExerciseJournal.createdAt.desc())
                 .distinct()
@@ -132,8 +145,11 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
 
         JPAQuery<Long> countQuery = jpaQueryFactory.select(feedExerciseJournal.count())
                 .from(user)
-                .where(user.nickname.eq(nickname))
-                .leftJoin(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email));
+                .leftJoin(feedExerciseJournal).on(user.email.eq(feedExerciseJournal.exerciseJournal.user.email))
+                .where(
+                        user.nickname.eq(nickname),
+                        visibilityCondition
+                );
 
         return PageableExecutionUtils.getPage(userFeedJournalLists, pageable, countQuery::fetchOne);
     }

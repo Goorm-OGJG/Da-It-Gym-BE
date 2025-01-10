@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.feed.service;
 
+import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListDto;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
@@ -23,10 +24,10 @@ public class UserFeedExerciseJournalService {
      * 유저 페이지 피드 운동일지 목록 가져오기
      */
     public FeedExerciseJournalListResponse userFeedExerciseJournalLists(
-            String nickname, Pageable pageable
+            String nickname, Pageable pageable,
+            OAuth2JwtUserDetails userDetails
     ) {
-        Page<Long> userFeedExerciseJournals =
-                feedExerciseJournalRepository.userFeedExerciseJournalLists(nickname, pageable);
+        Page<Long> userFeedExerciseJournals = feedExerciseJournalRepository.userFeedExerciseJournalListsOfUser(nickname, pageable, isMyFeedList(nickname, userDetails));
 
         List<FeedExerciseJournalListDto> content =
                 feedJournalHelper.feedExerciseJournalsChangeFeedExerciseJournalsDto(userFeedExerciseJournals);
@@ -35,6 +36,10 @@ public class UserFeedExerciseJournalService {
         if (!content.isEmpty()) totalpage -= 1;
 
         return new FeedExerciseJournalListResponse(totalpage, content);
+    }
+
+    private boolean isMyFeedList(String nickname, OAuth2JwtUserDetails userDetails) {
+        return nickname.equals(userDetails.getNickname());
     }
 
     /**

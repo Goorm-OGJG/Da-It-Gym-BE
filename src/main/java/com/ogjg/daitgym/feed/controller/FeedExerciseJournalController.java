@@ -7,6 +7,7 @@ import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
 import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
+import com.ogjg.daitgym.feed.dto.response.FeedToggleVisibilityResponse;
 import com.ogjg.daitgym.feed.service.FeedExerciseJournalService;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
 import lombok.RequiredArgsConstructor;
@@ -126,6 +127,21 @@ public class FeedExerciseJournalController {
         return new ApiResponse<>(
                 ErrorCode.SUCCESS,
                 feedExerciseJournalService.feedDetail(feedJournalId, userDetails.getEmail())
+        );
+    }
+
+    /**
+     * 운동일지 피드 공개 여부 토글
+     */
+    @PostMapping("{feedJournalId}/visibility")
+    public ApiResponse<FeedToggleVisibilityResponse> toggleFeedJournalVisibility(
+            @PathVariable("feedJournalId") Long feedJournalId,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
+    ) {
+
+        return new ApiResponse<>(
+                ErrorCode.SUCCESS,
+                feedExerciseJournalService.toggleFeedJournalVisibility(userDetails.getEmail(), feedJournalId)
         );
     }
 }

@@ -77,6 +77,10 @@ public class ExerciseJournal extends BaseEntity {
         this.isVisible = false;
     }
 
+    public boolean toggleVisibility() {
+        return this.isVisible = !this.isVisible;
+    }
+
     @Builder
     public ExerciseJournal(
             User user, boolean isVisible, boolean isCompleted,

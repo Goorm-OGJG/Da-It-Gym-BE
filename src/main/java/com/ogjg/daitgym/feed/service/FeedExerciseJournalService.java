@@ -8,10 +8,7 @@ import com.ogjg.daitgym.domain.feed.FeedExerciseJournalCollection;
 import com.ogjg.daitgym.domain.journal.ExerciseJournal;
 import com.ogjg.daitgym.domain.journal.ExerciseList;
 import com.ogjg.daitgym.feed.dto.request.FeedSearchConditionRequest;
-import com.ogjg.daitgym.feed.dto.response.FeedDetailResponse;
-import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalCountResponse;
-import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListDto;
-import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
+import com.ogjg.daitgym.feed.dto.response.*;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalCollectionRepository;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
 import com.ogjg.daitgym.journal.dto.response.UserJournalDetailResponse;
@@ -172,4 +169,12 @@ public class FeedExerciseJournalService {
         return new UserJournalDetailResponse(userJournalDetailDto);
     }
 
+    @Transactional
+    public FeedToggleVisibilityResponse toggleFeedJournalVisibility(String email, Long feedJournalId) {
+        ExerciseJournal exerciseJournal = feedJournalHelper.findFeedJournalById(feedJournalId).getExerciseJournal();
+        exerciseJournalHelper.isAuthorizedForJournal(email, exerciseJournal.getId());
+
+        exerciseJournal.toggleVisibility();
+        return new FeedToggleVisibilityResponse(exerciseJournal.isVisible());
+    }
 }
