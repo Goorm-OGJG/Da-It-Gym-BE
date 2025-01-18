@@ -81,7 +81,6 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
     public Page<Long> feedExerciseJournalListsByFollow(
             String email, Pageable pageable, FeedSearchConditionRequest feedSearchConditionRequest
     ) {
-
         List<Long> followerFeedJournalLists = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(follow)
                 .where(follow.follower.email.eq(email))
@@ -91,6 +90,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                 .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id))
                 .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id))
                 .where(
+                        feedExerciseJournal.exerciseJournal.isVisible.eq(true),
                         exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
                 )
@@ -110,6 +110,7 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
                 .leftJoin(exercise).on(exerciseList.exercise.id.eq(exercise.id))
                 .leftJoin(exercisePart).on(exercise.id.eq(exercisePart.exercise.id))
                 .where(
+                        feedExerciseJournal.exerciseJournal.isVisible.eq(true),
                         exerciseJournal.split.eq(feedSearchConditionRequest.getSplit()),
                         exercisePartEq(feedSearchConditionRequest.getPart(), exercisePart.part)
                 );
