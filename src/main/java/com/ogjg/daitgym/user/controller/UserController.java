@@ -46,14 +46,14 @@ public class UserController {
     }
 
     /**
-     * 닉네임 중복 검사
+     * 가입 시 닉네임 중복 검사
      */
     @GetMapping("/check-duplication")
     public ApiResponse<?> checkNicknameDuplication(
             @RequestParam("nickname") String newNickname,
             @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
-        String message = userService.checkNicknameDuplication(userDetails.getNickname(), newNickname);
+        String message = userService.checkNicknameDuplication(userDetails.getEmail(), newNickname);
         return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage(message));
     }
 

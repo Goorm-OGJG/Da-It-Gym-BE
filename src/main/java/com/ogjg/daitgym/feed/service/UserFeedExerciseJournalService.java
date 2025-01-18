@@ -1,9 +1,11 @@
 package com.ogjg.daitgym.feed.service;
 
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListDto;
 import com.ogjg.daitgym.feed.dto.response.FeedExerciseJournalListResponse;
 import com.ogjg.daitgym.feed.repository.FeedExerciseJournalRepository;
+import com.ogjg.daitgym.user.service.UserHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserFeedExerciseJournalService {
 
+    private final UserHelper userHelper;
     private final FeedExerciseJournalRepository feedExerciseJournalRepository;
     private final FeedJournalHelper feedJournalHelper;
 
@@ -27,7 +30,8 @@ public class UserFeedExerciseJournalService {
             String nickname, Pageable pageable,
             OAuth2JwtUserDetails userDetails
     ) {
-        Page<Long> userFeedExerciseJournals = feedExerciseJournalRepository.userFeedExerciseJournalListsOfUser(nickname, pageable, isMyFeedList(nickname, userDetails));
+        User loginUser = userHelper.findUserByEmail(userDetails.getEmail());
+        Page<Long> userFeedExerciseJournals = feedExerciseJournalRepository.userFeedExerciseJournalListsOfUser(nickname, pageable, isMyFeedList(nickname, loginUser));
 
         List<FeedExerciseJournalListDto> content =
                 feedJournalHelper.feedExerciseJournalsChangeFeedExerciseJournalsDto(userFeedExerciseJournals);
@@ -38,8 +42,8 @@ public class UserFeedExerciseJournalService {
         return new FeedExerciseJournalListResponse(totalpage, content);
     }
 
-    private boolean isMyFeedList(String nickname, OAuth2JwtUserDetails userDetails) {
-        return nickname.equals(userDetails.getNickname());
+    private boolean isMyFeedList(String nickname, User loginUser) {
+        return nickname.equals(loginUser.getNickname());
     }
 
     /**

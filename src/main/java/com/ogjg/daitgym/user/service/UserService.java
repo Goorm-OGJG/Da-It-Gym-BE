@@ -280,8 +280,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public String checkNicknameDuplication(String loginNickname, String newNickname) {
-        if (userHelper.isNicknameAlreadyExist(loginNickname, newNickname)) {
+    public String checkNicknameDuplication(String loginEmail, String newNickname) {
+        User loginUser = userHelper.findUserByEmail(loginEmail);
+        if (userHelper.isNicknameAlreadyExist(loginUser.getNickname(), newNickname)) {
             return "중복";
         }
         return "사용가능";
