@@ -164,7 +164,10 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
         List<Long> userFeedJournalCollections = jpaQueryFactory.select(feedExerciseJournal.id)
                 .from(feedExerciseJournalCollection)
                 .join(user).on(feedExerciseJournalCollection.user.email.eq(user.email))
-                .where(user.nickname.eq(nickname))
+                .where(
+                        user.nickname.eq(nickname),
+                        feedExerciseJournal.exerciseJournal.isVisible.eq(true)
+                        )
                 .join(feedExerciseJournal).on(feedExerciseJournalCollection.feedExerciseJournal.id.eq(feedExerciseJournal.id))
                 .join(exerciseJournal).on(feedExerciseJournal.exerciseJournal.id.eq(exerciseJournal.id))
                 .orderBy(feedExerciseJournal.createdAt.desc())
@@ -176,7 +179,10 @@ public class FeedExerciseJournalRepositoryImpl implements FeedExerciseJournalRep
         JPAQuery<Long> countQuery = jpaQueryFactory.select(feedExerciseJournal.count())
                 .from(feedExerciseJournalCollection)
                 .join(user).on(feedExerciseJournalCollection.user.email.eq(user.email))
-                .where(user.nickname.eq(nickname))
+                .where(
+                        user.nickname.eq(nickname),
+                        feedExerciseJournal.exerciseJournal.isVisible.eq(true)
+                        )
                 .join(feedExerciseJournal).on(feedExerciseJournalCollection.feedExerciseJournal.id.eq(feedExerciseJournal.id))
                 .join(exerciseJournal).on(feedExerciseJournal.exerciseJournal.id.eq(exerciseJournal.id));
 
