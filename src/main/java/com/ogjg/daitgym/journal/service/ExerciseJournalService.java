@@ -116,7 +116,7 @@ public class ExerciseJournalService {
     public void deleteJournal(String email, Long journalId) {
         ExerciseJournal journal = exerciseJournalHelper.isAuthorizedForJournal(email, journalId);
 
-        if (journal.isVisible()) {
+        if (feedJournalHelper.checkExistFeedExerciseJournalByExerciseJournal(journal)) {
             FeedExerciseJournal feedJournal = feedJournalHelper.findFeedJournalByJournal(journal);
             feedJournalHelper.deleteFeedJournal(email, feedJournal.getId());
         }
