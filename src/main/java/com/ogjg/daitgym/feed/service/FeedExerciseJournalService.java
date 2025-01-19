@@ -2,6 +2,7 @@ package com.ogjg.daitgym.feed.service;
 
 import com.ogjg.daitgym.comment.feedExerciseJournal.exception.NotFoundFeedJournal;
 import com.ogjg.daitgym.common.exception.feed.AlreadyExistFeedJournalCollection;
+import com.ogjg.daitgym.common.exception.journal.UserNotAuthorizedForJournal;
 import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournal;
 import com.ogjg.daitgym.domain.feed.FeedExerciseJournalCollection;
@@ -136,13 +137,20 @@ public class FeedExerciseJournalService {
      * 피드 운동일지 피드부분 상세정보 가져오기
      */
     @Transactional(readOnly = true)
-    public FeedDetailResponse feedDetail(Long feedJournalId, String email) {
+    public FeedDetailResponse feedDetail(Long feedJournalId, String loginEmail) {
+        FeedExerciseJournal feedJournal = feedJournalHelper.findFeedJournalById(feedJournalId);
+        ExerciseJournal exerciseJournal = feedJournal.getExerciseJournal();
+
+        if (!exerciseJournal.isAccessibleBy(loginEmail)) {
+            throw new UserNotAuthorizedForJournal();
+        }
+
         FeedDetailResponse feedDetail = feedExerciseJournalRepository.feedDetail(feedJournalId)
                 .orElseThrow(NotFoundFeedJournal::new);
 
         feedDetail.setFeedDetails(
-                feedExerciseJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(email, feedJournalId),
-                feedJournalHelper.feedExerciseJournalCollectionScrapStatus(email, feedJournalId),
+                feedExerciseJournalLikeRepository.existsByUserEmailAndFeedExerciseJournalId(loginEmail, feedJournalId),
+                feedJournalHelper.feedExerciseJournalCollectionScrapStatus(loginEmail, feedJournalId),
                 feedJournalHelper.feedExerciseJournalLikes(feedJournalId),
                 feedJournalHelper.feedExerciseJournalScrapCounts(feedJournalId),
                 feedJournalHelper.feedImageListsDto(feedJournalHelper.findFeedJournalById(feedJournalId))
@@ -156,11 +164,12 @@ public class FeedExerciseJournalService {
      * 공개여부 확인후 운동일지 반환
      */
     @Transactional(readOnly = true)
-    public UserJournalDetailResponse JournalDetail(Long feedJournalId) {
-        FeedExerciseJournal feedJournal = feedJournalHelper.findFeedJournalById(feedJournalId);
-        Long exerciseJournalId = feedJournal.getExerciseJournal().getId();
-        exerciseJournalHelper.checkExerciseJournalDisclosure(exerciseJournalId);
-        ExerciseJournal exerciseJournal = exerciseJournalHelper.findExerciseJournalById(exerciseJournalId);
+    public UserJournalDetailResponse JournalDetail(Long feedJournalId, String loginEmail) {
+        ExerciseJournal exerciseJournal = feedJournalHelper.findExerciseJournalByFeedJournalId(feedJournalId);
+
+        if (!exerciseJournal.isAccessibleBy(loginEmail)) {
+            throw new UserNotAuthorizedForJournal();
+        }
 
         List<ExerciseList> journalList = exerciseJournalHelper.findExerciseListsByJournal(exerciseJournal);
         List<UserJournalDetailExerciseListDto> exerciseListsDto = exerciseJournalHelper.exerciseListsChangeUserJournalDetailsDto(journalList);

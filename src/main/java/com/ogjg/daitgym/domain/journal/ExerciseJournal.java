@@ -81,6 +81,7 @@ public class ExerciseJournal extends BaseEntity {
         return this.isVisible = !this.isVisible;
     }
 
+
     @Builder
     public ExerciseJournal(
             User user, boolean isVisible, boolean isCompleted,
@@ -96,5 +97,9 @@ public class ExerciseJournal extends BaseEntity {
         this.exerciseStartTime = exerciseStartTime;
         this.exerciseEndTime = exerciseEndTime;
         this.split = split;
+    }
+
+    public boolean isAccessibleBy(String loginEmail) {
+        return isVisible || loginEmail.equals(user.getEmail());
     }
 }

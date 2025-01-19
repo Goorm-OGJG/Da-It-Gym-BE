@@ -109,10 +109,11 @@ public class FeedExerciseJournalController {
      */
     @GetMapping("{feedJournalId}/journal-detail")
     public ApiResponse<UserJournalDetailResponse> feedExerciseJournalDetail(
-            @PathVariable("feedJournalId") Long journalId
+            @PathVariable("feedJournalId") Long journalId,
+            @AuthenticationPrincipal OAuth2JwtUserDetails userDetails
     ) {
         return new ApiResponse<>(
-                ErrorCode.SUCCESS, feedExerciseJournalService.JournalDetail(journalId)
+                ErrorCode.SUCCESS, feedExerciseJournalService.JournalDetail(journalId, userDetails.getEmail())
         );
     }
 
