@@ -225,7 +225,7 @@ public class AuthService {
         String accessToken = TokenGenerator.generateAccessToken(jwtUserClaimsDto);
         String refreshToken = TokenGenerator.generateRefreshToken(jwtUserClaimsDto);
 
-        response.addHeader(HEADER_AUTHORIZATION, TOKEN_PREFIX + accessToken);
+        response.addHeader(HEADER_AUTHORIZATION, accessToken);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setHeader("Set-Cookie", createRefreshTokenCookie(refreshToken).toString());
         response.setCharacterEncoding("UTF-8");

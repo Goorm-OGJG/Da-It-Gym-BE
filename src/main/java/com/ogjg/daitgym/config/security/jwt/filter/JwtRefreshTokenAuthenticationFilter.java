@@ -92,7 +92,7 @@ public class JwtRefreshTokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void addTokenInHeader(HttpServletResponse response, String accessToken) {
-        response.addHeader(HEADER_AUTHORIZATION, TOKEN_PREFIX + accessToken);
+        response.addHeader(HEADER_AUTHORIZATION, accessToken);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(CHARSET_UTF_8);
     }
