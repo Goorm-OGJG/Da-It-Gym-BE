@@ -1,7 +1,5 @@
 package com.ogjg.daitgym.follow.repository;
 
-import com.ogjg.daitgym.domain.QUser;
-import com.ogjg.daitgym.domain.User;
 import com.ogjg.daitgym.follow.dto.response.FollowListDto;
 import com.ogjg.daitgym.follow.dto.response.QFollowListDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -22,6 +20,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
         return jpaQueryFactory
                 .select(
                         new QFollowListDto(
+                                user.email,
                                 user.imageUrl,
                                 user.nickname,
                                 user.introduction
@@ -37,6 +36,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
         return jpaQueryFactory
                 .select(
                         new QFollowListDto(
+                                user.email,
                                 user.imageUrl,
                                 user.nickname,
                                 user.introduction

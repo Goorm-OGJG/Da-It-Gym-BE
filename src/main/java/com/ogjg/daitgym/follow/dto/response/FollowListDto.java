@@ -10,6 +10,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class FollowListDto {
 
+    private String email;
     private String imageUrl;
     private String nickname;
     private String intro;
@@ -20,7 +21,8 @@ public class FollowListDto {
     }
 
     @QueryProjection
-    public FollowListDto(String imageUrl, String nickname, String intro) {
+    public FollowListDto(String email, String imageUrl, String nickname, String intro) {
+        this.email= email;
         this.imageUrl = imageUrl;
         this.nickname = nickname;
         this.intro = intro;

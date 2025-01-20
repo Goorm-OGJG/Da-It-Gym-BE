@@ -88,12 +88,11 @@ public class FollowService {
      */
     @Transactional(readOnly = true)
     public FollowListResponse followingList(String nickname) {
-        User user = findUserByNickName(nickname);
         List<FollowListDto> followingList = followRepository.followingList(nickname);
 
         followingList.forEach(
                 following -> following.putLatestInbodyScore(
-                        userLatestInbodyScore(user.getEmail())
+                        userLatestInbodyScore(following.getEmail())
                 )
         );
 
@@ -105,12 +104,11 @@ public class FollowService {
      */
     @Transactional(readOnly = true)
     public FollowListResponse followerList(String nickname) {
-        User user = findUserByNickName(nickname);
         List<FollowListDto> followerList = followRepository.followerList(nickname);
 
         followerList.forEach(
                 follower -> follower.putLatestInbodyScore(
-                        userLatestInbodyScore(user.getEmail())
+                        userLatestInbodyScore(follower.getEmail())
                 )
         );
 
