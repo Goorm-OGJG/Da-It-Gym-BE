@@ -13,11 +13,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
 
@@ -28,11 +27,11 @@ public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthenticationEntryPoint authenticationEntryPoint;
 
-    private final List<String> permitUrlList;
+    private final RequestMatcher PERMIT_ALL_REQUEST;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (isPermitted(request.getRequestURI())) {
+        if (PERMIT_ALL_REQUEST.matches(request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -48,13 +47,6 @@ public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
                     new AccessTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage())
             );
         }
-    }
-
-    private boolean isPermitted(String requestUri) {
-        return permitUrlList.stream()
-                .filter((pattern) -> Pattern.matches(pattern, requestUri))
-                .findAny()
-                .isPresent();
     }
 
     private Authentication authenticate(HttpServletRequest request) {

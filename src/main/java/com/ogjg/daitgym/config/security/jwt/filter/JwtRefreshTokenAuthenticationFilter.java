@@ -19,6 +19,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -29,16 +30,16 @@ import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
 @RequiredArgsConstructor
 public class JwtRefreshTokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final String TOKEN_REGENERATE_REQUEST_URL = "/api/users/token";
-
     private final AuthenticationManager authenticationManager;
 
     private final AuthenticationEntryPoint authenticationEntryPoint;
 
+    private final RequestMatcher REGENERATE_TOKEN_REQUEST;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!isAccessTokenExpired(request)) {
+        if (!REGENERATE_TOKEN_REQUEST.matches(request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -66,10 +67,6 @@ public class JwtRefreshTokenAuthenticationFilter extends OncePerRequestFilter {
                     new RefreshTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage())
             );
         }
-    }
-
-    private boolean isAccessTokenExpired(HttpServletRequest request) {
-        return TOKEN_REGENERATE_REQUEST_URL.equals(request.getRequestURI());
     }
 
     private Authentication authenticate(HttpServletRequest request) {

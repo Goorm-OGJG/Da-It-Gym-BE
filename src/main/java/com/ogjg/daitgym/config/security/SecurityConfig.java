@@ -21,17 +21,16 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -41,19 +40,9 @@ public class SecurityConfig {
 
     private final AccessDeniedHandler accessDeniedHandler;
 
-    private final List<String> permitJwtUrlList = new ArrayList<>(
-            List.of(
-                    "/",
-                    "/favicon.ico",
-                    "/login/oauth2/callback/kakao.*",
-                    "/login/oauth2/code/.*",
-                    "/api/users/token",
-                    "/api/token/new",
-                    "/health",
-                    "/ws/.*",
-                    "/chat/.*",
-                    "/h2-console/.*"
-            ));
+    private final RequestMatcher PERMIT_ALL_REQUEST;
+
+    private final RequestMatcher REGENERATE_TOKEN_REQUEST;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -70,11 +59,10 @@ public class SecurityConfig {
                 .addFilterAfter(jwtRefreshTokenAuthenticationFilter(), JwtAccessTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(
                         authorize -> authorize
-                                .requestMatchers(CorsUtils::isPreFlightRequest)
-                                .permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
+                                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/api/admins/**")).hasRole(Role.ADMIN.name())
-                                .requestMatchers(new AntPathRequestMatcher("/api/trainers/**")).hasRole(Role.TRAINER.name())
+                                .requestMatchers(new AntPathRequestMatcher("/api/trainers/**")).hasAnyRole(Role.TRAINER.name(), Role.ADMIN.name())
+                                .requestMatchers(PERMIT_ALL_REQUEST).permitAll()
                                 .anyRequest().authenticated()
                 ).exceptionHandling((exceptionHandle) -> exceptionHandle
                         .accessDeniedHandler(accessDeniedHandler)
@@ -106,12 +94,12 @@ public class SecurityConfig {
     @Bean
     public JwtAccessTokenAuthenticationFilter jwtAccessTokenAuthenticationFilter() throws Exception {
         authenticationManagerBuilder.authenticationProvider(jwtAuthenticationProvider());
-        return new JwtAccessTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint(), permitJwtUrlList);
+        return new JwtAccessTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint(), PERMIT_ALL_REQUEST);
     }
 
     @Bean
     public JwtRefreshTokenAuthenticationFilter jwtRefreshTokenAuthenticationFilter() throws Exception {
-        return new JwtRefreshTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint());
+        return new JwtRefreshTokenAuthenticationFilter(authenticationManager(), jwtAuthenticationEntryPoint(), REGENERATE_TOKEN_REQUEST);
     }
 
     @Bean
