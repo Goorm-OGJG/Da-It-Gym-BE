@@ -7,6 +7,7 @@ import com.ogjg.daitgym.alarm.service.FcmTokenService;
 import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
+import com.ogjg.daitgym.config.security.jwt.util.JwtUtils;
 import com.ogjg.daitgym.user.dto.request.ApplyForApprovalRequest;
 import com.ogjg.daitgym.user.dto.request.EditNicknameRequest;
 import com.ogjg.daitgym.user.dto.request.EditUserProfileRequest;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +42,7 @@ public class UserController {
     public ApiResponse<?> logout(HttpServletResponse response,
                                  @RequestBody FcmTokenRequestDto fcmTokenRequestDto,
                                  @AuthenticationPrincipal OAuth2JwtUserDetails oAuth2JwtUserDetails) {
-        response.setHeader("Set-Cookie", userService.getExpiredResponseCookie().toString());
+        response.setHeader(HttpHeaders.SET_COOKIE, JwtUtils.createExpiredRefreshTokenCookie().toString());
         fcmTokenService.deleteFcmToken(fcmTokenRequestDto, oAuth2JwtUserDetails);
         return new ApiResponse<>(ErrorCode.SUCCESS.changeMessage("로그아웃 성공"));
     }

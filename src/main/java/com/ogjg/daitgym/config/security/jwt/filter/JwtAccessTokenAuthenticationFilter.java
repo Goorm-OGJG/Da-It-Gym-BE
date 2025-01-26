@@ -1,8 +1,9 @@
 package com.ogjg.daitgym.config.security.jwt.filter;
 
 import com.ogjg.daitgym.common.exception.ErrorCode;
-import com.ogjg.daitgym.config.security.jwt.authentication.JwtAuthenticationToken;
+import com.ogjg.daitgym.config.security.jwt.authentication.JwtAccessAuthenticationToken;
 import com.ogjg.daitgym.config.security.jwt.exception.AccessTokenException;
+import com.ogjg.daitgym.config.security.jwt.util.JwtUtils;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,8 +18,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
-import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
 
 @RequiredArgsConstructor
 public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
@@ -37,7 +36,8 @@ public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            Authentication jwtAuthentication = authenticate(request);
+            String accessToken = JwtUtils.getAccessTokenFrom(request);
+            Authentication jwtAuthentication = authenticationManager.authenticate(new JwtAccessAuthenticationToken(accessToken));
             SecurityContextHolder.getContext().setAuthentication(jwtAuthentication);
 
             filterChain.doFilter(request, response);
@@ -47,20 +47,5 @@ public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
                     new AccessTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage())
             );
         }
-    }
-
-    private Authentication authenticate(HttpServletRequest request) {
-        String jwt = validAndGetAccessToken(request);
-        Authentication authentication = authenticationManager.authenticate(new JwtAuthenticationToken(jwt));
-        return authentication;
-    }
-
-    private String validAndGetAccessToken(HttpServletRequest request) {
-        String jwt = request.getHeader(HEADER_AUTHORIZATION);
-
-        TokenValidator.validateHasToken(jwt);
-        TokenValidator.validatePrefix(jwt);
-
-        return jwt.substring(TOKEN_PREFIX.length());
     }
 }

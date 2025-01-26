@@ -29,7 +29,6 @@ import com.ogjg.daitgym.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -249,16 +248,6 @@ public class UserService {
         return new GetInbodiesResponse(
                 inbodyRepository.findByUserEmail(user.getEmail())
         );
-    }
-
-    public ResponseCookie getExpiredResponseCookie() {
-        return ResponseCookie.from("refreshToken", null)
-                .maxAge(0)
-                .path("/")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .build();
     }
 
     @Transactional

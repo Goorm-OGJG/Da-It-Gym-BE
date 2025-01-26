@@ -1,5 +1,6 @@
 package com.ogjg.daitgym.common.exception.chat;
 
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageDeliveryException;
@@ -24,17 +25,16 @@ public class StompExceptionHandler extends StompSubProtocolErrorHandler {
     @Override
     public Message<byte[]> handleClientMessageProcessingError(Message<byte[]> clientMessage, Throwable ex) {
 
-        final Throwable exception = converterTrowException(ex);
+        final Throwable exception = extractCauseException(ex);
 
-        if (exception instanceof UnauthorizedException) {
+        if (exception instanceof JwtException || exception instanceof UnauthorizedException) {
             return handleUnauthorizedException(clientMessage, exception);
         }
 
         return super.handleClientMessageProcessingError(clientMessage, ex);
-
     }
 
-    private Throwable converterTrowException(final Throwable exception) {
+    private Throwable extractCauseException(final Throwable exception) {
         if (exception instanceof MessageDeliveryException) {
             return exception.getCause();
         }
@@ -45,7 +45,6 @@ public class StompExceptionHandler extends StompSubProtocolErrorHandler {
                                                         Throwable ex) {
 
         return prepareErrorMessage(clientMessage, ex.getMessage(), HttpStatus.UNAUTHORIZED.name());
-
     }
 
     private Message<byte[]> prepareErrorMessage(final Message<byte[]> clientMessage,

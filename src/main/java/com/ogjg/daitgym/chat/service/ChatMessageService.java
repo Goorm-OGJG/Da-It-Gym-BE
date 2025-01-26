@@ -24,8 +24,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class ChatMessageService {
-
-    private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
@@ -42,7 +40,7 @@ public class ChatMessageService {
 
     @Transactional
     public ChatMessageDto save(ChatMessageDto chatMessageDto, String token) {
-        String email = jwtUtils.getEmail(jwtUtils.getAccessToken(token));
+        String email = JwtUtils.extractEmail(token);
         User user = getUserByEmail(email);
 
         ChatRoom chatroom = chatRoomRepository.findByRedisRoomId(chatMessageDto.getRedisRoomId());

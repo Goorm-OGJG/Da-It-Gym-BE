@@ -24,7 +24,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 class StompHandler implements ChannelInterceptor {
 
-    private final JwtUtils jwtUtils;
     private Map<String, String> sessionId;
     private HashOperations<String, String, String> hashOperations;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -67,13 +66,8 @@ class StompHandler implements ChannelInterceptor {
         }
     }
 
-    /**
-     * 토큰검증로직
-     */
-    private boolean verifyAccessToken(StompHeaderAccessor headerAccessor) {
-        String token = headerAccessor.getFirstNativeHeader("Authentication");
-        String tokenStompHeader = jwtUtils.getTokenStompHeader(token);
-        return jwtUtils.validateToken(tokenStompHeader);
+    private void verifyAccessToken(StompHeaderAccessor headerAccessor) {
+        JwtUtils.Verifier.verifyTokenInStomp(headerAccessor);
     }
 
     /**
@@ -82,12 +76,10 @@ class StompHandler implements ChannelInterceptor {
      * 연결되었을 때, 2로 설정되어있던 인원수를 1로 업데이트해준다.
      */
     private void connectToChatRoom(StompHeaderAccessor headerAccessor, String session) {
+        String email = JwtUtils.extractEmail(headerAccessor);
+
         ChannelTopic redisRoomId = ChannelTopic.of(headerAccessor.getFirstNativeHeader("RedisRoomId"));
         String stringRedisRoomID = redisRoomId.toString();
-        String token = headerAccessor.getFirstNativeHeader("Authentication");
-        String tokenStompHeader = jwtUtils.getTokenStompHeader(token);
-        String email = jwtUtils.getEmail(tokenStompHeader);
-
 
         hashOperations.put(session, "RedisRoomId", stringRedisRoomID);
         hashOperations.put(session, "email", email);

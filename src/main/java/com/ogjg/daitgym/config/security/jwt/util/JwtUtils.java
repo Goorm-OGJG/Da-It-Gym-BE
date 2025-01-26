@@ -1,10 +1,17 @@
 package com.ogjg.daitgym.config.security.jwt.util;
 
-import com.ogjg.daitgym.common.exception.chat.UnauthorizedException;
+import com.ogjg.daitgym.config.security.jwt.authentication.JwtAccessAuthenticationToken;
+import com.ogjg.daitgym.config.security.jwt.authentication.JwtRefreshAuthenticationToken;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
+import com.ogjg.daitgym.config.security.jwt.exception.RefreshTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SecurityException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -12,46 +19,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.ogjg.daitgym.config.security.jwt.constants.JwtConstants.*;
+
 @Component
 public class JwtUtils {
 
-    // todo : 상수 처리
-    public static final String TOKEN_PREFIX = "Bearer ";
-
-    public static final String SPACE = " ";
-
-    public static final String CHARSET_UTF_8 = "UTF-8";
-
     private static String JWT_SECRET;
-
-    private static final String ALGORITHM_KEY = "alg";
-
-    private static final String ALGORITHM_HS256 = "HS256";
-
-    private static final String TYPE_KEY = "typ";
-
-    private static final String TYPE = "JWT";
-
-    private static final String ISSUER_KEY = "iss";
-
-    private static final String ISSUER = "team_ogjg";
-
-    public static final String HEADER_AUTHORIZATION = "Authorization";
-
-    private static final int MINUTE = 60 * 1000;
-
-    private static final int HOUR = MINUTE * 60;
-
-    private static final int DAY = HOUR * 24;
-
-    private static final int ACCESS_TOKEN_VALID_TIME = MINUTE * 5;
-
-    private static final long REFRESH_TOKEN_VALID_TIME = DAY * 30L;
-
     private static Key SIGNATURE_KEY;
 
     @Value("${jwt.secret}")
@@ -59,35 +37,37 @@ public class JwtUtils {
         JWT_SECRET = jwtSecret;
     }
 
-    public static class TokenGenerator {
+    public static class Generator {
+
         public static String generateAccessToken(JwtUserClaimsDto jwtUserClaimsDto) {
             return Jwts.builder()
-                    .setHeader(createHeader())
+                    .setHeader(createHeader(ACCESS_TOKEN.TOKEN_TYPE))
                     .setClaims(createClaims(jwtUserClaimsDto))
-                    .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALID_TIME))
+                    .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN.VALID_TIME))
                     .signWith(generateKey())
                     .compact();
         }
 
         public static String generateRefreshToken(JwtUserClaimsDto userClaimsDto) {
             return Jwts.builder()
-                    .setHeader(createHeader())
+                    .setHeader(createHeader(REFRESH_TOKEN.TOKEN_TYPE))
                     .setClaims(createClaims(userClaimsDto))
-                    .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALID_TIME))
+                    .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN.VALID_TIME))
                     .signWith(generateKey())
                     .compact();
         }
 
-        private static Map<String, Object> createHeader() {
+        private static Map<String, Object> createHeader(String tokenType) {
             return new HashMap<>(Map.of(
-                    ALGORITHM_KEY, ALGORITHM_HS256,
-                    TYPE_KEY, TYPE
+                    HEADER.KEY.ALGORITHM, HEADER.VALUE.ALGORITHM_HS256,
+                    HEADER.KEY.TYPE, HEADER.VALUE.TYPE_JWT,
+                    HEADER.KEY.TOKEN_TYPE, tokenType
             ));
         }
 
         private static Map<String, Object> createClaims(JwtUserClaimsDto jwtUserClaimsDto) {
             return new HashMap<>(Map.of(
-                    ISSUER_KEY, ISSUER,
+                    CLAIM.KEY.ISSUER, CLAIM.VALUE.ISSUER,
                     "nickname", jwtUserClaimsDto.getNickname(),
                     "email", jwtUserClaimsDto.getEmail(),
                     "role", jwtUserClaimsDto.getRole().getKey()
@@ -101,36 +81,41 @@ public class JwtUtils {
             }
             return SIGNATURE_KEY;
         }
+
     }
 
-    public static class TokenVerifier {
-        public static Claims verifyTokenAndGetClaims(String jwt) {
-            Jws<Claims> claimsJws = parseAndVerify(jwt);
-            return claimsJws.getBody();
+    public static class Verifier {
+
+        public static Jws<Claims> verifyTokenInStomp(StompHeaderAccessor headerAccessor) {
+            String jwt = getAccessTokenFrom(headerAccessor);
+            return verifyToken(jwt, new JwtAccessAuthenticationToken(jwt));
         }
 
-        private static Jws<Claims> parseAndVerify(String token) {
-            Jws<Claims> claimsJws = Jwts.parserBuilder()
-                    .setSigningKey(TokenGenerator.generateKey())
-                    .build()
-                    .parseClaimsJws(token);
+        public static Jws<Claims> verifyToken(String jwt, Authentication authentication) {
+            Jws<Claims> claimsJws = verifyToken(jwt);
+
+            Validator.validateIssuer(claimsJws);
+            Validator.validateTokenType(claimsJws, authentication);
+
             return claimsJws;
         }
+
+        public static Jws<Claims> verifyToken(String jwt) {
+            try {
+                return parseToken(jwt);
+            } catch (SecurityException | MalformedJwtException e) {
+                throw new JwtException("잘못된 JWT 토큰입니다.");
+            } catch (ExpiredJwtException e) {
+                throw new JwtException("만료된 JWT 토큰입니다.");
+            } catch (UnsupportedJwtException e) {
+                throw new JwtException("지원되지 않는 JWT 토큰입니다.");
+            } catch (IllegalArgumentException e) {
+                throw new JwtException("JWT 토큰이 잘못되었습니다.");
+            }
+        }
     }
 
-    public static class TokenValidator {
-        public static void validateExpiration(Claims claims) {
-            Date expiration = claims.getExpiration();
-            if (expiration.before(new Date())) {
-                throw new JwtException("토큰이 만료되었습니다.");
-            }
-        }
-
-        public static void validateIssuer(Claims claims) {
-            if (!ISSUER.equals(claims.get(ISSUER_KEY))) {
-                throw new JwtException("Issuer가 일치하지 않습니다.");
-            }
-        }
+    public static class Validator {
 
         public static void validateHasToken(String jwt) {
             if (jwt == null) {
@@ -139,45 +124,110 @@ public class JwtUtils {
         }
 
         public static void validatePrefix(String jwt) {
-            if (jwt != null && !jwt.startsWith(TOKEN_PREFIX)) {
+            if (jwt != null && !jwt.startsWith(ACCESS_TOKEN.PREFIX)) {
                 throw new JwtException("Token의 prefix가 유효하지 않습니다.");
+            }
+        }
+
+        public static void validateIssuer(Jws<Claims> claimsJws) {
+            Object expectedIssuer = claimsJws.getBody().get(CLAIM.KEY.ISSUER);
+
+            if (!CLAIM.VALUE.ISSUER.equals(expectedIssuer)) {
+                throw new JwtException("Issuer가 일치하지 않습니다.");
+            }
+        }
+
+        public static void validateTokenType(Jws<Claims> claimsJws, Authentication authentication) {
+            String actualTokenType = findTokenType(authentication);
+            Object expectedTokenType = claimsJws.getHeader().get(HEADER.KEY.TOKEN_TYPE);
+
+            if (!actualTokenType.equals(expectedTokenType)) {
+                throw new JwtException("Token의 type이 일치하지 않습니다.");
+            }
+        }
+
+        private static String findTokenType(Authentication authentication) {
+            if (authentication instanceof JwtAccessAuthenticationToken) {
+                return ACCESS_TOKEN.TOKEN_TYPE;
+            }
+            else if (authentication instanceof JwtRefreshAuthenticationToken) {
+                return REFRESH_TOKEN.TOKEN_TYPE;
+            }
+            else {
+                throw new JwtException("존재하지 않는 Token type입니다.");
             }
         }
     }
 
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(SIGNATURE_KEY).build().parseClaimsJws(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            throw UnauthorizedException.of(e.getClass().getName(), "잘못된 JWT 토큰입니다.");
-        } catch (ExpiredJwtException e) {
-            throw UnauthorizedException.of(e.getClass().getName(), "만료된 JWT 토큰입니다.");
-        } catch (UnsupportedJwtException e) {
-            throw UnauthorizedException.of(e.getClass().getName(), "지원되지 않는 JWT 토큰입니다.");
-        } catch (IllegalArgumentException e) {
-            throw UnauthorizedException.of(e.getClass().getName(), "JWT 토큰이 잘못되었습니다.");
-        }
-    }
+    public static String getAccessTokenFrom(StompHeaderAccessor headerAccessor) {
+        String headerValue = headerAccessor.getFirstNativeHeader("Authentication");
 
-    public String getTokenStompHeader(String token) {
         try {
-            return getAccessToken(URLDecoder.decode(token, "UTF-8"));
+            return getAccessTokenFrom(URLDecoder.decode(headerValue, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             return null;
         }
     }
 
-    public String getAccessToken(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith(
-                TOKEN_PREFIX)) {
-            return authorizationHeader.substring(7);
-        }
-        return null;
+    public static String getAccessTokenFrom(HttpServletRequest request) {
+        String headerValue = request.getHeader(ACCESS_TOKEN.HTTP_HEADER_AUTHORIZATION);
+        return getAccessTokenFrom(headerValue);
     }
 
-    public String getEmail(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(SIGNATURE_KEY).build().parseClaimsJws(token).getBody();
-        return claims.get("email", String.class);
+    public static String getAccessTokenFrom(String authHeaderValue) {
+        Validator.validateHasToken(authHeaderValue);
+        Validator.validatePrefix(authHeaderValue);
+
+        return authHeaderValue.substring(ACCESS_TOKEN.PREFIX.length());
+    }
+
+    public static String getRefreshTokenFrom(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        return Arrays.stream(cookies)
+                .filter(cookie -> "refreshToken".equals(cookie.getName()))
+                .findFirst()
+                .orElseThrow(RefreshTokenException::new)
+                .getValue();
+    }
+
+    public static ResponseCookie createExpiredRefreshTokenCookie() {
+        return ResponseCookie.from(REFRESH_TOKEN.COOKIE.NAME, null)
+                .maxAge(0)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .build();
+    }
+
+    public static ResponseCookie createRefreshTokenCookie(String refreshToken) {
+        return ResponseCookie.from(REFRESH_TOKEN.COOKIE.NAME, refreshToken)
+                .maxAge(REFRESH_TOKEN.MAX_AGE)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .build();
+    }
+
+    public static String extractEmail(String authHeaderValue) {
+        String jwt = getAccessTokenFrom(authHeaderValue);
+        return extractEmail(parseToken(jwt));
+    }
+
+    public static String extractEmail(StompHeaderAccessor headerAccessor) {
+        String jwt = getAccessTokenFrom(headerAccessor);
+        return extractEmail(parseToken(jwt));
+    }
+
+    public static String extractEmail(Jws<Claims> claimsJws) {
+        return claimsJws.getBody().get("email", String.class);
+    }
+
+    private static Jws<Claims> parseToken(String jwt) {
+        return Jwts.parserBuilder()
+                .setSigningKey(Generator.generateKey())
+                .build()
+                .parseClaimsJws(jwt);
     }
 }

@@ -2,13 +2,12 @@ package com.ogjg.daitgym.config.security.jwt.authentication;
 
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
+import com.ogjg.daitgym.config.security.jwt.util.JwtUtils;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-
-import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.TokenValidator;
-import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.TokenVerifier;
 
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
@@ -16,18 +15,16 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String jwt = (String) authentication.getCredentials();
 
-        Claims claims = TokenVerifier.verifyTokenAndGetClaims(jwt);
+        Jws<Claims> claimsJws = JwtUtils.Verifier.verifyToken(jwt, authentication);
 
-        TokenValidator.validateIssuer(claims);
-        TokenValidator.validateExpiration(claims);
-
-        OAuth2JwtUserDetails userDetails = new OAuth2JwtUserDetails(JwtUserClaimsDto.from(claims));
+        OAuth2JwtUserDetails userDetails = new OAuth2JwtUserDetails(JwtUserClaimsDto.from(claimsJws));
         return new JwtAuthenticationToken(userDetails, jwt, userDetails.getAuthorities());
     }
 
-
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication.equals(JwtAuthenticationToken.class);
+        return JwtAuthenticationToken.class.isAssignableFrom(authentication);
     }
+
+
 }

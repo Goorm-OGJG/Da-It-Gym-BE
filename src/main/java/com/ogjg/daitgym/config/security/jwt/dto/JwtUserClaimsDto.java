@@ -4,6 +4,7 @@ import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.domain.Role;
 import com.ogjg.daitgym.domain.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,9 @@ public class JwtUserClaimsDto {
                 .build();
     }
 
-    public static JwtUserClaimsDto from(Claims claims) {
+    public static JwtUserClaimsDto from(Jws<Claims> claimsJws) {
+        Claims claims = claimsJws.getBody();
+
         return JwtUserClaimsDto.builder()
                 .nickname((String) claims.get("nickname"))
                 .email((String) claims.get("email"))

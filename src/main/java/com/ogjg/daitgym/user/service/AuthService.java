@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ogjg.daitgym.config.security.jwt.constants.JwtConstants;
 import com.ogjg.daitgym.config.security.jwt.dto.JwtUserClaimsDto;
+import com.ogjg.daitgym.config.security.jwt.util.JwtUtils;
 import com.ogjg.daitgym.domain.*;
 import com.ogjg.daitgym.user.dto.response.KakaoAccountResponse;
 import com.ogjg.daitgym.user.dto.response.KakaoTokenResponse;
@@ -26,7 +28,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.UUID;
 
-import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.*;
+import static com.ogjg.daitgym.config.security.jwt.constants.JwtConstants.ACCESS_TOKEN;
+import static com.ogjg.daitgym.config.security.jwt.util.JwtUtils.Generator;
 import static com.ogjg.daitgym.user.constants.UserConstants.*;
 import static com.ogjg.daitgym.user.dto.response.LoginResponse.*;
 
@@ -222,23 +225,13 @@ public class AuthService {
     }
 
     private void addTokensInHeader(HttpServletResponse response, JwtUserClaimsDto jwtUserClaimsDto) {
-        String accessToken = TokenGenerator.generateAccessToken(jwtUserClaimsDto);
-        String refreshToken = TokenGenerator.generateRefreshToken(jwtUserClaimsDto);
+        String accessToken = Generator.generateAccessToken(jwtUserClaimsDto);
+        String refreshToken = Generator.generateRefreshToken(jwtUserClaimsDto);
 
-        response.addHeader(HEADER_AUTHORIZATION, accessToken);
+        response.addHeader(ACCESS_TOKEN.HTTP_HEADER_AUTHORIZATION, accessToken);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setHeader("Set-Cookie", createRefreshTokenCookie(refreshToken).toString());
-        response.setCharacterEncoding("UTF-8");
-    }
-
-    private ResponseCookie createRefreshTokenCookie(String refreshToken) {
-        return ResponseCookie.from("refreshToken", refreshToken)
-                .maxAge(60 * 60 * 24 * 30)
-                .path("/")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, JwtUtils.createRefreshTokenCookie(refreshToken).toString());
+        response.setCharacterEncoding(JwtConstants.CHARSET_UTF_8);
     }
 }
 
