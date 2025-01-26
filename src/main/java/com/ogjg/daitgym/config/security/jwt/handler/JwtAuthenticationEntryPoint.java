@@ -1,6 +1,7 @@
 package com.ogjg.daitgym.config.security.jwt.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ogjg.daitgym.common.exception.ErrorCode;
 import com.ogjg.daitgym.common.response.ErrorResponse;
 import com.ogjg.daitgym.config.security.jwt.exception.CustomAuthenticationException;
 import jakarta.servlet.ServletException;
@@ -15,13 +16,21 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        ErrorResponse errorResponse = null;
 
-        CustomAuthenticationException tokenException = (CustomAuthenticationException) authException;
+        if (authException instanceof CustomAuthenticationException customAuthEx) {
+            response.setStatus(customAuthEx.getErrorType().getStatusCode().value());
+            errorResponse = new ErrorResponse(customAuthEx.getErrorType(), customAuthEx.getErrorData());
 
-        response.setStatus(tokenException.getErrorType().getStatusCode().value());
+        } else {
+            response.setStatus(ErrorCode.AUTHENTICATION_FAIL.getStatusCode().value());
+            errorResponse = new ErrorResponse(ErrorCode.AUTHENTICATION_FAIL);
+        }
 
-        // todo : 에러데이터 확인
-        ErrorResponse errorResponse = new ErrorResponse(tokenException.getErrorType());
+        writeResponse(response, errorResponse);
+    }
+
+    private static void writeResponse(HttpServletResponse response, ErrorResponse errorResponse) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         String errorResponseData = objectMapper.writeValueAsString(errorResponse);
 

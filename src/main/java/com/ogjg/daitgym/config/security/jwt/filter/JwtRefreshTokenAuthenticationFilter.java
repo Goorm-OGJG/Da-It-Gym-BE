@@ -2,6 +2,7 @@ package com.ogjg.daitgym.config.security.jwt.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ogjg.daitgym.common.exception.ErrorCode;
+import com.ogjg.daitgym.common.exception.ErrorMessage;
 import com.ogjg.daitgym.common.response.ApiResponse;
 import com.ogjg.daitgym.config.security.details.OAuth2JwtUserDetails;
 import com.ogjg.daitgym.config.security.jwt.authentication.JwtRefreshAuthenticationToken;
@@ -65,7 +66,7 @@ public class JwtRefreshTokenAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException jwtException) {
             authenticationEntryPoint.commence(
                     request, response,
-                    new RefreshTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL.getMessage())
+                    new RefreshTokenException(ErrorCode.ACCESS_TOKEN_AUTHENTICATION_FAIL, ErrorMessage.from(jwtException))
             );
         }
     }

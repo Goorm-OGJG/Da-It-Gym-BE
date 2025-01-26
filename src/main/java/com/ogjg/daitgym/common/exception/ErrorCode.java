@@ -10,6 +10,7 @@ public enum ErrorCode implements ErrorType {
     SUCCESS(HttpStatus.OK, "200", "OK"),
 
     //ETC
+    AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "인증 실패"),
     REFRESH_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Refresh Token 인증 오류"),
     ACCESS_TOKEN_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "401", "Access Token 인증 오류"),
     USER_NOT_AUTHORIZED_JOURNAL(HttpStatus.FORBIDDEN, "403", "운동일지에 접근 권한이 없습니다"),
